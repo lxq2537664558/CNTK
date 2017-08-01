@@ -340,7 +340,8 @@ void CheckEnumValuesNotModified() {
                   static_cast<size_t>(PrimitiveOpType::StableSigmoid) == 75 && 
                   static_cast<size_t>(PrimitiveOpType::RandomDistribution) == 76 &&
                   static_cast<size_t>(PrimitiveOpType::UnpackBatch) == 79 &&
-                  static_cast<size_t>(PrimitiveOpType::ToBatch) == 80,
+                  static_cast<size_t>(PrimitiveOpType::ToBatch) == 80 &&
+                  static_cast<size_t>(PrimitiveOpType::Pad) == 81,
                   "PrimitiveOpType enum value was modified.");
 }
 
