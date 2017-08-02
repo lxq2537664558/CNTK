@@ -6,7 +6,7 @@
 
 from cntk.io import UserMinibatchSource, StreamInformation, MinibatchData
 from cntk.core import Value
-from od_reader import ObjectDetectionReader
+from utils.od_reader import ObjectDetectionReader
 import numpy as np
 
 class ObjectDetectionMinibatchSource(UserMinibatchSource):

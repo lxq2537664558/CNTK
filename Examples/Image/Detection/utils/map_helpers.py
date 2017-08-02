@@ -5,7 +5,7 @@
 # ==============================================================================
 
 import numpy as np
-from utils.nms.nms_wrapper import apply_nms_to_test_set_results
+from utils.nms_wrapper import apply_nms_to_test_set_results
 
 def evaluate_detections(all_boxes, all_gt_infos, classes, use_07_metric=False, apply_mms=True, nms_threshold=0.5, conf_threshold=0.0):
     '''

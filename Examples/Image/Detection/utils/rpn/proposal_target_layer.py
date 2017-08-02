@@ -15,7 +15,7 @@ from utils.cython_modules.cython_bbox import bbox_overlaps
 try:
     from config import cfg
 except ImportError:
-    from utils.default_config import cfg
+    from utils.rpn.rpn_default_config import cfg
 
 DEBUG = False
 

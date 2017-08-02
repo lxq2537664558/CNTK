@@ -15,14 +15,9 @@ from utils.rpn.anchor_target_layer import AnchorTargetLayer
 from utils.rpn.proposal_layer import ProposalLayer
 from utils.rpn.proposal_target_layer import ProposalTargetLayer
 from utils.rpn.cntk_smoothL1_loss import SmoothL1Loss
-try:
-    from config import cfg
-except ImportError:
-    from utils.default_config import cfg
 
 # Please keep in sync with Readme.md
-def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
-               proposal_layer_param_string=None, conv_bias_init=0.0):
+def create_rpn(conv_out, scaled_gt_boxes, im_info, cfg, add_loss_functions=True):
     '''
     Creates a region proposal network for object detection as proposed in the "Faster R-CNN" paper:
         Shaoqing Ren and Kaiming He and Ross Girshick and Jian Sun:
@@ -37,8 +32,8 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
         im_info:         A CNTK variable or constant containing
                          (pad_width, pad_height, scaled_image_width, scaled_image_height, orig_img_width, orig_img_height)
                          e.g. (1000, 1000, 1000, 600, 500, 300) for an original image of 600x300 that is scaled and padded to 1000x1000
+        cfg:             The configuration dictionary
         add_loss_functions: If set to True rpn_losses will be returned, otherwise None is returned for the losses
-        proposal_layer_param_string: A yaml parameter string that is passed to the proposal layer.
 
     Returns:
         rpn_rois - the proposed ROIs
@@ -49,11 +44,11 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
     # init = 'normal', initValueScale = 0.01, initBias = 0.1
     num_channels = cfg["CNTK"].RPN_NUM_CHANNELS
     rpn_conv_3x3 = Convolution((3, 3), num_channels, activation=relu, pad=True, strides=1,
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(conv_out)
+                                init = normal(scale=0.01), init_bias=0.0)(conv_out)
     rpn_cls_score = Convolution((1, 1), 18, activation=None, name="rpn_cls_score",
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(rpn_conv_3x3)  # 2(bg/fg)  * 9(anchors)
+                                init = normal(scale=0.01), init_bias=0.0)(rpn_conv_3x3)  # 2(bg/fg)  * 9(anchors)
     rpn_bbox_pred = Convolution((1, 1), 36, activation=None, name="rpn_bbox_pred",
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(rpn_conv_3x3)  # 4(coords) * 9(anchors)
+                                init = normal(scale=0.01), init_bias=0.0)(rpn_conv_3x3)  # 4(coords) * 9(anchors)
 
     # apply softmax to get (bg, fg) probabilities and reshape predictions back to grid of (18, H, W)
     num_predictions = int(rpn_cls_score.shape[0] / 2)
@@ -64,14 +59,13 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
     rpn_cls_prob_reshape = reshape(rpn_cls_prob, rpn_cls_score.shape, name="rpn_cls_prob_reshape")
 
     # proposal layer
-    rpn_rois_raw = user_function(ProposalLayer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, param_str=proposal_layer_param_string))
-    rpn_rois = alias(rpn_rois_raw, name='rpn_rois')
+    rpn_rois = add_proposal_layer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, cfg)
 
     rpn_losses = None
     if(add_loss_functions):
         # RPN targets
         # Comment: rpn_cls_score is only passed   vvv   to get width and height of the conv feature map ...
-        atl = user_function(AnchorTargetLayer(rpn_cls_score, scaled_gt_boxes, im_info, param_str=proposal_layer_param_string))
+        atl = user_function(AnchorTargetLayer(rpn_cls_score, scaled_gt_boxes, im_info, param_str=cfg["CNTK"].PROPOSAL_LAYER_PARAMS))
         rpn_labels = atl.outputs[0]
         rpn_bbox_targets = atl.outputs[1]
         rpn_bbox_inside_weights = atl.outputs[2]
@@ -113,6 +107,19 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
         rpn_losses = plus(reduced_rpn_loss_cls, reduced_rpn_loss_bbox, name="rpn_losses")
 
     return rpn_rois, rpn_losses
+
+def add_proposal_layer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, cfg):
+    rpn_rois_raw = user_function(ProposalLayer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info,
+                                               train_pre_nms_topN=cfg["TRAIN"].RPN_PRE_NMS_TOP_N,
+                                               train_post_nms_topN=cfg["TRAIN"].RPN_POST_NMS_TOP_N,
+                                               train_nms_thresh=cfg["TRAIN"].RPN_NMS_THRESH,
+                                               train_min_size=cfg["TRAIN"].RPN_MIN_SIZE,
+                                               test_pre_nms_topN=cfg["TEST"].RPN_PRE_NMS_TOP_N,
+                                               test_post_nms_topN=cfg["TEST"].RPN_POST_NMS_TOP_N,
+                                               test_nms_thresh=cfg["TEST"].RPN_NMS_THRESH,
+                                               test_min_size=cfg["TEST"].RPN_MIN_SIZE,
+                                               param_str=cfg["CNTK"].PROPOSAL_LAYER_PARAMS))
+    return alias(rpn_rois_raw, name='rpn_rois')
 
 def create_proposal_target_layer(rpn_rois, scaled_gt_boxes, num_classes):
     '''

@@ -17,7 +17,7 @@ from utils.cython_modules.cython_bbox import bbox_overlaps
 try:
     from config import cfg
 except ImportError:
-    from utils.default_config import cfg
+    from utils.rpn.rpn_default_config import cfg
 
 DEBUG = False
 
@@ -59,7 +59,7 @@ class AnchorTargetLayer(UserFunction):
         self._allowed_border = False # layer_params.get('allowed_border', 0)
 
     def infer_outputs(self):
-        # This is a necessary work around since anfter cloning the cloned inputs are just place holders without the proper shape
+        # This is a necessary work around since after cloning the cloned inputs are just place holders without the proper shape
         if self._cfm_shape is None:
             self._cfm_shape = self.inputs[0].shape
         height, width = self._cfm_shape[-2:]

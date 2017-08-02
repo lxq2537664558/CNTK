@@ -88,7 +88,7 @@ class ObjectDetectionReader:
         # read roi map file
         with open(roi_map_file) as f:
             roi_map_lines = f.readlines()
-        # TODO: check whether this avoids reading empty lines
+
         roi_map_lines = [line for line in roi_map_lines if len(line) > 0]
         if max_images is not None:
             roi_map_lines = roi_map_lines[:max_images]
@@ -159,6 +159,10 @@ class ObjectDetectionReader:
         bottom = self._pad_height - top - target_h
         right = self._pad_width - left - target_w
 
+        # keep image stats for scaling and padding images later
+        img_stats = [target_w, target_h, img_width, img_height, top, bottom, left, right, scale_factor]
+        self._img_stats[index] = img_stats
+
         xyxy = annotations[:, :4]
         xyxy *= scale_factor
         xyxy += (left, top, left, top)
@@ -169,10 +173,6 @@ class ObjectDetectionReader:
         annotations[:, 1] = np.round(annotations[:, 1])
         annotations[:, 2] = np.round(annotations[:, 2])
         annotations[:, 3] = np.round(annotations[:, 3])
-
-        # keep image stats for scaling and padding images later
-        img_stats = [target_w, target_h, img_width, img_height, top, bottom, left, right]
-        self._img_stats[index] = img_stats
 
     def _get_next_image_index(self):
         if self._reading_index < 0 or self._reading_index >= self._num_images:
@@ -190,7 +190,7 @@ class ObjectDetectionReader:
             img_height = len(img)
             self._prepare_annotations_and_image_stats(index, img_width, img_height)
 
-        target_w, target_h, img_width, img_height, top, bottom, left, right = self._img_stats[index]
+        target_w, target_h, img_width, img_height, top, bottom, left, right, scale = self._img_stats[index]
 
         resized = cv2.resize(img, (target_w, target_h), 0, 0, interpolation=cv2.INTER_NEAREST)
         resized_with_pad = cv2.copyMakeBorder(resized, top, bottom, left, right, cv2.BORDER_CONSTANT,

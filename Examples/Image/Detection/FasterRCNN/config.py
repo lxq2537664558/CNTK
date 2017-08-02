@@ -19,12 +19,12 @@ cfg = __C
 
 __C.CNTK = edict()
 
-__C.CNTK.MAKE_MODE = True
+__C.CNTK.MAKE_MODE = False
 __C.CNTK.TRAIN_E2E = True # E2E or 4-stage training
 __C.CNTK.TRAIN_CONV_LAYERS = True
 __C.CNTK.USE_MEAN_GRADIENT = True
 __C.CNTK.FORCE_DETERMINISTIC = True
-__C.CNTK.FAST_MODE = False
+__C.CNTK.FAST_MODE = True
 
 __C.CNTK.DATASET = "Grocery" # "Grocery" or "Pascal"
 __C.CNTK.BASE_MODEL = "AlexNet" # "VGG16" or "AlexNet"
@@ -56,7 +56,7 @@ __C.CNTK.RESULTS_NMS_CONF_THRESHOLD = 0.0
 __C.CNTK.RESULTS_BGR_PLOT_THRESHOLD = 0.1
 
 __C.CNTK.GRAPH_TYPE = "png" # "png" or "pdf"
-__C.CNTK.DEBUG_OUTPUT = True
+__C.CNTK.DEBUG_OUTPUT = False
 __C.CNTK.VISUALIZE_RESULTS = True
 __C.CNTK.DRAW_NEGATIVE_ROIS = False
 __C.CNTK.DRAW_UNREGRESSED_ROIS = False
@@ -97,6 +97,7 @@ if __C.CNTK.DATASET == "Pascal":
 
 if __C.CNTK.BASE_MODEL == "AlexNet":
     __C.CNTK.BASE_MODEL_FILE = "AlexNet.model"
+    __C.CNTK.IMG_PAD_COLOR = [114, 114, 114]
     __C.CNTK.FEATURE_NODE_NAME = "features"
     __C.CNTK.LAST_CONV_NODE_NAME = "conv5.y"
     __C.CNTK.START_TRAIN_CONV_NODE_NAME = __C.CNTK.FEATURE_NODE_NAME
@@ -110,6 +111,7 @@ if __C.CNTK.BASE_MODEL == "AlexNet":
 
 if __C.CNTK.BASE_MODEL == "VGG16":
     __C.CNTK.BASE_MODEL_FILE = "VGG16_ImageNet_Caffe.model"
+    __C.CNTK.IMG_PAD_COLOR = [103, 116, 123]
     __C.CNTK.FEATURE_NODE_NAME = "data"
     __C.CNTK.LAST_CONV_NODE_NAME = "relu5_3"
     __C.CNTK.START_TRAIN_CONV_NODE_NAME = "pool2" # __C.CNTK.FEATURE_NODE_NAME

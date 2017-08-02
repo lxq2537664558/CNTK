@@ -15,7 +15,7 @@ except ImportError:
 try:
     from config import cfg
 except ImportError:
-    from utils.default_config import cfg
+    from utils.rpn.rpn_default_config import cfg
 
 import pdb
 
