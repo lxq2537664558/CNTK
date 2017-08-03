@@ -37,7 +37,7 @@ We recommend you to keep the downloaded data in the respective folder while down
 
 To train and evaluate Faster R-CNN run 
 
-`python FasterRCNN.py`
+`python run_faster_rcnn.py`
 
 The results for end-to-end training on Grocery using AlexNet as the base model should look similar to these:
 
@@ -70,13 +70,13 @@ python Examples/Image/DataSets/Pascal/install_pascalvoc.py
 python Examples/Image/DataSets/Pascal/mappings/create_mappings.py
 ```
 
-Change the data set parameter in `config.py` to `'Pascal'`:
+Change the `dataset_cfg` in the `get_configuration()` method of `run_faster_rcnn.py` to
 
 ```
-__C.CNTK.DATASET = "Pascal"    # "Grocery" or "Pascal"
+from utils.configs.Pascal_config import cfg as dataset_cfg
 ```
 
-Now you're set to train on the Pascal VOC 2007 data using `python FasterRCNN.py`. Beware that training might take a while.
+Now you're set to train on the Pascal VOC 2007 data using `python run_faster_rcnn.py`. Beware that training might take a while.
 
 ### Running Faster R-CNN on your own data
 
@@ -85,41 +85,51 @@ After storing your images in the described folder structure and annotating them 
 
 `python Examples/Image/Detection/utils/annotations/annotations_helper.py`
 
-after changing the folder in that script to your data folder. Finally, in `config.py` you need to add a new section for your data set, e.g.:
+after changing the folder in that script to your data folder. Finally, create a `MyDataSet_config.py` in the `utils\configs` folder following the existing examples:
 
 ```
-if __C.CNTK.DATASET == "YourDataSet":
-    __C.CNTK.MAP_FILE_PATH = "../../DataSets/YourDataSet"
-    __C.CNTK.CLASS_MAP_FILE = "class_map.txt"
-    __C.CNTK.TRAIN_MAP_FILE = "train_img_file.txt"
-    __C.CNTK.TEST_MAP_FILE = "test_img_file.txt"
-    __C.CNTK.TRAIN_ROI_FILE = "train_roi_file.txt"
-    __C.CNTK.TEST_ROI_FILE = "test_roi_file.txt"
-    __C.CNTK.NUM_TRAIN_IMAGES = 500
-    __C.CNTK.NUM_TEST_IMAGES = 200
+__C.CNTK.DATASET == "YourDataSet":
+__C.CNTK.MAP_FILE_PATH = "../../DataSets/YourDataSet"
+__C.CNTK.CLASS_MAP_FILE = "class_map.txt"
+__C.CNTK.TRAIN_MAP_FILE = "train_img_file.txt"
+__C.CNTK.TEST_MAP_FILE = "test_img_file.txt"
+__C.CNTK.TRAIN_ROI_FILE = "train_roi_file.txt"
+__C.CNTK.TEST_ROI_FILE = "test_roi_file.txt"
+__C.CNTK.NUM_TRAIN_IMAGES = 500
+__C.CNTK.NUM_TEST_IMAGES = 200
 ```
 
-Set `__C.CNTK.DATASET = "YourDataSet"` and run `python FasterRCNN.py` to train and evaluate Faster R-CNN on your data.
+Change the `dataset_cfg` in the `get_configuration()` method of `run_faster_rcnn.py` to
+
+```
+from utils.configs.MyDataSet_config import cfg as dataset_cfg
+```
+
+and run `python run_faster_rcnn.py` to train and evaluate Faster R-CNN on your data.
 
 ## Technical details
 
 ### Parameters
 
-All options and parameters are in `config.py`. These include
+All options and parameters are in `config.py` in the `FasterRCNN` folder and all of them are explained there. These include
 
 ```
-__C.CNTK.DATASET = "Grocery"    # "Grocery" or "Pascal"
-__C.CNTK.BASE_MODEL = "AlexNet" # "VGG16" or "AlexNet"
+# E2E or 4-stage training
+__C.CNTK.TRAIN_E2E = True
+# If set to 'True' conv layers weights from the base model will be trained, too
+__C.CNTK.TRAIN_CONV_LAYERS = True
 
-__C.CNTK.TRAIN_E2E = True       # E2E or 4-stage training
-
+# E2E learning parameters
 __C.CNTK.E2E_MAX_EPOCHS = 20
 __C.CNTK.E2E_LR_PER_SAMPLE = [0.001] * 10 + [0.0001] * 10 + [0.00001]
+
+# NMS threshold used to discard overlapping predicted bounding boxes
+__C.CNTK.RESULTS_NMS_THRESHOLD = 0.5
 ```
 
 ### Faster R-CNN CNTK code
 
-Most of the code is in `FasterRCNN.py` (and `Examples/Image/Detection/utils/rpn/rpn_helpers.py` for the region proposal network). This is how the network is built in the CNTK Python API:
+Most of the code is in `FasterRCNN_train.py` and `FasterRCNN_eval.py` (and `Examples/Image/Detection/utils/rpn/rpn_helpers.py` for the region proposal network). This is how the network is built in the CNTK Python API:
 
 ```
 def create_faster_rcnn_predictor(features, scaled_gt_boxes, dims_input, cfg):

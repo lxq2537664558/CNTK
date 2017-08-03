@@ -30,7 +30,8 @@ if __name__ == '__main__':
     # write detection results to output
     fg_boxes = np.where(labels > 0)
     print("#bboxes: before nms: {}, after nms: {}, foreground: {}".format(len(regressed_rois), len(bboxes), len(fg_boxes[0])))
-    # for i in fg_boxes[0]: print("box: {}, label: {}, score: {}".format(bboxes[i], labels[i], scores[i]))
+    for i in fg_boxes[0]: print("{:<12} (label: {:<2}), score: {:.3f}, box: {}".format(
+                                cfg.CNTK.CLASSES[labels[i]], labels[i], scores[i], [int(v) for v in bboxes[i]]))
 
     # visualize detections on image
     od.visualize_results(img_path, bboxes, labels, scores, cfg)

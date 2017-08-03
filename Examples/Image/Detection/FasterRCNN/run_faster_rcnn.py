@@ -4,13 +4,21 @@ from FasterRCNN_train import prepare, train_faster_rcnn
 from FasterRCNN_eval import compute_test_set_aps, plot_test_set_results
 from utils.config_helpers import merge_configs
 
+def get_configuration():
+    # load configs for detector, base network and data set
+    from config import cfg as detector_cfg
+    # for VGG16 base model use:         from utils.configs.VGG16_config import cfg as network_cfg
+    # for AlexNet base model use:       from utils.configs.AlexNet_config import cfg as network_cfg
+    from utils.configs.AlexNet_config import cfg as network_cfg
+    # for Pascal VOC 2007 data set use: from utils.configs.Pascal_config import cfg as dataset_cfg
+    # for the Grocery data set use:     from utils.configs.Grocery_config import cfg as dataset_cfg
+    from utils.configs.Grocery_config import cfg as dataset_cfg
+
+    return merge_configs([detector_cfg, network_cfg, dataset_cfg])
+
 # trains and evaluates a Fast R-CNN model.
 if __name__ == '__main__':
-    # set parameters
-    from config import cfg as detector_cfg
-    from utils.configs.AlexNet_config import cfg as network_cfg
-    from utils.configs.Grocery_config import cfg as dataset_cfg
-    cfg = merge_configs([detector_cfg, network_cfg, dataset_cfg])
+    cfg = get_configuration()
     prepare(cfg)
 
     # train and test
