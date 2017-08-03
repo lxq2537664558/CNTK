@@ -97,6 +97,7 @@ __C.CNTK.TRAIN_ROI_FILE = "train_roi_file.txt"
 __C.CNTK.TEST_ROI_FILE = "test_roi_file.txt"
 __C.CNTK.NUM_TRAIN_IMAGES = 500
 __C.CNTK.NUM_TEST_IMAGES = 200
+__C.CNTK.PROPOSAL_LAYER_SCALES = [8, 16, 32]
 ```
 
 Change the `dataset_cfg` in the `get_configuration()` method of `run_faster_rcnn.py` to

@@ -8,7 +8,6 @@ import zipfile
 import cv2 # pip install opencv-python
 import numpy as np
 import os
-import pdb
 
 DEBUG = False
 if DEBUG:
@@ -67,7 +66,6 @@ class ObjectDetectionReader:
             try:
                 cv2.rectangle(img_data, pt1, pt2, color, thickness)
             except:
-                pdb.set_trace()
                 print("Unexpected error:", sys.exc_info()[0])
 
         mp.imshow(img_data)

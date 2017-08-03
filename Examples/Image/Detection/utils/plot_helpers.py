@@ -223,7 +223,6 @@ def drawRectangles(img, rects, color = (0, 255, 0), thickness = 2):
         try:
             cv2.rectangle(img, pt1, pt2, color, thickness)
         except:
-            import pdb; pdb.set_trace()
             print("Unexpected error:", sys.exc_info()[0])
 
 def drawCrossbar(img, pt):

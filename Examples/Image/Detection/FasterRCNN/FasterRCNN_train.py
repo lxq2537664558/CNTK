@@ -71,6 +71,8 @@ def prepare(cfg, use_arg_parser=True):
 
     cfg["CNTK"].CLASSES = parse_class_map_file(cfg["CNTK"].CLASS_MAP_FILE)
     cfg["CNTK"].NUM_CLASSES = len(cfg["CNTK"].CLASSES)
+    cfg["CNTK"].PROPOSAL_LAYER_PARAMS = "'feat_stride': {}\n'scales':\n - {}".\
+        format(cfg["CNTK"].FEATURE_STRIDE, "\n - ".join([str(v) for v in cfg["CNTK"].PROPOSAL_LAYER_SCALES]))
 
     if cfg["CNTK"].FAST_MODE:
         cfg["CNTK"].E2E_MAX_EPOCHS = 1

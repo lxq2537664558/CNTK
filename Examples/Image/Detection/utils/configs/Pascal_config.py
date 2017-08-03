@@ -21,4 +21,4 @@ __C.CNTK.TEST_MAP_FILE = "test2007.txt"
 __C.CNTK.TEST_ROI_FILE = "test2007_rois_abs-xyxy_noPad_skipDif.txt"
 __C.CNTK.NUM_TRAIN_IMAGES = 5010
 __C.CNTK.NUM_TEST_IMAGES = 4952
-__C.CNTK.PROPOSAL_LAYER_PARAMS = "'feat_stride': 16\n'scales':\n - 8 \n - 16 \n - 32"
+__C.CNTK.PROPOSAL_LAYER_SCALES = [8, 16, 32]
