@@ -65,7 +65,13 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, cfg, add_loss_functions=True)
     if(add_loss_functions):
         # RPN targets
         # Comment: rpn_cls_score is only passed   vvv   to get width and height of the conv feature map ...
-        atl = user_function(AnchorTargetLayer(rpn_cls_score, scaled_gt_boxes, im_info, param_str=cfg["CNTK"].PROPOSAL_LAYER_PARAMS))
+        atl = user_function(AnchorTargetLayer(rpn_cls_score, scaled_gt_boxes, im_info,
+                                              rpn_batch_size=cfg["TRAIN"].RPN_BATCHSIZE,
+                                              rpn_fg_fraction=cfg["TRAIN"].RPN_FG_FRACTION,
+                                              clobber_positives=cfg["TRAIN"].RPN_CLOBBER_POSITIVES,
+                                              positive_overlap=cfg["TRAIN"].RPN_POSITIVE_OVERLAP,
+                                              negative_overlap=cfg["TRAIN"].RPN_NEGATIVE_OVERLAP,
+                                              param_str=cfg["CNTK"].PROPOSAL_LAYER_PARAMS))
         rpn_labels = atl.outputs[0]
         rpn_bbox_targets = atl.outputs[1]
         rpn_bbox_inside_weights = atl.outputs[2]
@@ -121,7 +127,7 @@ def add_proposal_layer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, cfg):
                                                param_str=cfg["CNTK"].PROPOSAL_LAYER_PARAMS))
     return alias(rpn_rois_raw, name='rpn_rois')
 
-def create_proposal_target_layer(rpn_rois, scaled_gt_boxes, num_classes):
+def create_proposal_target_layer(rpn_rois, scaled_gt_boxes, cfg):
     '''
     Creates a proposal target layer that is used for training an object detection network as proposed in the "Faster R-CNN" paper:
         Shaoqing Ren and Kaiming He and Ross Girshick and Jian Sun:
@@ -143,8 +149,17 @@ def create_proposal_target_layer(rpn_rois, scaled_gt_boxes, num_classes):
         bbox_inside_weights - the weights for the regression loss
     '''
 
-    ptl_param_string = "'num_classes': {}".format(num_classes)
-    ptl = user_function(ProposalTargetLayer(rpn_rois, scaled_gt_boxes, param_str=ptl_param_string))
+    ptl_param_string = "'num_classes': {}".format(cfg["CNTK"].NUM_CLASSES)
+    ptl = user_function(ProposalTargetLayer(rpn_rois, scaled_gt_boxes,
+                                            batch_size=cfg["TRAIN"].BATCH_SIZE,
+                                            fg_fraction=cfg["TRAIN"].FG_FRACTION,
+                                            normalize_targets=cfg["TRAIN"].BBOX_NORMALIZE_TARGETS,
+                                            normalize_means=cfg["TRAIN"].BBOX_NORMALIZE_MEANS,
+                                            normalize_stds=cfg["TRAIN"].BBOX_NORMALIZE_STDS,
+                                            fg_thresh=cfg["TRAIN"].FG_THRESH,
+                                            bg_thresh_hi=cfg["TRAIN"].BG_THRESH_HI,
+                                            bg_thresh_lo=cfg["TRAIN"].BG_THRESH_LO,
+                                            param_str=ptl_param_string))
 
     # use an alias if you need to access the outputs, e.g., when cloning a trained network
     rois = alias(ptl.outputs[0], name='rpn_target_rois')

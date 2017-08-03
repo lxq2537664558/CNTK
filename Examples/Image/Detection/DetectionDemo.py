@@ -1,12 +1,15 @@
+import os
 import numpy as np
 import demo_utils as od
 from utils.config_helpers import merge_configs
-import pdb
 
 def get_configuration():
-    from FasterRCNN.config import cfg as faster_rcnn_cfg
-    cfg = merge_configs([faster_rcnn_cfg, {'DETECTOR': 'FasterRCNN'}])
-    return cfg
+    # load configs for detector, base network and data set
+    from FasterRCNN.config import cfg as detector_cfg
+    from utils.configs.AlexNet_config import cfg as network_cfg
+    from utils.configs.Grocery_config import cfg as dataset_cfg
+
+    return merge_configs([detector_cfg, network_cfg, dataset_cfg, {'DETECTOR': 'FasterRCNN'}])
 
 if __name__ == '__main__':
     cfg = get_configuration()
@@ -20,7 +23,7 @@ if __name__ == '__main__':
     print('Mean AP = {:.4f}'.format(np.nanmean(list(eval_results.values()))))
 
     # detect objects in single image
-    img_path = r"C:\src\CNTK\Examples\Image\DataSets\Grocery\testImages\WIN_20160803_11_28_42_Pro.jpg"
+    img_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), r"..\DataSets\Grocery\testImages\WIN_20160803_11_28_42_Pro.jpg")
     regressed_rois, cls_probs = od.evaluate_single_image(eval_model, img_path, cfg)
     bboxes, labels, scores = od.filter_results(regressed_rois, cls_probs, cfg)
 

@@ -31,6 +31,7 @@ class ProposalLayer(UserFunction):
                  test_min_size=16,
                  param_str = None,
                  name='ProposalLayer'):
+        super(ProposalLayer, self).__init__([arg1, arg2, arg3], name=name)
         self._train_pre_nms_topN = train_pre_nms_topN
         self._train_post_nms_topN = train_post_nms_topN
         self._train_nms_thresh = train_nms_thresh
@@ -40,7 +41,6 @@ class ProposalLayer(UserFunction):
         self._test_nms_thresh = test_nms_thresh
         self._test_min_size = test_min_size
         self._param_str = param_str if param_str is not None else "'feat_stride': 16\n'scales':\n - 8 \n - 16 \n - 32"
-        super(ProposalLayer, self).__init__([arg1, arg2, arg3], name=name)
 
         # parse the layer parameter string, which must be valid YAML
         layer_params = yaml.load(self._param_str)

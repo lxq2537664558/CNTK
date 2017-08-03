@@ -79,14 +79,14 @@ def prepare(cfg, use_arg_parser=True):
 
     if cfg["CNTK"].FORCE_DETERMINISTIC:
         force_deterministic_algorithms()
-    np.random.seed(seed=cfg.RNG_SEED)
+    np.random.seed(seed=cfg.RND_SEED)
 
     if cfg["CNTK"].DEBUG_OUTPUT:
         # report args
         print("Using the following parameters:")
         print("Flip image       : {}".format(cfg["TRAIN"].USE_FLIPPED))
         print("Train conv layers: {}".format(cfg["CNTK"].TRAIN_CONV_LAYERS))
-        print("Random seed      : {}".format(cfg.RNG_SEED))
+        print("Random seed      : {}".format(cfg.RND_SEED))
         print("Momentum per MB  : {}".format(cfg["CNTK"].MOMENTUM_PER_MB))
         if cfg["CNTK"].TRAIN_E2E:
             print("E2E epochs       : {}".format(cfg["CNTK"].E2E_MAX_EPOCHS))
@@ -151,7 +151,7 @@ def parse_arguments(cfg):
     if args['momentumPerMb'] is not None:
         cfg["CNTK"].MOMENTUM_PER_MB = args['momentumPerMb']
     if args['rndSeed'] is not None:
-        cfg.RNG_SEED = args['rndSeed']
+        cfg.RND_SEED = args['rndSeed']
     if args['trainConv'] is not None:
         cfg["CNTK"].TRAIN_CONV_LAYERS = True if args['trainConv'] == 1 else False
     if args['trainE2E'] is not None:
@@ -235,7 +235,7 @@ def create_faster_rcnn_predictor(features, scaled_gt_boxes, dims_input, cfg):
     # RPN and prediction targets
     rpn_rois, rpn_losses = create_rpn(conv_out, scaled_gt_boxes, dims_input, cfg)
     rois, label_targets, bbox_targets, bbox_inside_weights = \
-        create_proposal_target_layer(rpn_rois, scaled_gt_boxes, num_classes=cfg["CNTK"].NUM_CLASSES)
+        create_proposal_target_layer(rpn_rois, scaled_gt_boxes, cfg)
 
     # Fast RCNN and losses
     cls_score, bbox_pred = create_fast_rcnn_predictor(conv_out, rois, fc_layers, cfg)
@@ -297,7 +297,7 @@ def create_eval_model(model, image_input, dims_input, cfg, rpn_model=None):
     cls_score = pred_net.outputs[0]
     bbox_regr = pred_net.outputs[1]
 
-    if cfg["TRAIN"].BBOX_NORMALIZE_TARGETS and cfg["TRAIN"].BBOX_NORMALIZE_TARGETS_PRECOMPUTED:
+    if cfg["TRAIN"].BBOX_NORMALIZE_TARGETS:
         num_boxes = int(bbox_regr.shape[1] / 4)
         bbox_normalize_means = np.array(cfg["TRAIN"].BBOX_NORMALIZE_MEANS * num_boxes)
         bbox_normalize_stds = np.array(cfg["TRAIN"].BBOX_NORMALIZE_STDS * num_boxes)
@@ -329,12 +329,12 @@ def train_model(image_input, roi_input, dims_input, loss, pred_error,
     # Instantiate the learners and the trainer object
     lr_schedule = learning_rate_schedule(lr_per_sample, unit=UnitType.sample)
     learner = momentum_sgd(others, lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
-                           unit_gain=False, use_mean_gradient=cfg["CNTK"].USE_MEAN_GRADIENT)
+                           unit_gain=False, use_mean_gradient=True)
 
     bias_lr_per_sample = [v * bias_lr_mult for v in lr_per_sample]
     bias_lr_schedule = learning_rate_schedule(bias_lr_per_sample, unit=UnitType.sample)
     bias_learner = momentum_sgd(biases, bias_lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
-                           unit_gain=False, use_mean_gradient=cfg["CNTK"].USE_MEAN_GRADIENT)
+                           unit_gain=False, use_mean_gradient=True)
     trainer = Trainer(None, (loss, pred_error), [learner, bias_learner])
 
     # Get minibatches of images and perform model training
@@ -539,7 +539,7 @@ def train_faster_rcnn_alternating(cfg):
 
         # use buffered proposals in target layer
         rois, label_targets, bbox_targets, bbox_inside_weights = \
-            create_proposal_target_layer(rpn_rois_buf, scaled_gt_boxes, num_classes=cfg["CNTK"].NUM_CLASSES)
+            create_proposal_target_layer(rpn_rois_buf, scaled_gt_boxes, cfg)
 
         # Fast RCNN and losses
         fc_layers = clone_model(base_model, [cfg["CNTK"].POOL_NODE_NAME], [cfg["CNTK"].LAST_HIDDEN_NODE_NAME], CloneMethod.clone)
@@ -688,6 +688,8 @@ def evaluate_faster_rcnn(eval_model, cfg):
 
     # calculate mAP
     aps = evaluate_detections(all_boxes, all_gt_infos, classes,
+                              use_gpu_nms = cfg.USE_GPU_NMS,
+                              device_id = cfg.GPU_ID,
                               nms_threshold=cfg["CNTK"].RESULTS_NMS_THRESHOLD,
                               conf_threshold = cfg["CNTK"].RESULTS_NMS_CONF_THRESHOLD)
 
@@ -716,7 +718,12 @@ def train_faster_rcnn(cfg):
 # The main method trains and evaluates a Fast R-CNN model.
 # If a trained model is already available it is loaded an no training will be performed (if MAKE_MODE=True).
 if __name__ == '__main__':
-    from config import cfg
+    from utils.config_helpers import merge_configs
+    from config import cfg as detector_cfg
+    from utils.configs.AlexNet_config import cfg as network_cfg
+    from utils.configs.Grocery_config import cfg as dataset_cfg
+    cfg = merge_configs([detector_cfg, network_cfg, dataset_cfg])
+
     prepare(cfg)
 
     # train and test
@@ -737,14 +744,4 @@ if __name__ == '__main__':
         num_eval = min(cfg["CNTK"].NUM_TEST_IMAGES, 100)
         img_shape = (cfg["CNTK"].NUM_CHANNELS, cfg["CNTK"].IMAGE_HEIGHT, cfg["CNTK"].IMAGE_WIDTH)
         results_folder = os.path.join(cfg["CNTK"].OUTPUT_PATH, cfg["CNTK"].DATASET)
-        eval_and_plot_faster_rcnn(trained_model, num_eval, 
-                                  cfg["CNTK"].TEST_MAP_FILE,
-                                  (cfg["CNTK"].NUM_CHANNELS, cfg["CNTK"].IMAGE_HEIGHT, cfg["CNTK"].IMAGE_WIDTH),
-                                  results_folder, 
-                                  cfg["CNTK"].FEATURE_NODE_NAME, 
-                                  cfg["CNTK"].CLASSES,
-                                  drawUnregressedRois=cfg["CNTK"].DRAW_UNREGRESSED_ROIS,
-                                  drawNegativeRois=cfg["CNTK"].DRAW_NEGATIVE_ROIS,
-                                  nmsThreshold=cfg["CNTK"].RESULTS_NMS_THRESHOLD,
-                                  nmsConfThreshold=cfg["CNTK"].RESULTS_NMS_CONF_THRESHOLD,
-                                  bgrPlotThreshold=cfg["CNTK"].RESULTS_BGR_PLOT_THRESHOLD)
+        eval_and_plot_faster_rcnn(trained_model, num_eval, results_folder, cfg)

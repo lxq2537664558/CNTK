@@ -56,11 +56,20 @@ def evaluate_single_image(model, img_path, cfg):
     regressed_rois = None
     cls_probs = None
     if detector_name is not None:
-        print("detecting objets in image {}".format(img_path))
+        print("detecting objects in image {}".format(img_path))
         if detector_name == 'FasterRCNN':
             from FasterRCNN.FasterRCNN_eval import FasterRCNN_Evaluator
             evaluator = FasterRCNN_Evaluator(model, cfg)
             regressed_rois, cls_probs = evaluator.process_image(img_path)
+
+            if False:
+                import time
+                start = int(time.time())
+                for i in range(100):
+                    regressed_rois, cls_probs = evaluator.process_image(img_path)
+                total = int(time.time()) - start
+                print("time for 100 evals: {}".format(total))
+
         else:
             print('Unknown detector: {}'.format(detector_name))
 
@@ -82,6 +91,8 @@ def filter_results(regressed_rois, cls_probs, cfg):
     scores = cls_probs.max(axis=1)
     nmsKeepIndices = apply_nms_to_single_image_results(
                         regressed_rois, labels, scores,
+                        use_gpu_nms=cfg.USE_GPU_NMS,
+                        device_id=cfg.GPU_ID,
                         nms_threshold=cfg["CNTK"].RESULTS_NMS_THRESHOLD,
                         conf_threshold=cfg["CNTK"].RESULTS_NMS_CONF_THRESHOLD)
 
