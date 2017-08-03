@@ -13,7 +13,7 @@ def train_object_detector(cfg):
     if detector_name is not None:
         print("training {}".format(detector_name))
         if detector_name == 'FasterRCNN':
-            from FasterRCNN.FasterRCNN import prepare, train_faster_rcnn
+            from FasterRCNN.FasterRCNN_train import prepare, train_faster_rcnn
             prepare(cfg, use_arg_parser=False)
             eval_model = train_faster_rcnn(cfg)
         else:
@@ -34,8 +34,8 @@ def evaluate_test_set(model, cfg):
     if detector_name is not None:
         print("evaluating {}".format(detector_name))
         if detector_name == 'FasterRCNN':
-            from FasterRCNN.FasterRCNN import evaluate_faster_rcnn
-            aps = evaluate_faster_rcnn(model, cfg)
+            from FasterRCNN.FasterRCNN_eval import compute_test_set_aps
+            aps = compute_test_set_aps(model, cfg)
         else:
             print('Unknown detector: {}'.format(detector_name))
 

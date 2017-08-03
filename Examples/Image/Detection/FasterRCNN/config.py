@@ -19,44 +19,57 @@ cfg = __C
 
 __C.CNTK = edict()
 
-__C.CNTK.MAKE_MODE = False
-__C.CNTK.TRAIN_E2E = False # E2E or 4-stage training
+# If set to 'True' training will be skipped if a trained model exists already
+__C.CNTK.MAKE_MODE = True
+# E2E or 4-stage training
+__C.CNTK.TRAIN_E2E = True
+# If set to 'True' conv layers weights from the base model will be trained, too
 __C.CNTK.TRAIN_CONV_LAYERS = True
-__C.CNTK.FORCE_DETERMINISTIC = True
-__C.CNTK.FAST_MODE = True
+# set to 'True' to use determininistic algorithms
+__C.CNTK.FORCE_DETERMINISTIC = False
+# set to 'True' to run only a single epoch
+__C.CNTK.FAST_MODE = False
 
 # Learning parameters
 __C.CNTK.L2_REG_WEIGHT = 0.0005
 __C.CNTK.MOMENTUM_PER_MB = 0.9
+# The learning rate multiplier for all bias weights
+__C.CNTK.BIAS_LR_MULT = 2.0
 
-# E2E config
+# E2E learning parameters
 __C.CNTK.E2E_MAX_EPOCHS = 20
 __C.CNTK.E2E_LR_PER_SAMPLE = [0.001] * 10 + [0.0001] * 10 + [0.00001]
 
-# 4-stage config (alternating training scheme)
+# 4-stage learning parameters (alternating training scheme)
 __C.CNTK.RPN_EPOCHS = 16
 __C.CNTK.RPN_LR_PER_SAMPLE = [0.001] * 12 + [0.0001] * 4
 __C.CNTK.FRCN_EPOCHS = 8
 __C.CNTK.FRCN_LR_PER_SAMPLE = [0.001] * 6 + [0.0001] * 2
 
-# Misc
+# Maximum number of ground truth annotations per iamge
 __C.CNTK.INPUT_ROIS_PER_IMAGE = 50
 __C.CNTK.IMAGE_WIDTH = 850
 __C.CNTK.IMAGE_HEIGHT = 850
 
+# Sigma parameter for smooth L1 loss in the RPN and the detector (DET)
 __C.CNTK.SIGMA_RPN_L1 = 3.0
 __C.CNTK.SIGMA_DET_L1 = 1.0
-__C.CNTK.BIAS_LR_MULT = 2.0
 
+# NMS threshold used to discard overlapping predicted bounding boxes
 __C.CNTK.RESULTS_NMS_THRESHOLD = 0.5
+# all bounding boxes with a score lower than this threshold will be considered background
 __C.CNTK.RESULTS_NMS_CONF_THRESHOLD = 0.0
-__C.CNTK.RESULTS_BGR_PLOT_THRESHOLD = 0.1
 
-__C.CNTK.GRAPH_TYPE = "png" # "png" or "pdf"
+# Debug parameters
 __C.CNTK.DEBUG_OUTPUT = False
-__C.CNTK.VISUALIZE_RESULTS = False
+__C.CNTK.GRAPH_TYPE = "png" # "png" or "pdf"
+
+# Enable plotting of results generally / also plot background boxes / also plot unregressed boxes
+__C.CNTK.VISUALIZE_RESULTS = True
 __C.CNTK.DRAW_NEGATIVE_ROIS = False
 __C.CNTK.DRAW_UNREGRESSED_ROIS = False
+# only for plotting results: boxes with a score lower than this threshold will be considered background
+__C.CNTK.RESULTS_BGR_PLOT_THRESHOLD = 0.1
 
 #
 # Training parameters

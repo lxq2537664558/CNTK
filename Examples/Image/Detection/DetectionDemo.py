@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import demo_utils as od
+import utils.od_utils as od
 from utils.config_helpers import merge_configs
 
 def get_configuration():

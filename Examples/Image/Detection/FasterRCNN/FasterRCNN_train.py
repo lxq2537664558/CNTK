@@ -29,10 +29,10 @@ abs_path = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(abs_path, ".."))
 from utils.rpn.rpn_helpers import create_rpn, create_proposal_target_layer, add_proposal_layer
 from utils.rpn.cntk_smoothL1_loss import SmoothL1Loss
-from utils.map_helpers import evaluate_detections
+from utils.rpn.bbox_transform import regress_rois
 from utils.annotations.annotations_helper import parse_class_map_file
 from utils.od_mb_source import ObjectDetectionMinibatchSource
-from utils.cntk_helpers import regress_rois
+from FasterRCNN.FasterRCNN_eval import compute_test_set_aps
 
 def prepare(cfg, use_arg_parser=True):
     cfg["CNTK"].MB_SIZE = 1
@@ -284,8 +284,6 @@ def create_eval_model(model, image_input, dims_input, cfg, rpn_model=None):
     conv_layers = clone_model(model, [cfg["CNTK"].FEATURE_NODE_NAME], [last_conv_node_name], CloneMethod.freeze)
     conv_out = conv_layers(image_input)
 
-    #rpn = clone_model(model_with_rpn, [last_conv_node_name, "dims_input"], ["rpn_rois"], CloneMethod.freeze)
-    #rpn_rois = rpn(conv_out, dims_input)
     model_with_rpn = model if rpn_model is None else rpn_model
     rpn = clone_model(model_with_rpn, [last_conv_node_name], ["rpn_cls_prob_reshape", "rpn_bbox_pred"], CloneMethod.freeze)
     rpn_out = rpn(conv_out)
@@ -307,77 +305,6 @@ def create_eval_model(model, image_input, dims_input, cfg, rpn_model=None):
     eval_model = combine([cls_pred, rpn_rois, bbox_regr])
 
     return eval_model
-
-def train_model(image_input, roi_input, dims_input, loss, pred_error,
-                lr_per_sample, mm_schedule, l2_reg_weight, epochs_to_train, cfg,
-                rpn_rois_input=None, buffered_rpn_proposals=None):
-    if isinstance(loss, cntk.Variable):
-        loss = combine([loss])
-
-    params = loss.parameters
-    biases = [p for p in params if '.b' in p.name or 'b' == p.name]
-    others = [p for p in params if not p in biases]
-    bias_lr_mult = cfg["CNTK"].BIAS_LR_MULT
-
-    if cfg["CNTK"].DEBUG_OUTPUT:
-        print("biases")
-        for p in biases: print(p)
-        print("others")
-        for p in others: print(p)
-        print("bias_lr_mult: {}".format(bias_lr_mult))
-
-    # Instantiate the learners and the trainer object
-    lr_schedule = learning_rate_schedule(lr_per_sample, unit=UnitType.sample)
-    learner = momentum_sgd(others, lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
-                           unit_gain=False, use_mean_gradient=True)
-
-    bias_lr_per_sample = [v * bias_lr_mult for v in lr_per_sample]
-    bias_lr_schedule = learning_rate_schedule(bias_lr_per_sample, unit=UnitType.sample)
-    bias_learner = momentum_sgd(biases, bias_lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
-                           unit_gain=False, use_mean_gradient=True)
-    trainer = Trainer(None, (loss, pred_error), [learner, bias_learner])
-
-    # Get minibatches of images and perform model training
-    print("Training model for %s epochs." % epochs_to_train)
-    log_number_of_parameters(loss)
-
-    # Create the minibatch source
-    od_minibatch_source = ObjectDetectionMinibatchSource(
-        cfg["CNTK"].TRAIN_MAP_FILE, cfg["CNTK"].TRAIN_ROI_FILE,
-        max_annotations_per_image=cfg["CNTK"].INPUT_ROIS_PER_IMAGE,
-        pad_width=cfg["CNTK"].IMAGE_WIDTH,
-        pad_height=cfg["CNTK"].IMAGE_HEIGHT,
-        pad_value=cfg["CNTK"].IMG_PAD_COLOR,
-        randomize=True,
-        use_flipping=cfg["TRAIN"].USE_FLIPPED,
-        max_images=cfg["CNTK"].NUM_TRAIN_IMAGES,
-        buffered_rpn_proposals=buffered_rpn_proposals)
-
-    # define mapping from reader streams to network inputs
-    input_map = {
-        od_minibatch_source.image_si: image_input,
-        od_minibatch_source.roi_si: roi_input,
-        od_minibatch_source.dims_si: dims_input
-    }
-
-    use_buffered_proposals = buffered_rpn_proposals is not None
-    progress_printer = ProgressPrinter(tag='Training', num_epochs=epochs_to_train, gen_heartbeat=True)
-    for epoch in range(epochs_to_train):       # loop over epochs
-        sample_count = 0
-        while sample_count < cfg["CNTK"].NUM_TRAIN_IMAGES:  # loop over minibatches in the epoch
-            data, proposals = od_minibatch_source.next_minibatch_with_proposals(min(cfg["CNTK"].MB_SIZE, cfg["CNTK"].NUM_TRAIN_IMAGES-sample_count), input_map=input_map)
-            if use_buffered_proposals:
-                data[rpn_rois_input] = MinibatchData(Value(batch=np.asarray(proposals, dtype=np.float32)), 1, 1, False)
-                # remove dims input if no rpn is required to avoid warnings
-                del data[[k for k in data if '[6]' in str(k)][0]]
-
-            trainer.train_minibatch(data)                                    # update model with it
-            sample_count += trainer.previous_minibatch_sample_count          # count samples processed so far
-            progress_printer.update_with_trainer(trainer, with_metric=True)  # log progress
-            if sample_count % 100 == 0:
-                print("Processed {} samples".format(sample_count))
-
-        progress_printer.epoch_summary(with_metric=True)
 
 def compute_rpn_proposals(rpn_model, image_input, roi_input, dims_input, cfg):
     num_images = cfg["CNTK"].NUM_TRAIN_IMAGES
@@ -411,6 +338,27 @@ def compute_rpn_proposals(rpn_model, image_input, roi_input, dims_input, cfg):
             print("Buffered proposals for {} samples".format(sample_count))
 
     return buffered_proposals
+
+# If a trained model is already available it is loaded an no training will be performed (if MAKE_MODE=True).
+def train_faster_rcnn(cfg):
+    # Train only if no model exists yet
+    model_path = cfg['MODEL_PATH']
+    if os.path.exists(model_path) and cfg["CNTK"].MAKE_MODE:
+        print("Loading existing model from %s" % model_path)
+        eval_model = load_model(model_path)
+    else:
+        if cfg["CNTK"].TRAIN_E2E:
+            eval_model = train_faster_rcnn_e2e(cfg)
+        else:
+            eval_model = train_faster_rcnn_alternating(cfg)
+
+        eval_model.save(model_path)
+        if cfg["CNTK"].DEBUG_OUTPUT:
+            plot(eval_model, os.path.join(cfg["CNTK"].OUTPUT_PATH, "graph_frcn_eval_{}_{}.{}"
+                                          .format(cfg["CNTK"].BASE_MODEL, "e2e" if cfg["CNTK"].TRAIN_E2E else "4stage", cfg["CNTK"].GRAPH_TYPE)))
+
+        print("Stored eval model at %s" % model_path)
+    return eval_model
 
 # Trains a Faster R-CNN model end-to-end
 def train_faster_rcnn_e2e(cfg):
@@ -614,134 +562,73 @@ def train_faster_rcnn_alternating(cfg):
 
     return create_eval_model(stage2_frcn_network, image_input, dims_input, cfg, rpn_model=stage2_rpn_network)
 
-def evaluate_faster_rcnn(eval_model, cfg):
-    num_test_images = cfg["CNTK"].NUM_TEST_IMAGES
-    classes = cfg["CNTK"].CLASSES
-    image_input = input_variable(shape=(cfg["CNTK"].NUM_CHANNELS, cfg["CNTK"].IMAGE_HEIGHT, cfg["CNTK"].IMAGE_WIDTH),
-                                 dynamic_axes=[Axis.default_batch_axis()],
-                                 name=cfg["CNTK"].FEATURE_NODE_NAME)
-    roi_input = input_variable((cfg["CNTK"].INPUT_ROIS_PER_IMAGE, 5), dynamic_axes=[Axis.default_batch_axis()])
-    dims_input = input_variable((6), dynamic_axes=[Axis.default_batch_axis()])
-    frcn_eval = eval_model(image_input, dims_input)
+def train_model(image_input, roi_input, dims_input, loss, pred_error,
+                lr_per_sample, mm_schedule, l2_reg_weight, epochs_to_train, cfg,
+                rpn_rois_input=None, buffered_rpn_proposals=None):
+    if isinstance(loss, cntk.Variable):
+        loss = combine([loss])
+
+    params = loss.parameters
+    biases = [p for p in params if '.b' in p.name or 'b' == p.name]
+    others = [p for p in params if not p in biases]
+    bias_lr_mult = cfg["CNTK"].BIAS_LR_MULT
+
+    if cfg["CNTK"].DEBUG_OUTPUT:
+        print("biases")
+        for p in biases: print(p)
+        print("others")
+        for p in others: print(p)
+        print("bias_lr_mult: {}".format(bias_lr_mult))
+
+    # Instantiate the learners and the trainer object
+    lr_schedule = learning_rate_schedule(lr_per_sample, unit=UnitType.sample)
+    learner = momentum_sgd(others, lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
+                           unit_gain=False, use_mean_gradient=True)
+
+    bias_lr_per_sample = [v * bias_lr_mult for v in lr_per_sample]
+    bias_lr_schedule = learning_rate_schedule(bias_lr_per_sample, unit=UnitType.sample)
+    bias_learner = momentum_sgd(biases, bias_lr_schedule, mm_schedule, l2_regularization_weight=l2_reg_weight,
+                           unit_gain=False, use_mean_gradient=True)
+    trainer = Trainer(None, (loss, pred_error), [learner, bias_learner])
+
+    # Get minibatches of images and perform model training
+    print("Training model for %s epochs." % epochs_to_train)
+    log_number_of_parameters(loss)
 
     # Create the minibatch source
-    minibatch_source = ObjectDetectionMinibatchSource(
-        cfg["CNTK"].TEST_MAP_FILE,
-        cfg["CNTK"].TEST_ROI_FILE,
+    od_minibatch_source = ObjectDetectionMinibatchSource(
+        cfg["CNTK"].TRAIN_MAP_FILE, cfg["CNTK"].TRAIN_ROI_FILE,
         max_annotations_per_image=cfg["CNTK"].INPUT_ROIS_PER_IMAGE,
         pad_width=cfg["CNTK"].IMAGE_WIDTH,
         pad_height=cfg["CNTK"].IMAGE_HEIGHT,
         pad_value=cfg["CNTK"].IMG_PAD_COLOR,
-        randomize=False, use_flipping=False,
-        max_images=cfg["CNTK"].NUM_TEST_IMAGES)
+        randomize=True,
+        use_flipping=cfg["TRAIN"].USE_FLIPPED,
+        max_images=cfg["CNTK"].NUM_TRAIN_IMAGES,
+        buffered_rpn_proposals=buffered_rpn_proposals)
 
     # define mapping from reader streams to network inputs
     input_map = {
-        minibatch_source.image_si: image_input,
-        minibatch_source.roi_si: roi_input,
-        minibatch_source.dims_si: dims_input
+        od_minibatch_source.image_si: image_input,
+        od_minibatch_source.roi_si: roi_input,
+        od_minibatch_source.dims_si: dims_input
     }
 
-    # all detections are collected into:
-    #    all_boxes[cls][image] = N x 5 array of detections in
-    #    (x1, y1, x2, y2, score)
-    all_boxes = [[[] for _ in range(num_test_images)] for _ in range(cfg["CNTK"].NUM_CLASSES)]
+    use_buffered_proposals = buffered_rpn_proposals is not None
+    progress_printer = ProgressPrinter(tag='Training', num_epochs=epochs_to_train, gen_heartbeat=True)
+    for epoch in range(epochs_to_train):       # loop over epochs
+        sample_count = 0
+        while sample_count < cfg["CNTK"].NUM_TRAIN_IMAGES:  # loop over minibatches in the epoch
+            data, proposals = od_minibatch_source.next_minibatch_with_proposals(min(cfg["CNTK"].MB_SIZE, cfg["CNTK"].NUM_TRAIN_IMAGES-sample_count), input_map=input_map)
+            if use_buffered_proposals:
+                data[rpn_rois_input] = MinibatchData(Value(batch=np.asarray(proposals, dtype=np.float32)), 1, 1, False)
+                # remove dims input if no rpn is required to avoid warnings
+                del data[[k for k in data if '[6]' in str(k)][0]]
 
-    # evaluate test images and write netwrok output to file
-    print("Evaluating Faster R-CNN model for %s images." % num_test_images)
-    all_gt_infos = {key: [] for key in classes}
-    for img_i in range(0, num_test_images):
-        mb_data = minibatch_source.next_minibatch(1, input_map=input_map)
+            trainer.train_minibatch(data)                                    # update model with it
+            sample_count += trainer.previous_minibatch_sample_count          # count samples processed so far
+            progress_printer.update_with_trainer(trainer, with_metric=True)  # log progress
+            if sample_count % 100 == 0:
+                print("Processed {} samples".format(sample_count))
 
-        gt_row = mb_data[roi_input].asarray()
-        gt_row = gt_row.reshape((cfg["CNTK"].INPUT_ROIS_PER_IMAGE, 5))
-        all_gt_boxes = gt_row[np.where(gt_row[:,-1] > 0)]
-
-        for cls_index, cls_name in enumerate(classes):
-            if cls_index == 0: continue
-            cls_gt_boxes = all_gt_boxes[np.where(all_gt_boxes[:,-1] == cls_index)]
-            all_gt_infos[cls_name].append({'bbox': np.array(cls_gt_boxes),
-                                           'difficult': [False] * len(cls_gt_boxes),
-                                           'det': [False] * len(cls_gt_boxes)})
-
-        output = frcn_eval.eval({image_input: mb_data[image_input], dims_input: mb_data[dims_input]})
-        out_dict = dict([(k.name, k) for k in output])
-        out_cls_pred = output[out_dict['cls_pred']][0]
-        out_rpn_rois = output[out_dict['rpn_rois']][0]
-        out_bbox_regr = output[out_dict['bbox_regr']][0]
-
-        labels = out_cls_pred.argmax(axis=1)
-        scores = out_cls_pred.max(axis=1)
-        regressed_rois = regress_rois(out_rpn_rois, out_bbox_regr, labels, mb_data[dims_input].asarray())
-
-        labels.shape = labels.shape + (1,)
-        scores.shape = scores.shape + (1,)
-        coords_score_label = np.hstack((regressed_rois, scores, labels))
-
-        #   shape of all_boxes: e.g. 21 classes x 4952 images x 58 rois x 5 coords+score
-        for cls_j in range(1, cfg["CNTK"].NUM_CLASSES):
-            coords_score_label_for_cls = coords_score_label[np.where(coords_score_label[:,-1] == cls_j)]
-            all_boxes[cls_j][img_i] = coords_score_label_for_cls[:,:-1].astype(np.float32, copy=False)
-
-        if (img_i+1) % 100 == 0:
-            print("Processed {} samples".format(img_i+1))
-
-    # calculate mAP
-    aps = evaluate_detections(all_boxes, all_gt_infos, classes,
-                              use_gpu_nms = cfg.USE_GPU_NMS,
-                              device_id = cfg.GPU_ID,
-                              nms_threshold=cfg["CNTK"].RESULTS_NMS_THRESHOLD,
-                              conf_threshold = cfg["CNTK"].RESULTS_NMS_CONF_THRESHOLD)
-
-    return aps
-
-def train_faster_rcnn(cfg):
-    # Train only if no model exists yet
-    model_path = cfg['MODEL_PATH']
-    if os.path.exists(model_path) and cfg["CNTK"].MAKE_MODE:
-        print("Loading existing model from %s" % model_path)
-        eval_model = load_model(model_path)
-    else:
-        if cfg["CNTK"].TRAIN_E2E:
-            eval_model = train_faster_rcnn_e2e(cfg)
-        else:
-            eval_model = train_faster_rcnn_alternating(cfg)
-
-        eval_model.save(model_path)
-        if cfg["CNTK"].DEBUG_OUTPUT:
-            plot(eval_model, os.path.join(cfg["CNTK"].OUTPUT_PATH, "graph_frcn_eval_{}_{}.{}"
-                                          .format(cfg["CNTK"].BASE_MODEL, "e2e" if cfg["CNTK"].TRAIN_E2E else "4stage", cfg["CNTK"].GRAPH_TYPE)))
-
-        print("Stored eval model at %s" % model_path)
-    return eval_model
-
-# The main method trains and evaluates a Fast R-CNN model.
-# If a trained model is already available it is loaded an no training will be performed (if MAKE_MODE=True).
-if __name__ == '__main__':
-    from utils.config_helpers import merge_configs
-    from config import cfg as detector_cfg
-    from utils.configs.AlexNet_config import cfg as network_cfg
-    from utils.configs.Grocery_config import cfg as dataset_cfg
-    cfg = merge_configs([detector_cfg, network_cfg, dataset_cfg])
-
-    prepare(cfg)
-
-    # train and test
-    trained_model = train_faster_rcnn(cfg)
-    aps = evaluate_faster_rcnn(trained_model, cfg)
-
-    # write AP results to output
-    ap_list = []
-    for class_name in aps:
-        ap_list += [aps[class_name]]
-        print('AP for {:>15} = {:.4f}'.format(class_name, aps[class_name]))
-    meanAP = np.nanmean(ap_list)
-    print('Mean AP = {:.4f}'.format(meanAP))
-
-    # Plot results on test set
-    if cfg["CNTK"].VISUALIZE_RESULTS:
-        from utils.plot_helpers import eval_and_plot_faster_rcnn
-        num_eval = min(cfg["CNTK"].NUM_TEST_IMAGES, 100)
-        img_shape = (cfg["CNTK"].NUM_CHANNELS, cfg["CNTK"].IMAGE_HEIGHT, cfg["CNTK"].IMAGE_WIDTH)
-        results_folder = os.path.join(cfg["CNTK"].OUTPUT_PATH, cfg["CNTK"].DATASET)
-        eval_and_plot_faster_rcnn(trained_model, num_eval, results_folder, cfg)
+        progress_printer.epoch_summary(with_metric=True)

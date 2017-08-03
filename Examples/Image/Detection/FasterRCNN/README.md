@@ -15,21 +15,20 @@ Other base models or image sets can be used by adapting config.py.
 To run Faster R-CNN you need a CNTK Python environment. Install the following additional packages:
 
 ```
-pip install opencv-python
-pip install easydict
-pip install pyyaml
-pip install future
+pip install opencv-python easydict pyyaml future
 ```
 
 The code uses prebuild Cython modules for parts of the region proposal network (see `Examples/Image/Detection/utils/cython_modules`). 
 These binaries are contained in the repository for Python 3.5 under Windows and Python 3.4 under Linux.
 If you require other versions please follow the instructions at [https://github.com/rbgirshick/py-faster-rcnn](https://github.com/rbgirshick/py-faster-rcnn#installation-sufficient-for-the-demo).
 
+If you want to use the debug output you need to run ' pip install pydot_ng) ([website](https://pypi.python.org/pypi/pydot-ng)) and install [graphviz](http://graphviz.org/) (GraphViz executable has to be in the system’s PATH) to be able to plot the CNTK graphs.
+
 ### Getting the data and AlexNet model
 
 We use a toy dataset of images captured from a refrigerator to demonstrate Faster R-CNN. Both the dataset and the pre-trained AlexNet model can be downloaded by running the following Python command:
 
-`python install_data-and-model.py`
+`python install_data_and_model.py`
 
 After running the script, the toy dataset will be installed under the `Image/DataSets/Grocery` folder. And the AlexNet model will be downloaded to the `Image/PretrainedModels` folder. 
 We recommend you to keep the downloaded data in the respective folder while downloading, as the configuration files in this folder assumes that by default.
@@ -123,55 +122,54 @@ __C.CNTK.E2E_LR_PER_SAMPLE = [0.001] * 10 + [0.0001] * 10 + [0.00001]
 Most of the code is in `FasterRCNN.py` (and `Examples/Image/Detection/utils/rpn/rpn_helpers.py` for the region proposal network). This is how the network is built in the CNTK Python API:
 
 ```
-def create_faster_rcnn_predictor(base_model_file_name, features, scaled_gt_boxes, dims_input):
+def create_faster_rcnn_predictor(features, scaled_gt_boxes, dims_input, cfg):
     # Load the pre-trained classification net and clone layers
-    base_model = load_model(base_model_file_name)
-    conv_layers = clone_conv_layers(base_model)
-    fc_layers = clone_model(base_model, [pool_node_name], [last_hidden_node_name], clone_method=CloneMethod.clone)
+    base_model = load_model(cfg['BASE_MODEL_PATH'])
+    conv_layers = clone_conv_layers(base_model, cfg)
+    fc_layers = clone_model(base_model, ['pool5'], ['drop7'], clone_method=CloneMethod.clone)
 
     # Normalization and conv layers
-    feat_norm = features - normalization_const
+    feat_norm = features - Constant([[[v]] for v in cfg["CNTK"].IMG_PAD_COLOR])
     conv_out = conv_layers(feat_norm)
 
     # RPN and prediction targets
-    rpn_rois, rpn_losses = \
-        create_rpn(conv_out, scaled_gt_boxes, dims_input, proposal_layer_param_string=cfg["CNTK"].PROPOSAL_LAYER_PARAMS)
+    rpn_rois, rpn_losses = create_rpn(conv_out, scaled_gt_boxes, dims_input, cfg)
     rois, label_targets, bbox_targets, bbox_inside_weights = \
-        create_proposal_target_layer(rpn_rois, scaled_gt_boxes, num_classes=globalvars['num_classes'])
+        create_proposal_target_layer(rpn_rois, scaled_gt_boxes, cfg)
 
     # Fast RCNN and losses
-    cls_score, bbox_pred = create_fast_rcnn_predictor(conv_out, rois, fc_layers)
-    detection_losses = create_detection_losses(cls_score, label_targets, rois, bbox_pred, bbox_targets, bbox_inside_weights)
+    cls_score, bbox_pred = create_fast_rcnn_predictor(conv_out, rois, fc_layers, cfg)
+    detection_losses = create_detection_losses(cls_score, label_targets, rois, bbox_pred, bbox_targets, bbox_inside_weights, cfg)
     loss = rpn_losses + detection_losses
     pred_error = classification_error(cls_score, label_targets, axis=1)
 
     return loss, pred_error
 
-def create_fast_rcnn_predictor(conv_out, rois, fc_layers):
+def create_fast_rcnn_predictor(conv_out, rois, fc_layers, cfg):
     # RCNN
-    roi_out = roipooling(conv_out, rois, cntk.MAX_POOLING, (roi_dim, roi_dim), spatial_scale=1/16.0)
+    roi_out = roipooling(conv_out, rois, cntk.MAX_POOLING, (7, 7), spatial_scale=1/16.0)
     fc_out = fc_layers(roi_out)
 
     # prediction head
-    W_pred = parameter(shape=(4096, globalvars['num_classes']), init=normal(scale=0.01), name="cls_score.W")
-    b_pred = parameter(shape=globalvars['num_classes'], init=0, name="cls_score.b")
+    W_pred = parameter(shape=(4096, cfg["CNTK"].NUM_CLASSES), init=normal(scale=0.01), name="cls_score.W")
+    b_pred = parameter(shape=cfg["CNTK"].NUM_CLASSES, init=0, name="cls_score.b")
     cls_score = plus(times(fc_out, W_pred), b_pred, name='cls_score')
 
     # regression head
-    W_regr = parameter(shape=(4096, globalvars['num_classes']*4), init=normal(scale=0.001), name="bbox_regr.W")
-    b_regr = parameter(shape=globalvars['num_classes']*4, init=0, name="bbox_regr.b")
+    W_regr = parameter(shape=(4096, cfg["CNTK"].NUM_CLASSES*4), init=normal(scale=0.001), name="bbox_regr.W")
+    b_regr = parameter(shape=cfg["CNTK"].NUM_CLASSES*4, init=0, name="bbox_regr.b")
     bbox_pred = plus(times(fc_out, W_regr), b_regr, name='bbox_regr')
 
     return cls_score, bbox_pred
 
-def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
-               proposal_layer_param_string=None, conv_bias_init=0.0):
+def create_rpn(conv_out, scaled_gt_boxes, im_info, cfg, add_loss_functions=True):
+    num_channels = cfg["CNTK"].RPN_NUM_CHANNELS
     rpn_conv_3x3 = Convolution((3, 3), num_channels, activation=relu, pad=True, strides=1,
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(conv_out)
+                                init = normal(scale=0.01), init_bias=0.0)(conv_out)
     rpn_cls_score = Convolution((1, 1), 18, activation=None, name="rpn_cls_score",
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(rpn_conv_3x3)  # 2(bg/fg)  * 9(anchors)
+                                init = normal(scale=0.01), init_bias=0.0)(rpn_conv_3x3)  # 2(bg/fg)  * 9(anchors)
     rpn_bbox_pred = Convolution((1, 1), 36, activation=None, name="rpn_bbox_pred",
-                                init = normal(scale=0.01), init_bias=conv_bias_init)(rpn_conv_3x3)  # 4(coords) * 9(anchors)
+                                init = normal(scale=0.01), init_bias=0.0)(rpn_conv_3x3)  # 4(coords) * 9(anchors)
 
     # apply softmax to get (bg, fg) probabilities and reshape predictions back to grid of (18, H, W)
     num_predictions = int(rpn_cls_score.shape[0] / 2)
@@ -182,8 +180,7 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, add_loss_functions=True,
     rpn_cls_prob_reshape = reshape(rpn_cls_prob, rpn_cls_score.shape, name="rpn_cls_prob_reshape")
 
     # proposal layer
-    rpn_rois_raw = user_function(ProposalLayer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, param_str=proposal_layer_param_string))
-    rpn_rois = alias(rpn_rois_raw, name='rpn_rois')
+    rpn_rois = add_proposal_layer(rpn_cls_prob_reshape, rpn_bbox_pred, im_info, cfg)
 ```
 
 ### Algorithm 

@@ -8,7 +8,6 @@ from __future__ import print_function
 from builtins import str
 import sys, os, time
 import numpy as np
-from easydict import EasyDict
 from builtins import range
 import copy, textwrap
 from PIL import Image, ImageFont, ImageDraw
@@ -17,7 +16,7 @@ from matplotlib.pyplot import imsave
 import cntk
 from cntk import input_variable, Axis
 from utils.nms_wrapper import apply_nms_to_single_image_results
-from utils.cntk_helpers import regress_rois
+from utils.rpn.bbox_transform import regress_rois
 import cv2 # pip install opencv-python
 
 available_font = "arial.ttf"
@@ -126,71 +125,6 @@ def visualize_detections(img_path, roi_coords, roi_labels, roi_scores,
                     text += "(" + str(round(score, 2)) + ")"
                 result_img = drawText(result_img, (rect[0],rect[1]), text, color = (255,255,255), font = font, colorBackground=color)
     return result_img
-
-def eval_and_plot_faster_rcnn(eval_model, num_images_to_plot, results_base_path, cfg):
-    test_map_file = cfg["CNTK"].TEST_MAP_FILE
-    img_shape = (cfg["CNTK"].NUM_CHANNELS, cfg["CNTK"].IMAGE_HEIGHT, cfg["CNTK"].IMAGE_WIDTH)
-    classes = cfg["CNTK"].CLASSES
-    drawNegativeRois = cfg["CNTK"].DRAW_NEGATIVE_ROIS
-    bgrPlotThreshold = cfg["CNTK"].RESULTS_BGR_PLOT_THRESHOLD
-
-    # get image paths
-    with open(test_map_file) as f:
-        content = f.readlines()
-    img_base_path = os.path.dirname(os.path.abspath(test_map_file))
-    img_file_names = [os.path.join(img_base_path, x.split('\t')[1]) for x in content]
-
-    # prepare model
-    image_input = input_variable(img_shape, dynamic_axes=[Axis.default_batch_axis()], name=cfg["CNTK"].FEATURE_NODE_NAME)
-    dims_input = input_variable((1,6), dynamic_axes=[Axis.default_batch_axis()], name='dims_input')
-    frcn_eval = eval_model(image_input, dims_input)
-
-    #dims_input_const = cntk.constant([image_width, image_height, image_width, image_height, image_width, image_height], (1, 6))
-    print("Plotting results from Faster R-CNN model for %s images." % num_images_to_plot)
-    for i in range(0, num_images_to_plot):
-        imgPath = img_file_names[i]
-
-        # evaluate single image
-        _, cntk_img_input, dims = load_resize_and_pad(imgPath, img_shape[2], img_shape[1])
-
-        dims_input = np.array(dims, dtype=np.float32)
-        dims_input.shape = (1,) + dims_input.shape
-        output = frcn_eval.eval({frcn_eval.arguments[0]: [cntk_img_input], frcn_eval.arguments[1]: dims_input})
-
-        out_dict = dict([(k.name, k) for k in output])
-        out_cls_pred = output[out_dict['cls_pred']][0]
-        out_rpn_rois = output[out_dict['rpn_rois']][0]
-        out_bbox_regr = output[out_dict['bbox_regr']][0]
-
-        labels = out_cls_pred.argmax(axis=1)
-        scores = out_cls_pred.max(axis=1)
-
-        if cfg["CNTK"].DRAW_UNREGRESSED_ROIS:
-            # plot results without final regression
-            imgDebug = visualize_detections(imgPath, out_rpn_rois, labels, scores,
-                                            img_shape[2], img_shape[1], classes,
-                                            draw_negative_rois=drawNegativeRois,
-                                            decision_threshold=bgrPlotThreshold)
-            imsave("{}/{}_{}".format(results_base_path, i, os.path.basename(imgPath)), imgDebug)
-
-        # apply regression and nms to bbox coordinates
-        regressed_rois = regress_rois(out_rpn_rois, out_bbox_regr, labels, dims)
-
-        nmsKeepIndices = apply_nms_to_single_image_results(regressed_rois, labels, scores,
-                                                           use_gpu_nms=cfg.USE_GPU_NMS,
-                                                           device_id=cfg.GPU_ID,
-                                                           nms_threshold=cfg["CNTK"].RESULTS_NMS_THRESHOLD,
-                                                           conf_threshold=cfg["CNTK"].RESULTS_NMS_CONF_THRESHOLD)
-
-        filtered_bboxes = regressed_rois[nmsKeepIndices]
-        filtered_labels = labels[nmsKeepIndices]
-        filtered_scores = scores[nmsKeepIndices]
-
-        img = visualize_detections(imgPath, filtered_bboxes, filtered_labels, filtered_scores,
-                                   img_shape[2], img_shape[1], classes,
-                                   draw_negative_rois=drawNegativeRois,
-                                   decision_threshold=bgrPlotThreshold)
-        imsave("{}/{}_regr_{}".format(results_base_path, i, os.path.basename(imgPath)), img)
 
 
 ####################################

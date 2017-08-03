@@ -93,8 +93,8 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, cfg, add_loss_functions=True)
         normalized_rpn_cls_loss = reduce_sum(rpn_loss_cls) * cls_normalization_factor
 
         reduced_rpn_loss_cls = cntk.as_block(normalized_rpn_cls_loss,
-                                         [(p_rpn_labels, rpn_labels), (p_rpn_cls_score_rshp, rpn_cls_score_rshp)],
-                                         'CE_with_ignore', 'norm_rpn_cls_loss')
+                                             [(p_rpn_labels, rpn_labels), (p_rpn_cls_score_rshp, rpn_cls_score_rshp)],
+                                             'CE_with_ignore', 'norm_rpn_cls_loss')
 
         # regression loss
         p_rpn_bbox_pred = cntk.placeholder()
@@ -106,9 +106,9 @@ def create_rpn(conv_out, scaled_gt_boxes, im_info, cfg, add_loss_functions=True)
         normalized_rpn_bbox_loss = reduce_sum(rpn_loss_bbox) * bbox_normalization_factor
 
         reduced_rpn_loss_bbox = cntk.as_block(normalized_rpn_bbox_loss,
-                                          [(p_rpn_bbox_pred, rpn_bbox_pred), (p_rpn_bbox_targets, rpn_bbox_targets),
-                                           (p_rpn_bbox_inside_weights, rpn_bbox_inside_weights)],
-                                          'SmoothL1Loss', 'norm_rpn_bbox_loss')
+                                              [(p_rpn_bbox_pred, rpn_bbox_pred), (p_rpn_bbox_targets, rpn_bbox_targets),
+                                               (p_rpn_bbox_inside_weights, rpn_bbox_inside_weights)],
+                                              'SmoothL1Loss', 'norm_rpn_bbox_loss')
 
         rpn_losses = plus(reduced_rpn_loss_cls, reduced_rpn_loss_bbox, name="rpn_losses")
 
