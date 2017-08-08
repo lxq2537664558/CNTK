@@ -8,7 +8,7 @@ from utils.map_helpers import evaluate_detections
 from utils.plot_helpers import load_resize_and_pad, visualize_detections
 from utils.rpn.bbox_transform import regress_rois
 from utils.od_mb_source import ObjectDetectionMinibatchSource
-
+from utils.proposal_helpers import ProposalProvider
 
 class FasterRCNN_Evaluator:
     def __init__(self, eval_model, cfg):
@@ -52,6 +52,8 @@ def compute_test_set_aps(eval_model, cfg):
     dims_input = input_variable((6), dynamic_axes=[Axis.default_batch_axis()])
     frcn_eval = eval_model(image_input, dims_input)
 
+    proposal_provider = ProposalProvider(cfg)
+
     # Create the minibatch source
     minibatch_source = ObjectDetectionMinibatchSource(
         cfg["CNTK"].TEST_MAP_FILE,
@@ -61,7 +63,9 @@ def compute_test_set_aps(eval_model, cfg):
         pad_height=cfg["CNTK"].IMAGE_HEIGHT,
         pad_value=cfg["CNTK"].IMG_PAD_COLOR,
         randomize=False, use_flipping=False,
-        max_images=cfg["CNTK"].NUM_TEST_IMAGES)
+        max_images=cfg["CNTK"].NUM_TEST_IMAGES,
+        num_classes=cfg["CNTK"].NUM_CLASSES,
+        proposal_provider=proposal_provider)
 
     # define mapping from reader streams to network inputs
     input_map = {

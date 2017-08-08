@@ -1,5 +1,7 @@
 import numpy as np
 from dlib import find_candidate_object_locations
+from utils.rpn.bbox_transform import bbox_transform
+from utils.cython_modules.cython_bbox import bbox_overlaps
 
 random_seed = 23
 
@@ -85,35 +87,80 @@ def _compute_grid_proposals(img_w, img_h, min_wh, max_wh, aspect_ratios):
 
     return rects
 
+def write_to_file(proposal_list, filename):
+    with open(filename, 'w') as f:
+        for i in range(len(proposal_list)):
+            proposals = proposal_list[i]
+            line = "{}\t".format(i)
+            for p in proposals:
+                line = "{} {}".format(line, " ".join([str(v) for v in p]))
+            f.write(line)
+
+def compute_targets(proposals, gt_rois, iou_threshold):
+    """Compute bounding-box regression targets for an image."""
+    if len(gt_rois) == 0:
+        # Bail if the image has no ground-truth ROIs
+        return np.zeros((proposals.shape[0], 6), dtype=np.float32)
+
+    # Get IoU overlap between each ex ROI and gt ROI
+    ex_gt_overlaps = bbox_overlaps(
+        np.ascontiguousarray(proposals, dtype=np.float),
+        np.ascontiguousarray(gt_rois, dtype=np.float))
+    # Indices of examples for which we try to make predictions
+    ex_inds = np.where(ex_gt_overlaps >= iou_threshold)[0] # cfg.TRAIN.BBOX_THRESH
+
+    # Find which gt ROI each ex ROI has max overlap with:
+    # this will be the ex ROI's gt target
+    gt_assignment_inds = ex_gt_overlaps.argmax(axis=1)
+    gt_assignment_rois = gt_rois[gt_assignment_inds, :]
+
+    targets = np.zeros((proposals.shape[0], 6), dtype=np.float32)
+    targets[ex_inds, :4] = bbox_transform(proposals[ex_inds], gt_assignment_rois[ex_inds])
+    targets[ex_inds, 4] = gt_rois[gt_assignment_inds[ex_inds], 4]
+    targets[ex_inds, 5] = 1 # bbiw
+    return targets
+
 class ProposalProvider:
-    def __init__(self, proposal_list, proposal_cfg=None):
-        self.proposal_list = proposal_list
-        self.proposal_cfg = proposal_cfg
+    def __init__(self, proposal_list, proposal_cfg=None, requires_scaling=True):
+        self._proposal_dict = {} if proposal_list is None else {k:v for k, v in enumerate(proposal_list)}
+        self._proposal_cfg = proposal_cfg
+        self._requires_scaling = requires_scaling
 
     @classmethod
     def fromfile(cls, filename):
-        proposal_list = [] # TODO: read proposals from file
+        with open(filename) as f:
+            lines = f.readlines()
+
+        proposal_list = [[] for _ in lines]
+        for line in lines:
+            # TODO: parse line
+            index = 0
+            rects = np.zeros((4, 200))
+            proposal_list[index] = rects
+
         return cls(proposal_list)
 
     @classmethod
     def fromconfig(cls, proposal_cfg):
-        if proposal_cfg.BUFFER_IN_MEMORY:
-            proposal_list = [] # TODO: compute_proposals
-            return cls(proposal_list)
+       return cls(None, proposal_cfg)
+
+    def requires_scaling(self):
+        return self._requires_scaling
+
+    def num_proposals(self):
+        return self._proposal_cfg['NUM_ROI_PROPOSALS']
+
+    def get_proposals(self, index, img=None):
+        if index in self._proposal_dict:
+            return self._proposal_dict[index]
         else:
-           return cls(None, proposal_cfg)
+            return self._compute_proposals(img)
 
-    def load_from_file(self, filename):
-        return None
-
-    def write_to_file(self, filename):
-        return None
-
-    def get_scaled_proposals(self, index, img_stats):
-        return self.proposal_list[index]
-
-    def compute_scaled_proposals(self, img, img_stats):
-        return None # TODO: compute based on self.proposal_cfg
+    def _compute_proposals(self, img):
+        min_w = self._proposal_cfg['PROPOSALS_MIN_W']
+        min_h = self._proposal_cfg['PROPOSALS_MIN_H']
+        num_proposals = self._proposal_cfg['NUM_ROI_PROPOSALS']
+        return compute_proposals(img, num_proposals, min_w, min_h)
 
 if __name__ == '__main__':
     # TODO: reading the image will be done externally

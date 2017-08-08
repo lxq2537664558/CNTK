@@ -6,13 +6,14 @@
 
 import os
 import numpy as np
-from FasterRCNN_train import prepare, train_faster_rcnn
+from FasterRCNN_train import prepare, train_faster_rcnn, train_fast_rcnn
 from FasterRCNN_eval import compute_test_set_aps, plot_test_set_results
 from utils.config_helpers import merge_configs
 
 def get_configuration():
     # load configs for detector, base network and data set
-    from config import cfg as detector_cfg
+    #from config import cfg as detector_cfg
+    from fast_config import cfg as detector_cfg
     # for VGG16 base model use:         from utils.configs.VGG16_config import cfg as network_cfg
     # for AlexNet base model use:       from utils.configs.AlexNet_config import cfg as network_cfg
     from utils.configs.AlexNet_config import cfg as network_cfg
@@ -25,10 +26,10 @@ def get_configuration():
 # trains and evaluates a Fast R-CNN model.
 if __name__ == '__main__':
     cfg = get_configuration()
-    prepare(cfg)
+    prepare(cfg, False)
 
     # train and test
-    trained_model = train_faster_rcnn(cfg)
+    trained_model = train_fast_rcnn(cfg)
     eval_results = compute_test_set_aps(trained_model, cfg)
 
     # write AP results to output
