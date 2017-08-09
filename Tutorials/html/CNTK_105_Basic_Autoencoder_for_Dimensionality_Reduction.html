@@ -1,0 +1,1457 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 105: Basic autoencoder (AE) with MNIST data &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 105: Basic autoencoder (AE) with MNIST data</a><ul>
+<li><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li><a class="reference internal" href="#Data-reading">Data reading</a></li>
+<li><a class="reference internal" href="#Model-Creation-(Simple-AE)">Model Creation (Simple AE)</a><ul>
+<li><a class="reference internal" href="#Train-and-test-the-model">Train and test the model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Visualize-simple-AE-results">Visualize simple AE results</a></li>
+<li><a class="reference internal" href="#Model-Creation-(Deep-AE)">Model Creation (Deep AE)</a></li>
+<li><a class="reference internal" href="#Visualize-deep-AE-results">Visualize deep AE results</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 105: Basic autoencoder (AE) with MNIST data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-105:-Basic-autoencoder-(AE)-with-MNIST-data">
+<h1>CNTK 105: Basic autoencoder (AE) with MNIST data<a class="headerlink" href="#CNTK-105:-Basic-autoencoder-(AE)-with-MNIST-data" title="Permalink to this headline">¶</a></h1>
+<p><strong>Prerequisites</strong>: We assume that you have successfully downloaded the
+MNIST data by completing the tutorial titled
+CNTK_103A_MNIST_DataLoader.ipynb.</p>
+<div class="section" id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we introduce you to the basics of
+<a class="reference external" href="https://en.wikipedia.org/wiki/Autoencoder">Autoencoders</a>. An
+autoencoder is an artificial neural network used for unsupervised
+learning of efficient encodings. In other words, they are used for lossy
+data-specific compression that is learnt automatically instead of
+relying on human engineered features. The aim of an autoencoder is to
+learn a representation (encoding) for a set of data, typically for the
+purpose of dimensionality reduction.</p>
+<p>The autoencoders are very specific to the data-set on hand and are
+different from standard codecs such as JPEG, MPEG standard based
+encodings. Once the information is encoded and decoded back to original
+dimensions some amount of information is lost in the process. Given
+these encodings are specific to data, autoencoders are not used for
+compression. However, there are two areas where autoencoders have been
+found very effective: denoising and dimensionality reduction.</p>
+<p>Autoencoders have attracted attention since they have long been thought
+to be a potential approach for unsupervised learning. Truly unsupervised
+approaches involve learning useful representations without the need for
+labels. Autoencoders fall under self-supervised learning, a specific
+instance of supervised learning where the targets are generated from the
+input data.</p>
+<p><strong>Goal</strong></p>
+<p>Our goal is to train an autoencoder that compresses MNIST digits image
+to a vector of smaller dimension and then restores the image. The MNIST
+data comprises of hand-written digits with little background noise.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://cntk.ai/jup/MNIST-image.jpg&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://cntk.ai/jup/MNIST-image.jpg" width="300" height="300"/></div>
+</div>
+<p>In this tutorial, we will use the <a class="reference external" href="https://en.wikipedia.org/wiki/MNIST_database">MNIST hand-written digits
+data</a> to show how
+images can be encoded and decoded (restored) using feed-forward
+networks. We will visualize the original and the restored images. We
+illustrate feed forward network based on two autoencoders: simple and
+deep autoencoder. More advanced autoencoders will be covered in future
+200 series tutorials.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Import the relevant modules</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c1"># Import CNTK</span>
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<p>There are two run modes: - <em>Fast mode</em>: <code class="docutils literal"><span class="pre">isFast</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>.
+This is the default mode for the notebooks, which means we train for
+fewer iterations or train / test on limited data. This ensures
+functional correctness of the notebook though the models produced are
+far from what a completed training would produce.</p>
+<ul class="simple">
+<li><em>Slow mode</em>: We recommend the user to set this flag to <code class="docutils literal"><span class="pre">False</span></code> once
+the user has gained familiarity with the notebook content and wants
+to gain insight from running the notebooks for a longer period with
+different parameters for training.</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">isFast</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-reading">
+<h2>Data reading<a class="headerlink" href="#Data-reading" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we will read the data generated in CNTK 103 Part A.</p>
+<p>The data is in the following format:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span><span class="n">labels</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">|</span><span class="n">features</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">...</span>
+                                              <span class="p">(</span><span class="mi">784</span> <span class="n">integers</span> <span class="n">each</span> <span class="n">representing</span> <span class="n">a</span> <span class="n">pixel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this tutorial we are going to use the image pixels corresponding the
+integer stream named “features”. We define a <code class="docutils literal"><span class="pre">create_reader</span></code> function
+to read the training and test data using the <a class="reference external" href="https://cntk.ai/pythondocs/cntk.io.html?highlight=ctfdeserializer#cntk.io.CTFDeserializer">CTF
+deserializer</a>.
+The labels are <a class="reference external" href="https://en.wikipedia.org/wiki/One-hot">1-hot
+encoded</a>. We ignore them in
+this tutorial.</p>
+<p>We also check if the training and test data file has been downloaded and
+available for reading by the <code class="docutils literal"><span class="pre">create_reader</span></code> function. In this
+tutorial we are using the MNIST data you have downloaded using
+CNTK_103A_MNIST_DataLoader notebook. The dataset has 60,000 training
+images and 10,000 test images with each image being 28 x 28 pixels.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read a CTF formatted text (as mentioned above) using the CTF deserializer from a file</span>
+<span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">labels_viz</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_label_classes</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">features</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">)),</span> <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Ensure the training and test data is generated and available for this tutorial.</span>
+<span class="c1"># We search in two locations in the toolkit for the cached MNIST data set.</span>
+<span class="n">data_found</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">for</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;Image&quot;</span><span class="p">,</span> <span class="s2">&quot;DataSets&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">),</span>
+                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)]:</span>
+    <span class="n">train_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Train-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="n">test_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Test-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">train_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_file</span><span class="p">):</span>
+        <span class="n">data_found</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">break</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_found</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please generate the data by completing CNTK 103 Part A&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Data directory is {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data directory is ..\Examples\Image\DataSets\MNIST
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Model-Creation-(Simple-AE)">
+<h2>Model Creation (Simple AE)<a class="headerlink" href="#Model-Creation-(Simple-AE)" title="Permalink to this headline">¶</a></h2>
+<p>We start with a simple single fully-connected feedforward network as
+encoder and as decoder (as shown in the figure below):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 2</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://cntk.ai/jup/SimpleAEfig.jpg&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://cntk.ai/jup/SimpleAEfig.jpg" width="200" height="200"/></div>
+</div>
+<p>The input data is a set of hand written digits images each of 28 x 28
+pixels. In this tutorial, we will consider each image as a linear array
+of 784 pixel values. These pixels are considered as an input having 784
+dimensions, one per pixel. Since the goal of the autoencoder is to
+compress the data and reconstruct the original image, the output
+dimension is same as the input dimension. We will compress the input to
+mere 32 dimensions (referred to as the <code class="docutils literal"><span class="pre">encoding_dim</span></code>). Additionally,
+since the maximum input value is 255, we normalize the input between 0
+and 1.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_dim</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="n">encoding_dim</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">output_dim</span> <span class="o">=</span> <span class="n">input_dim</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="c1"># We scale the input pixels to 0-1 range</span>
+        <span class="n">encode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">encoding_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">features</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)</span>
+        <span class="n">decode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">)(</span><span class="n">encode</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">decode</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Train-and-test-the-model">
+<h3>Train and test the model<a class="headerlink" href="#Train-and-test-the-model" title="Permalink to this headline">¶</a></h3>
+<p>In previous tutorials, we have defined each of the training and testing
+phases separately. In this tutorial, we combine the two components in
+one place such that this template could be used as a recipe for your
+usage.</p>
+<p>The <code class="docutils literal"><span class="pre">train_and_test</span></code> function performs two major tasks: - Train the
+model - Evaluate the accuracy of the model on test data</p>
+<p>For training:</p>
+<blockquote>
+<div><p>The function takes a reader (<code class="docutils literal"><span class="pre">reader_train</span></code>), a model function
+(<code class="docutils literal"><span class="pre">model_func</span></code>) and the target (a.k.a <code class="docutils literal"><span class="pre">label</span></code>) as input. In this
+tutorial, we show how to create and pass your <strong>own</strong> loss function.
+We normalize the <code class="docutils literal"><span class="pre">label</span></code> function to emit value between 0 and 1
+for us to compute the label error using <code class="docutils literal"><span class="pre">C.classification_error</span></code>
+function.</p>
+<p>We use Adam optimizer in this tutorial from a range of
+<a class="reference external" href="https://www.cntk.ai/pythondocs/cntk.learner.html#module-cntk.learner">learners</a>
+(optimizers) available in the toolkit.</p>
+</div></blockquote>
+<p>For testing:</p>
+<blockquote>
+<div>The function additionally takes a reader (<code class="docutils literal"><span class="pre">reader_test</span></code>) and
+evaluates the predicted pixel values made by the model against
+reference data, in this case the original pixel values for each
+image.</div></blockquote>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">train_and_test</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span> <span class="n">reader_test</span><span class="p">,</span> <span class="n">model_func</span><span class="p">):</span>
+
+    <span class="c1">###############################################</span>
+    <span class="c1"># Training the model</span>
+    <span class="c1">###############################################</span>
+
+    <span class="c1"># Instantiate the input and the label variables</span>
+    <span class="nb">input</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim</span><span class="p">)</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim</span><span class="p">)</span>
+
+    <span class="c1"># Create the model function</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_func</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+    <span class="c1"># The labels for this network is same as the input MNIST image.</span>
+    <span class="c1"># Note: Inside the model we are scaling the input to 0-1 range</span>
+    <span class="c1"># Hence we rescale the label to the same range</span>
+    <span class="c1"># We show how one can use their custom loss function</span>
+    <span class="c1"># loss = -(y* log(p)+ (1-y) * log(1-p)) where p = model output and y = target</span>
+    <span class="c1"># We have normalized the input between 0-1. Hence we scale the target to same range</span>
+
+    <span class="n">target</span> <span class="o">=</span> <span class="n">label</span><span class="o">/</span><span class="mf">255.0</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">target</span> <span class="o">*</span> <span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">model</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">target</span><span class="p">)</span> <span class="o">*</span> <span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">model</span><span class="p">))</span>
+    <span class="n">label_error</span>  <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+
+    <span class="c1"># training config</span>
+    <span class="n">epoch_size</span> <span class="o">=</span> <span class="mi">30000</span>        <span class="c1"># 30000 samples is half the dataset size</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">64</span>
+    <span class="n">num_sweeps_to_train_with</span> <span class="o">=</span> <span class="mi">5</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">100</span>
+    <span class="n">num_samples_per_sweep</span> <span class="o">=</span> <span class="mi">60000</span>
+    <span class="n">num_minibatches_to_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_samples_per_sweep</span> <span class="o">*</span> <span class="n">num_sweeps_to_train_with</span><span class="p">)</span> <span class="o">//</span> <span class="n">minibatch_size</span>
+
+
+    <span class="c1"># Instantiate the trainer object to drive the model training</span>
+    <span class="n">lr_per_sample</span> <span class="o">=</span> <span class="p">[</span><span class="mf">0.00003</span><span class="p">]</span>
+    <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr_per_sample</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">)</span>
+
+    <span class="c1"># Momentum</span>
+    <span class="n">momentum_as_time_constant</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="mi">700</span><span class="p">)</span>
+
+    <span class="c1"># We use a variant of the Adam optimizer which is known to work well on this dataset</span>
+    <span class="c1"># Feel free to try other optimizers from</span>
+    <span class="c1"># https://www.cntk.ai/pythondocs/cntk.learner.html#module-cntk.learner</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">fsadagrad</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                         <span class="n">lr</span><span class="o">=</span><span class="n">lr_schedule</span><span class="p">,</span> <span class="n">momentum</span><span class="o">=</span><span class="n">momentum_as_time_constant</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the trainer</span>
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span><span class="p">),</span> <span class="n">learner</span><span class="p">,</span> <span class="n">progress_printer</span><span class="p">)</span>
+
+    <span class="c1"># Map the data streams to the input and labels.</span>
+    <span class="c1"># Note: for autoencoders input == label</span>
+    <span class="n">input_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">input</span>  <span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">label</span>  <span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span>
+    <span class="p">}</span>
+
+    <span class="n">aggregate_metric</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_minibatches_to_train</span><span class="p">):</span>
+        <span class="c1"># Read a mini batch from the training data file</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span> <span class="o">=</span> <span class="n">input_map</span><span class="p">)</span>
+
+        <span class="c1"># Run the trainer on and perform model training</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">samples</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_sample_count</span>
+        <span class="n">aggregate_metric</span> <span class="o">+=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_evaluation_average</span> <span class="o">*</span> <span class="n">samples</span>
+
+    <span class="n">train_error</span> <span class="o">=</span> <span class="p">(</span><span class="n">aggregate_metric</span><span class="o">*</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">total_number_of_samples_seen</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Average training error: {0:0.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">train_error</span><span class="p">))</span>
+
+    <span class="c1">#############################################################################</span>
+    <span class="c1"># Testing the model</span>
+    <span class="c1"># Note: we use a test file reader to read data different from a training data</span>
+    <span class="c1">#############################################################################</span>
+
+    <span class="c1"># Test data for trained model</span>
+    <span class="n">test_minibatch_size</span> <span class="o">=</span> <span class="mi">32</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">num_minibatches_to_test</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">/</span> <span class="n">test_minibatch_size</span>
+    <span class="n">test_result</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="c1"># Test error metric calculation</span>
+    <span class="n">metric_numer</span>    <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">metric_denom</span>    <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">test_input_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="nb">input</span>  <span class="p">:</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">label</span>  <span class="p">:</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span>
+    <span class="p">}</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_minibatches_to_test</span><span class="p">)):</span>
+
+        <span class="c1"># We are loading test data in batches specified by test_minibatch_size</span>
+        <span class="c1"># Each data point in the minibatch is a MNIST digit image of 784 dimensions</span>
+        <span class="c1"># with one pixel per dimension that we will encode / decode with the</span>
+        <span class="c1"># trained model.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">test_minibatch_size</span><span class="p">,</span>
+                                       <span class="n">input_map</span> <span class="o">=</span> <span class="n">test_input_map</span><span class="p">)</span>
+
+        <span class="c1"># Specify the mapping of input variables in the model to actual</span>
+        <span class="c1"># minibatch data to be tested with</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="c1"># minibatch data to be trained with</span>
+        <span class="n">metric_numer</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">eval_error</span> <span class="o">*</span> <span class="n">test_minibatch_size</span><span class="p">)</span>
+        <span class="n">metric_denom</span> <span class="o">+=</span> <span class="n">test_minibatch_size</span>
+
+    <span class="c1"># Average of evaluation errors of all test minibatches</span>
+    <span class="n">test_error</span> <span class="o">=</span> <span class="p">(</span><span class="n">metric_numer</span><span class="o">*</span><span class="mf">100.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">metric_denom</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Average test error: {0:0.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_error</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">train_error</span><span class="p">,</span> <span class="n">test_error</span>
+</pre></div>
+</div>
+</div>
+<p>Let us train the simple autoencoder. We create a training and a test
+reader</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">num_label_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">train_file</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+<span class="n">reader_test</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+<span class="n">model</span><span class="p">,</span> <span class="n">simple_ae_train_error</span><span class="p">,</span> <span class="n">simple_ae_test_error</span> <span class="o">=</span> <span class="n">train_and_test</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                                                                    <span class="n">reader_test</span><span class="p">,</span>
+                                                                    <span class="n">model_func</span> <span class="o">=</span> <span class="n">create_model</span> <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ average      since    average      since      examples
+    loss       last     metric       last
+ ------------------------------------------------------
+Learning rate per sample: 3e-05
+      544        544      0.947      0.947            64
+      544        544      0.931      0.923           192
+      543        543      0.921      0.913           448
+      542        541      0.924      0.927           960
+      537        532      0.924      0.924          1984
+      493        451      0.821      0.721          4032
+      383        275      0.639       0.46          8128
+      303        223      0.524      0.409         16320
+      251        199      0.396      0.268         32704
+      209        168      0.281      0.167         65472
+      174        139      0.194      0.107        131008
+      144        113      0.125     0.0554        262080
+Average training error: 11.33%
+Average test error: 3.12%
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Visualize-simple-AE-results">
+<h2>Visualize simple AE results<a class="headerlink" href="#Visualize-simple-AE-results" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read some data to run the eval</span>
+<span class="n">num_label_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">reader_eval</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+
+<span class="n">eval_minibatch_size</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="n">eval_input_map</span> <span class="o">=</span> <span class="p">{</span> <span class="nb">input</span>  <span class="p">:</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span> <span class="p">}</span>
+
+<span class="n">eval_data</span> <span class="o">=</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">eval_minibatch_size</span><span class="p">,</span>
+                                  <span class="n">input_map</span> <span class="o">=</span> <span class="n">eval_input_map</span><span class="p">)</span>
+
+<span class="n">img_data</span> <span class="o">=</span> <span class="n">eval_data</span><span class="p">[</span><span class="nb">input</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+
+<span class="c1"># Select a random image</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">eval_minibatch_size</span><span class="p">)</span>
+
+<span class="n">orig_image</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">idx</span><span class="p">,:,:]</span>
+<span class="n">decoded_image</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">orig_image</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">255</span>
+
+<span class="c1"># Print image statistics</span>
+<span class="k">def</span> <span class="nf">print_image_stats</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Max: {0:.2f}, Median: {1:.2f}, Mean: {2:.2f}, Min: {3:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">img</span><span class="p">)))</span>
+
+<span class="c1"># Print original image</span>
+<span class="n">print_image_stats</span><span class="p">(</span><span class="n">orig_image</span><span class="p">,</span> <span class="s2">&quot;Original image statistics:&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print decoded image</span>
+<span class="n">print_image_stats</span><span class="p">(</span><span class="n">decoded_image</span><span class="p">,</span> <span class="s2">&quot;Decoded image statistics:&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Original image statistics:
+Max: 255.00, Median: 0.00, Mean: 24.07, Min: 0.00
+Decoded image statistics:
+Max: 249.56, Median: 0.58, Mean: 27.02, Min: 0.00
+</pre></div></div>
+</div>
+<p>Let us plot the original and the decoded image. They should look
+visually similar.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Define a helper function to plot a pair of images</span>
+<span class="k">def</span> <span class="nf">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">):</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">text1</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img2</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray&quot;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">text2</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s2">&quot;off&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot the original and the decoded image</span>
+<span class="n">img1</span> <span class="o">=</span> <span class="n">orig_image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Original image&#39;</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="n">decoded_image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Decoded image&#39;</span>
+
+<span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_22_0.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_22_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Model-Creation-(Deep-AE)">
+<h2>Model Creation (Deep AE)<a class="headerlink" href="#Model-Creation-(Deep-AE)" title="Permalink to this headline">¶</a></h2>
+<p>We do not have to limit ourselves to a single layer as encoder or
+decoder, we could instead use a stack of dense layers. Let us create a
+deep autoencoder.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 3</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://cntk.ai/jup/DeepAEfig.jpg&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[15]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://cntk.ai/jup/DeepAEfig.jpg" width="500" height="300"/></div>
+</div>
+<p>The encoding dimensions are 128, 64 and 32 while the decoding dimensions
+are symmetrically opposite 64, 128 and 784. This increases the number of
+parameters used to model the transformation and achieves lower error
+rates at the cost of longer training duration and memory footprint. If
+we train this deep encoder for larger number iterations by turning the
+<code class="docutils literal"><span class="pre">isFast</span></code> flag to be <code class="docutils literal"><span class="pre">False</span></code>, we get a lower error and the
+reconstructed images are also marginally better.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_dim</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="n">encoding_dims</span> <span class="o">=</span> <span class="p">[</span><span class="mi">128</span><span class="p">,</span><span class="mi">64</span><span class="p">,</span><span class="mi">32</span><span class="p">]</span>
+<span class="n">decoding_dims</span> <span class="o">=</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">128</span><span class="p">]</span>
+
+<span class="n">encoded_model</span> <span class="o">=</span> <span class="bp">None</span>
+
+<span class="k">def</span> <span class="nf">create_deep_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="n">encode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">element_times</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">255.0</span><span class="p">),</span> <span class="n">features</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">encoding_dim</span> <span class="ow">in</span> <span class="n">encoding_dims</span><span class="p">:</span>
+            <span class="n">encode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">encoding_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">encode</span><span class="p">)</span>
+
+        <span class="k">global</span> <span class="n">encoded_model</span>
+        <span class="n">encoded_model</span><span class="o">=</span> <span class="n">encode</span>
+
+        <span class="n">decode</span> <span class="o">=</span> <span class="n">encode</span>
+        <span class="k">for</span> <span class="n">decoding_dim</span> <span class="ow">in</span> <span class="n">decoding_dims</span><span class="p">:</span>
+            <span class="n">decode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">decoding_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">decode</span><span class="p">)</span>
+
+        <span class="n">decode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">)(</span><span class="n">decode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">decode</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">num_label_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">train_file</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+<span class="n">reader_test</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+
+<span class="n">model</span><span class="p">,</span> <span class="n">deep_ae_train_error</span><span class="p">,</span> <span class="n">deep_ae_test_error</span> <span class="o">=</span> <span class="n">train_and_test</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                                                                <span class="n">reader_test</span><span class="p">,</span>
+                                                                <span class="n">model_func</span> <span class="o">=</span> <span class="n">create_deep_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ average      since    average      since      examples
+    loss       last     metric       last
+ ------------------------------------------------------
+Learning rate per sample: 3e-05
+      543        543      0.928      0.928            64
+      543        543      0.925      0.923           192
+      543        543      0.907      0.894           448
+      542        541      0.891      0.877           960
+      527        513      0.768      0.652          1984
+      411        299       0.63      0.496          4032
+      313        217      0.547      0.466          8128
+      260        206      0.476      0.405         16320
+      220        181      0.377      0.278         32704
+      183        146      0.275      0.174         65472
+      150        118      0.185     0.0947        131008
+      125        100      0.119     0.0531        262080
+Average training error: 10.90%
+Average test error: 3.37%
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Visualize-deep-AE-results">
+<h2>Visualize deep AE results<a class="headerlink" href="#Visualize-deep-AE-results" title="Permalink to this headline">¶</a></h2>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Run the same image as the simple autoencoder through the deep encoder</span>
+<span class="n">orig_image</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">idx</span><span class="p">,:,:]</span>
+<span class="n">decoded_image</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">orig_image</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">255</span>
+
+<span class="c1"># Print image statistics</span>
+<span class="k">def</span> <span class="nf">print_image_stats</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Max: {0:.2f}, Median: {1:.2f}, Mean: {2:.2f}, Min: {3:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">img</span><span class="p">),</span>
+                                                                              <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">img</span><span class="p">)))</span>
+
+<span class="c1"># Print original image</span>
+<span class="n">print_image_stats</span><span class="p">(</span><span class="n">orig_image</span><span class="p">,</span> <span class="s2">&quot;Original image statistics:&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print decoded image</span>
+<span class="n">print_image_stats</span><span class="p">(</span><span class="n">decoded_image</span><span class="p">,</span> <span class="s2">&quot;Decoded image statistics:&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Original image statistics:
+Max: 255.00, Median: 0.00, Mean: 24.07, Min: 0.00
+Decoded image statistics:
+Max: 250.92, Median: 0.01, Mean: 23.60, Min: 0.00
+</pre></div></div>
+</div>
+<p>Let us plot the original and the decoded image with the deep
+autoencoder. They should look visually similar.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot the original and the decoded image</span>
+<span class="n">img1</span> <span class="o">=</span> <span class="n">orig_image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Original image&#39;</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="n">decoded_image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Decoded image&#39;</span>
+
+<span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_31_0.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_31_0.png" />
+</div>
+</div>
+<p>We have shown how to encode and decode an input. In this section we will
+explore how we can compare one to another and also show how to extract
+an encoded input for a given input. For visualizing high dimension data
+in 2D,
+<a class="reference external" href="http://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html">t-SNE</a>
+is probably one of the best methods. However, it typically requires
+relatively low-dimensional data. So a good strategy for visualizing
+similarity relationships in high-dimensional data is to encode data into
+a low-dimensional space (e.g. 32 dimensional) using an autoencoder
+first, extract the encoding of the input data followed by using t-SNE
+for mapping the compressed data to a 2D plane.</p>
+<p>We will use the deep autoencoder outputs to: - Compare two images and -
+Show how we can retrieve an encoded (compressed) data.</p>
+<p>First we need to read some image data along with their labels.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read some data to run get the image data and the corresponding labels</span>
+<span class="n">num_label_classes</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">reader_viz</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">)</span>
+
+<span class="n">image</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim</span><span class="p">)</span>
+<span class="n">image_label</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_label_classes</span><span class="p">)</span>
+
+<span class="n">viz_minibatch_size</span> <span class="o">=</span> <span class="mi">50</span>
+
+<span class="n">viz_input_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">image</span>  <span class="p">:</span> <span class="n">reader_viz</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span>
+    <span class="n">image_label</span>  <span class="p">:</span> <span class="n">reader_viz</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels_viz</span>
+<span class="p">}</span>
+
+<span class="n">viz_data</span> <span class="o">=</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">viz_minibatch_size</span><span class="p">,</span>
+                                  <span class="n">input_map</span> <span class="o">=</span> <span class="n">viz_input_map</span><span class="p">)</span>
+
+<span class="n">img_data</span>   <span class="o">=</span> <span class="n">viz_data</span><span class="p">[</span><span class="n">image</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+<span class="n">imglabel_raw</span> <span class="o">=</span> <span class="n">viz_data</span><span class="p">[</span><span class="n">image_label</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Map the image labels into indices in minibatch array</span>
+<span class="n">img_labels</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">imglabel_raw</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">imglabel_raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span>
+<span class="n">label_dict</span><span class="o">=</span><span class="n">defaultdict</span><span class="p">(</span><span class="nb">list</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">img_idx</span><span class="p">,</span> <span class="n">img_label</span><span class="p">,</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">img_labels</span><span class="p">):</span>
+    <span class="n">label_dict</span><span class="p">[</span><span class="n">img_label</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">img_idx</span><span class="p">)</span>
+
+<span class="c1"># Print indices corresponding to 3 digits</span>
+<span class="n">randIdx</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">randIdx</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;{0}: {1}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">label_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+1: [7, 24, 39, 44, 46]
+3: [1, 13, 18, 26, 37, 40, 43]
+9: [8, 12, 23, 28, 42, 49]
+</pre></div></div>
+</div>
+<p>We will <a class="reference external" href="https://en.wikipedia.org/wiki/Cosine_similarity">compute cosine
+distance</a> between
+two images using <code class="docutils literal"><span class="pre">scipy</span></code>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">spatial</span>
+
+<span class="k">def</span> <span class="nf">image_pair_cosine_distance</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">img2</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">img1</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">img2</span><span class="o">.</span><span class="n">size</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Two images need to be of same dimension&quot;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">spatial</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">cosine</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">img2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Let s compute the distance between two images of the same number</span>
+<span class="n">digit_of_interest</span> <span class="o">=</span> <span class="mi">6</span>
+
+<span class="n">digit_index_list</span> <span class="o">=</span> <span class="n">label_dict</span><span class="p">[</span><span class="n">digit_of_interest</span><span class="p">]</span>
+
+<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">digit_index_list</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Need at least two images to compare&quot;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">imgA</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">digit_index_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],:,:][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">imgB</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">digit_index_list</span><span class="p">[</span><span class="mi">1</span><span class="p">],:,:][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Print distance between original image</span>
+    <span class="n">imgA_B_dist</span> <span class="o">=</span> <span class="n">image_pair_cosine_distance</span><span class="p">(</span><span class="n">imgA</span><span class="p">,</span> <span class="n">imgB</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Distance between two original image: {0:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imgA_B_dist</span><span class="p">))</span>
+
+    <span class="c1"># Plot the two images</span>
+    <span class="n">img1</span> <span class="o">=</span> <span class="n">imgA</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+    <span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Original image 1&#39;</span>
+
+    <span class="n">img2</span> <span class="o">=</span> <span class="n">imgB</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+    <span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Original image 2&#39;</span>
+
+    <span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+
+    <span class="c1"># Decode the encoded stream</span>
+    <span class="n">imgA_decoded</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">imgA</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">imgB_decoded</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">imgB</span><span class="p">])</span>   <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">imgA_B_decoded_dist</span> <span class="o">=</span> <span class="n">image_pair_cosine_distance</span><span class="p">(</span><span class="n">imgA_decoded</span><span class="p">,</span> <span class="n">imgB_decoded</span><span class="p">)</span>
+
+    <span class="c1"># Print distance between original image</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Distance between two decoded image: {0:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imgA_B_decoded_dist</span><span class="p">))</span>
+
+    <span class="c1"># Plot the two images</span>
+    <span class="c1"># Plot the original and the decoded image</span>
+    <span class="n">img1</span> <span class="o">=</span> <span class="n">imgA_decoded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+    <span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Decoded image 1&#39;</span>
+
+    <span class="n">img2</span> <span class="o">=</span> <span class="n">imgB_decoded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+    <span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Decoded image 2&#39;</span>
+
+    <span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Distance between two original image: 0.294
+Distance between two decoded image: 0.346
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_37_1.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_37_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_37_2.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_37_2.png" />
+</div>
+</div>
+<p>Note: The cosine distance between the original images comparable to the
+distance between the corresponding decoded images. A value of 1
+indicates high similarity between the images and 0 indicates no
+similarity.</p>
+<p>Let us now see how to get the encoded vector corresponding to an input
+image. This should have the dimension of the choke point in the network
+shown in the figure with the box labeled <code class="docutils literal"><span class="pre">E</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">imgA</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">digit_index_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],:,:][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">imgA_encoded</span> <span class="o">=</span>  <span class="n">encoded_model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">imgA</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Length of the original image is {0:3d} and the encoded image is {1:3d}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">imgA</span><span class="p">),</span>
+                                                                                      <span class="nb">len</span><span class="p">(</span><span class="n">imgA_encoded</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">The encoded image: &quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">imgA_encoded</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Length of the original image is 784 and the encoded image is  32
+
+The encoded image:
+[  0.          22.22325325   3.9777317   13.26123905   9.97513866   0.
+  13.37649727   6.18241978   5.78068304  12.50789165  20.11767769
+   9.77285862   0.          14.75064278  17.07588768   0.           3.6076715
+   8.29384613  20.11726952  15.80433846   3.4400022    0.           0.
+  14.63469696   3.61723995  15.29668236  10.98176098   7.29611969
+  16.65932465   9.66042233   5.93092394   0.        ]
+</pre></div></div>
+</div>
+<p>Let us compare the distance between different digits.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">digitA</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">digitB</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="n">digitA_index</span> <span class="o">=</span> <span class="n">label_dict</span><span class="p">[</span><span class="n">digitA</span><span class="p">]</span>
+<span class="n">digitB_index</span> <span class="o">=</span> <span class="n">label_dict</span><span class="p">[</span><span class="n">digitB</span><span class="p">]</span>
+
+<span class="n">imgA</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">digitA_index</span><span class="p">[</span><span class="mi">0</span><span class="p">],:,:][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">imgB</span> <span class="o">=</span> <span class="n">img_data</span><span class="p">[</span><span class="n">digitB_index</span><span class="p">[</span><span class="mi">0</span><span class="p">],:,:][</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Print distance between original image</span>
+<span class="n">imgA_B_dist</span> <span class="o">=</span> <span class="n">image_pair_cosine_distance</span><span class="p">(</span><span class="n">imgA</span><span class="p">,</span> <span class="n">imgB</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Distance between two original image: {0:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imgA_B_dist</span><span class="p">))</span>
+
+<span class="c1"># Plot the two images</span>
+<span class="n">img1</span> <span class="o">=</span> <span class="n">imgA</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Original image 1&#39;</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="n">imgB</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Original image 2&#39;</span>
+
+<span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+
+<span class="c1"># Decode the encoded stream</span>
+<span class="n">imgA_decoded</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">imgA</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">imgB_decoded</span> <span class="o">=</span>  <span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">imgB</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">imgA_B_decoded_dist</span> <span class="o">=</span> <span class="n">image_pair_cosine_distance</span><span class="p">(</span><span class="n">imgA_decoded</span><span class="p">,</span> <span class="n">imgB_decoded</span><span class="p">)</span>
+
+<span class="c1">#Print distance between original image</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Distance between two decoded image: {0:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">imgA_B_decoded_dist</span><span class="p">))</span>
+
+<span class="c1"># Plot the original and the decoded image</span>
+<span class="n">img1</span> <span class="o">=</span> <span class="n">imgA_decoded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text1</span> <span class="o">=</span> <span class="s1">&#39;Decoded image 1&#39;</span>
+
+<span class="n">img2</span> <span class="o">=</span> <span class="n">imgB_decoded</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)</span>
+<span class="n">text2</span> <span class="o">=</span> <span class="s1">&#39;Decoded image 2&#39;</span>
+
+<span class="n">plot_image_pair</span><span class="p">(</span><span class="n">img1</span><span class="p">,</span> <span class="n">text1</span><span class="p">,</span> <span class="n">img2</span><span class="p">,</span> <span class="n">text2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Distance between two original image: 0.376
+Distance between two decoded image: 0.421
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_41_1.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_41_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_41_2.png" src="_images/CNTK_105_Basic_Autoencoder_for_Dimensionality_Reduction_41_2.png" />
+</div>
+</div>
+<p>Print the results of the deep encoder test error for regression testing</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Simple autoencoder test error</span>
+<span class="k">print</span><span class="p">(</span><span class="n">simple_ae_test_error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3.11675742686
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Deep autoencoder test error</span>
+<span class="k">print</span><span class="p">(</span><span class="n">deep_ae_test_error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+3.37320691249
+</pre></div></div>
+</div>
+<p><strong>Suggested tasks</strong></p>
+<ul class="simple">
+<li>Try different activation functions.</li>
+<li>Find which images are more similar to one another (a) using original
+image and (b) decoded image.</li>
+<li>Try using mean square error as the loss function. Does it improve the
+performance of the encoder in terms of reduced errors.</li>
+<li>Can you try different network structure to reduce the error further.
+Explain your observations.</li>
+<li>Can you use a different distance metric to compute similarity between
+the MNIST images.</li>
+<li>Try a deep encoder with [1000, 500, 250, 128, 64, 32]. What is the
+training error for same number of iterations?</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

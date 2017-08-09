@@ -1,0 +1,1504 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Tutorial 104: Time Series Basics with Pandas and Finance Data &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">Tutorial 104: Time Series Basics with Pandas and Finance Data</a><ul>
+<li><a class="reference internal" href="#Read-data">Read data</a></li>
+<li><a class="reference internal" href="#Build-features">Build features</a></li>
+<li><a class="reference internal" href="#Model-Creation">Model Creation</a></li>
+<li><a class="reference internal" href="#Training">Training</a></li>
+<li><a class="reference internal" href="#Evaluation">Evaluation</a></li>
+<li><a class="reference internal" href="#Appendix">Appendix</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>Tutorial 104: Time Series Basics with Pandas and Finance Data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="Tutorial-104:-Time-Series-Basics-with-Pandas-and-Finance-Data">
+<h1>Tutorial 104: Time Series Basics with Pandas and Finance Data<a class="headerlink" href="#Tutorial-104:-Time-Series-Basics-with-Pandas-and-Finance-Data" title="Permalink to this headline">¶</a></h1>
+<p>Contributed by: Avi Thaker November 20, 2016</p>
+<p>This tutorial will introduce the use of the Cognitive Toolkit for time
+series data. We show how to prepare time series data for deep learning
+algorithms. We will cover training a neural network and evaluating the
+neural network model. We will also look at the predictive potential on
+classification of an Exchange-traded Funds
+(<a class="reference external" href="https://en.wikipedia.org/wiki/Exchange-traded_fund">ETF</a>), and in
+this simplified setting how one could trade it. This tutorial serves
+<strong>only</strong> as an example of how to use neural networks for time series
+analysis.</p>
+<p>It is important to note that the stock market is extremely noisy and is
+difficult to predict. This is best done by professionals with domain
+expertise. It is more important to make sure the model is correct before
+setting up a trading system (there are many factors to consider
+including but not limited to: <a class="reference external" href="https://en.wikipedia.org/wiki/Overfitting">curve fitting
+bias</a>, <a class="reference external" href="http://www.investopedia.com/terms/l/lookaheadbias.asp?lgl=no-infinite">forward looking
+bias</a>,
+profitability etc.). The learnings and anecdotes presented in this
+tutorial is only for exemplary purposes with the goal of introducing an
+approach to analyze time series data.</p>
+<p>This tutorial introduces how to use pandas_datareader package and
+pandas. Please note, this tutorial will utilize the numpy interface to
+CNTK which interfaces well with <a class="reference external" href="http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html">Pandas
+dataframes</a>
+(a structure that is well suited towards timeseries analysis).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">chained_assignment</span> <span class="o">=</span> <span class="bp">None</span>  <span class="c1"># default=&#39;warn&#39;</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="section" id="Read-data">
+<h2>Read data<a class="headerlink" href="#Read-data" title="Permalink to this headline">¶</a></h2>
+<p>We first retrieve stock data using the method <code class="docutils literal"><span class="pre">get_stock_data</span></code>. This
+method downloads stock data on a daily timescale from Google Finance
+(can be modified to get data from Yahoo Finance and many other sources).
+<a class="reference external" href="http://pandas-datareader.readthedocs.io/en/latest/remote_data.html">Pandas
+datareader</a>
+shows many use cases for the data reader.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># A method which obtains stock data from Google finance</span>
+<span class="c1"># Requires an Internet connection to retrieve stock data from Google finance</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span>  <span class="nn">pandas_datareader</span> <span class="kn">import</span> <span class="n">data</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="o">!</span>pip install pandas_datareader
+    <span class="kn">from</span>  <span class="nn">pandas_datareader</span> <span class="kn">import</span> <span class="n">data</span>
+
+<span class="c1"># Set a random seed</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">get_stock_data</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span> <span class="n">s_year</span><span class="p">,</span> <span class="n">s_month</span><span class="p">,</span> <span class="n">s_day</span><span class="p">,</span> <span class="n">e_year</span><span class="p">,</span> <span class="n">e_month</span><span class="p">,</span> <span class="n">e_day</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Args:</span>
+<span class="sd">        contract (str): the name of the stock/etf</span>
+<span class="sd">        s_year (int): start year for data</span>
+<span class="sd">        s_month (int): start month</span>
+<span class="sd">        s_day (int): start day</span>
+<span class="sd">        e_year (int): end year</span>
+<span class="sd">        e_month (int): end month</span>
+<span class="sd">        e_day (int): end day</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        Pandas Dataframe: Daily OHLCV bars</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">s_year</span><span class="p">,</span> <span class="n">s_month</span><span class="p">,</span> <span class="n">s_day</span><span class="p">)</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">e_year</span><span class="p">,</span> <span class="n">e_month</span><span class="p">,</span> <span class="n">e_day</span><span class="p">)</span>
+
+    <span class="n">retry_cnt</span><span class="p">,</span> <span class="n">max_num_retry</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span>
+
+    <span class="k">while</span><span class="p">(</span><span class="n">retry_cnt</span> <span class="o">&lt;</span> <span class="n">max_num_retry</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">bars</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">DataReader</span><span class="p">(</span><span class="n">contract</span><span class="p">,</span><span class="s2">&quot;google&quot;</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">bars</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="n">retry_cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Google Finance is not reachable&quot;</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Google Finance is not reachable&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pickle</span> <span class="kn">as</span>  <span class="nn">pkl</span>
+
+<span class="c1"># We search in cached stock data set with symbol SPY.</span>
+<span class="c1"># Check for an environment variable defined in CNTK&#39;s test infrastructure</span>
+<span class="n">envvar</span> <span class="o">=</span> <span class="s1">&#39;CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY&#39;</span>
+<span class="k">def</span> <span class="nf">is_test</span><span class="p">():</span> <span class="k">return</span> <span class="n">envvar</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">data_file</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">get_stock_data</span><span class="p">(</span><span class="s2">&quot;SPY&quot;</span><span class="p">,</span> <span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2017</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Data could not be downloaded&quot;</span><span class="p">)</span>
+
+    <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">data_file</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Saving&quot;</span><span class="p">,</span> <span class="n">data_file</span> <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">data_file</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pkl</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">protocol</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="n">data_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;Stock&quot;</span><span class="p">,</span> <span class="s2">&quot;stock_SPY.pkl&quot;</span><span class="p">)</span>
+
+<span class="c1"># Check for data in local cache</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_file</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;File already exists&quot;</span><span class="p">,</span> <span class="n">data_file</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># If not there we might be running in CNTK&#39;s test infrastructure</span>
+    <span class="k">if</span> <span class="n">is_test</span><span class="p">():</span>
+        <span class="n">test_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">envvar</span><span class="p">],</span> <span class="s1">&#39;Tutorials&#39;</span><span class="p">,</span><span class="s1">&#39;data&#39;</span><span class="p">,</span><span class="s1">&#39;stock&#39;</span><span class="p">,</span><span class="s1">&#39;stock_SPY.pkl&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_file</span><span class="p">):</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reading data from test data directory&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="n">test_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Test data directory missing file&quot;</span><span class="p">,</span> <span class="n">test_file</span><span class="p">)</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Downloading data from Google Finance&quot;</span><span class="p">)</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Local cache is not present and not test env</span>
+        <span class="c1"># download the data from Google finance and cache it in a local directory</span>
+        <span class="c1"># Please check if there is trade data for the chosen stock symbol during this period</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">download</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+File already exists data\Stock\stock_SPY.pkl
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Build-features">
+<h2>Build features<a class="headerlink" href="#Build-features" title="Permalink to this headline">¶</a></h2>
+<p>The stock market behavior exhibits substantial
+<a class="reference external" href="https://en.wikipedia.org/wiki/Autocorrelation">autocorrelation</a>
+(<a class="reference external" href="http://epchan.blogspot.com/2016/04/mean-reversion-momentum-and-volatility.html">reference</a>).
+We use <a class="reference external" href="http://www.investopedia.com/terms/e/etf.asp">ETF</a> <code class="docutils literal"><span class="pre">SPY</span></code>
+index representing the “market” of stock. This is the ETF that
+encompasses around top 500 companies in America by market
+capitalization. We will trade under the assumption that there is some
+short term autocorrelation that have predictive power in the market.</p>
+<p><strong>Goal</strong></p>
+<ul class="simple">
+<li>Whether or not the next data for the given stock/ETF will be above or
+below the current day.</li>
+</ul>
+<p><strong>Model features</strong></p>
+<ul class="simple">
+<li>The previous 8 days, classified if greater than the current day,</li>
+<li>The volume changes as a percentage,</li>
+<li>The percentage change from the previous day.</li>
+</ul>
+<p>Note, we are not feeding the neural network the price itself. Financial
+timeseries data are noisy. It is important not to overfit the data.
+There is a lot we can do here (smoothing, adding more features, etc.),
+but we will keep this tutorial simple, and demonstrate CNTK’s ability to
+interface with timeseries data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Feature name list</span>
+<span class="n">predictor_names</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Compute price difference as a feature</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">predictor_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;diff&quot;</span><span class="p">)</span>
+
+<span class="c1"># Compute the volume difference as a feature</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;v_diff&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">((</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Volume&quot;</span><span class="p">])</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">predictor_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;v_diff&quot;</span><span class="p">)</span>
+
+<span class="c1"># Compute the stock being up (1) or down (0) over different day offsets compared to current dat closing price</span>
+<span class="n">num_days_back</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">num_days_back</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">data</span><span class="p">[</span><span class="s2">&quot;p_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># i: number of look back days</span>
+    <span class="n">predictor_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;p_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+
+<span class="c1"># If you want to save the file to your local drive</span>
+<span class="c1">#data.to_csv(&quot;PATH_TO_SAVE.csv&quot;)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">head</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Open</th>
+      <th>High</th>
+      <th>Low</th>
+      <th>Close</th>
+      <th>Volume</th>
+      <th>diff</th>
+      <th>v_diff</th>
+      <th>p_1</th>
+      <th>p_2</th>
+      <th>p_3</th>
+      <th>p_4</th>
+      <th>p_5</th>
+      <th>p_6</th>
+      <th>p_7</th>
+      <th>p_8</th>
+    </tr>
+    <tr>
+      <th>Date</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>2001-02-05</th>
+      <td>134.80</td>
+      <td>135.94</td>
+      <td>134.75</td>
+      <td>135.79</td>
+      <td>4280900</td>
+      <td>0.000000</td>
+      <td>0.000000</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-06</th>
+      <td>135.30</td>
+      <td>136.70</td>
+      <td>135.22</td>
+      <td>135.39</td>
+      <td>7092200</td>
+      <td>0.002954</td>
+      <td>0.396393</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-07</th>
+      <td>134.72</td>
+      <td>135.40</td>
+      <td>133.68</td>
+      <td>134.69</td>
+      <td>5689800</td>
+      <td>0.005197</td>
+      <td>0.246476</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-08</th>
+      <td>134.80</td>
+      <td>135.40</td>
+      <td>133.10</td>
+      <td>133.12</td>
+      <td>5876800</td>
+      <td>0.011794</td>
+      <td>0.031820</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-09</th>
+      <td>133.35</td>
+      <td>133.35</td>
+      <td>131.26</td>
+      <td>131.84</td>
+      <td>9871200</td>
+      <td>0.009709</td>
+      <td>0.404652</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-12</th>
+      <td>131.70</td>
+      <td>133.50</td>
+      <td>131.70</td>
+      <td>133.35</td>
+      <td>5790300</td>
+      <td>0.011324</td>
+      <td>0.704782</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-13</th>
+      <td>133.70</td>
+      <td>134.17</td>
+      <td>132.00</td>
+      <td>132.26</td>
+      <td>6583200</td>
+      <td>0.008241</td>
+      <td>0.120443</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-14</th>
+      <td>132.65</td>
+      <td>132.65</td>
+      <td>130.66</td>
+      <td>132.06</td>
+      <td>8390200</td>
+      <td>0.001514</td>
+      <td>0.215370</td>
+      <td>0</td>
+      <td>0</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-15</th>
+      <td>132.84</td>
+      <td>133.52</td>
+      <td>131.99</td>
+      <td>133.34</td>
+      <td>5881800</td>
+      <td>0.009600</td>
+      <td>0.426468</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>1</td>
+      <td>1</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2001-02-16</th>
+      <td>131.00</td>
+      <td>131.29</td>
+      <td>129.30</td>
+      <td>130.40</td>
+      <td>6432800</td>
+      <td>0.022546</td>
+      <td>0.085655</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p><strong>What are trying to predict</strong></p>
+<p>Here we are trying to predict whether or not the next days’ trading will
+be above or below the current day. We will represent a predicted up day
+as a 1, else a 0 if the next day is the same or below. (Note: the market
+is unlikely going to close at the same price as it did the previous
+day).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;next_day&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">data</span><span class="p">[</span><span class="s2">&quot;next_day_opposite&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;next_day&quot;</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># The label must be one-hot encoded</span>
+
+<span class="c1"># Establish the start and end date of our training timeseries (picked 2000 days before the market crash)</span>
+<span class="n">training_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;2001-02-05&quot;</span><span class="p">:</span><span class="s2">&quot;2009-01-20&quot;</span><span class="p">]</span>
+
+<span class="c1"># We define our test data as: data[&quot;2008-01-02&quot;:]</span>
+<span class="c1"># This example allows to include data up to current date</span>
+
+<span class="n">test_data</span><span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s2">&quot;2009-01-20&quot;</span><span class="p">:</span><span class="s2">&quot;2016-12-29&quot;</span><span class="p">]</span>
+<span class="n">training_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">training_data</span><span class="p">[</span><span class="n">predictor_names</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">training_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">training_data</span><span class="p">[[</span><span class="s2">&quot;next_day&quot;</span><span class="p">,</span><span class="s2">&quot;next_day_opposite&quot;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Here we are actually building the neural network itself. We will use a
+simple feedforward neural network (represented as <code class="docutils literal"><span class="pre">NN</span></code> in the plots)
+with 10 inputs and 50 dimensions.</p>
+<p><strong>Suggested exercise</strong> Try experimenting here with different sizes and
+number of hidden layers. What happens when we make this network large?
+Do we overfit the data?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="n">training_features</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(2000, 10)
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Model-Creation">
+<h2>Model Creation<a class="headerlink" href="#Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>We will be using a simple MLP network as our model using the <code class="docutils literal"><span class="pre">layers</span></code>
+library found <a class="reference external" href="https://cntk.ai/pythondocs/layerref.html">here</a>.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Lets build the network</span>
+<span class="n">input_dim</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">num_days_back</span>
+<span class="n">num_output_classes</span> <span class="o">=</span> <span class="mi">2</span> <span class="c1">#Remember we need to have 2 since we are trying to classify if the market goes up or down 1 hot encoded</span>
+<span class="n">num_hidden_layers</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">hidden_layers_dim</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">num_days_back</span>
+<span class="n">input_dynamic_axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">default_batch_axis</span><span class="p">()]</span>
+<span class="nb">input</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">input_dynamic_axes</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">input_dynamic_axes</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">):</span>
+    <span class="n">h</span> <span class="o">=</span> <span class="nb">input</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_hidden_layers</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_layers_dim</span><span class="p">,</span>
+                               <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span>
+
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+<span class="n">label_error</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+<span class="n">lr_per_minibatch</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="mf">0.125</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span><span class="p">),</span> <span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr</span><span class="o">=</span><span class="n">lr_per_minibatch</span><span class="p">)])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1">#Initialize the parameters for the trainer, we will train in large minibatches in sequential order</span>
+<span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">num_minibatches</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">training_data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span> <span class="o">//</span> <span class="n">minibatch_size</span>
+
+<span class="c1">#Run the trainer on and perform model training</span>
+<span class="n">training_progress_output_freq</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Visualize the loss over minibatch</span>
+<span class="n">plotdata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;batchsize&quot;</span><span class="p">:[],</span> <span class="s2">&quot;loss&quot;</span><span class="p">:[],</span> <span class="s2">&quot;error&quot;</span><span class="p">:[]}</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p><strong>Note</strong>: Number of passes through the data, how we train time series
+data?</p>
+<p>This tutorial will differ from other tutorials in the sense that here we
+will not randomly send data to the trainer, instead each minibatch will
+be fed sequentially in the order of the time dimension. This is key to
+time series data-handling where we want to “weigh” the data at the end
+of our sample a slightly higher. You can put in multiple passes, however
+you will notice significant performance degradation. Try it out!
+Additionally, multiple passes tend to overfit the financial timeseries
+data. This overfitting can be mitigated using standard ML approaches
+such as <a class="reference external" href="https://en.wikipedia.org/wiki/Regularization_%28mathematics%29">L1
+regularization</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">training_features</span><span class="p">,</span><span class="n">num_minibatches</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Number of mini batches&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tf</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;The shape of the training feature minibatch&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">tf</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+<span class="n">tl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">training_labels</span><span class="p">,</span> <span class="n">num_minibatches</span><span class="p">)</span>
+
+<span class="c1"># It is key that we make only one pass through the data linearly in time</span>
+<span class="n">num_passes</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Defines a utility that prints the training progress</span>
+<span class="k">def</span> <span class="nf">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">training_loss</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+    <span class="n">eval_error</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+    <span class="k">if</span> <span class="n">mb</span><span class="o">%</span><span class="k">frequency</span> == 0:
+        <span class="n">training_loss</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_evaluation_average</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Number of mini batches
+20
+The shape of the training feature minibatch
+(100, 10)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Train our neural network</span>
+<span class="n">tf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">training_features</span><span class="p">,</span><span class="n">num_minibatches</span><span class="p">)</span>
+<span class="n">tl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">training_labels</span><span class="p">,</span> <span class="n">num_minibatches</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_minibatches</span><span class="o">*</span><span class="n">num_passes</span><span class="p">):</span> <span class="c1"># multiply by the</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">tf</span><span class="p">[</span><span class="n">i</span><span class="o">%</span><span class="k">num_minibatches</span>])
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">tl</span><span class="p">[</span><span class="n">i</span><span class="o">%</span><span class="k">num_minibatches</span>])
+
+    <span class="c1"># Specify the mapping of input variables in the model to actual minibatch data to be trained with</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">({</span><span class="nb">input</span> <span class="p">:</span> <span class="n">features</span><span class="p">,</span> <span class="n">label</span> <span class="p">:</span> <span class="n">labels</span><span class="p">})</span>
+    <span class="n">batchsize</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">training_progress_output_freq</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;NA&quot;</span> <span class="ow">or</span> <span class="n">error</span> <span class="o">==</span><span class="s2">&quot;NA&quot;</span><span class="p">):</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batchsize</span><span class="p">)</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Minibatch: 0, Loss: 0.7874, Error: 54.00%
+Minibatch: 1, Loss: 0.7570, Error: 51.00%
+Minibatch: 2, Loss: 0.7579, Error: 61.00%
+Minibatch: 3, Loss: 0.6916, Error: 47.00%
+Minibatch: 4, Loss: 0.7127, Error: 54.00%
+Minibatch: 5, Loss: 0.7286, Error: 59.00%
+Minibatch: 6, Loss: 0.7056, Error: 50.00%
+Minibatch: 7, Loss: 0.6975, Error: 48.00%
+Minibatch: 8, Loss: 0.7059, Error: 56.00%
+Minibatch: 9, Loss: 0.7037, Error: 54.00%
+Minibatch: 10, Loss: 0.7567, Error: 60.00%
+Minibatch: 11, Loss: 0.8480, Error: 52.00%
+Minibatch: 12, Loss: 0.6917, Error: 45.00%
+Minibatch: 13, Loss: 0.7526, Error: 58.00%
+Minibatch: 14, Loss: 0.6823, Error: 47.00%
+Minibatch: 15, Loss: 0.8856, Error: 40.00%
+Minibatch: 16, Loss: 0.8299, Error: 48.00%
+Minibatch: 17, Loss: 1.1737, Error: 51.00%
+Minibatch: 18, Loss: 0.7951, Error: 53.00%
+Minibatch: 19, Loss: 0.7809, Error: 48.00%
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">],</span> <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Training loss &#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">],</span> <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Label Prediction Error&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Label Prediction Error &#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_17_0.png" src="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_17_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_17_1.png" src="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_17_1.png" />
+</div>
+</div>
+<p>Notice the trend for the label prediction error is still close to 50%.
+Remember that this is time variant, therefore it is expected that the
+system will have some noise as it trains through time. It should be
+noted; the model is still learning the market. Additionally, since this
+time series data is so noisy, having an error rate below 50% is good
+(many trading firms have win-rates of near 50% and have made money
+nearly every day
+<a class="reference external" href="https://en.wikipedia.org/wiki/Virtu_Financial#Trading_activity">VIRTU</a>).
+However note they are high frequency trading firm and can leverage
+themselves up with low winrate strategies (51%). Trying to classify and
+trade every single day is expensive from transaction fees perspective.
+Therefore, one approach would be to trade when we think we are more
+likely to win?</p>
+<p>Let us try this idea.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Now that we have trained the net, and we will do out of sample test to see how we did.</span>
+<span class="c1"># and then more importantly analyze how that set did</span>
+
+<span class="n">test_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="n">predictor_names</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">test_labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">test_data</span><span class="p">[[</span><span class="s2">&quot;next_day&quot;</span><span class="p">,</span><span class="s2">&quot;next_day_opposite&quot;</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+<span class="n">avg_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">({</span><span class="nb">input</span> <span class="p">:</span> <span class="n">test_features</span><span class="p">,</span> <span class="n">label</span> <span class="p">:</span> <span class="n">test_labels</span><span class="p">})</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Average error: {0:2.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">avg_error</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Average error: 54.05%
+</pre></div></div>
+</div>
+<p>Here we see that we have an error rate near 50%. At first glance this
+may appear to not have learned the network, but let us examine further
+and see if we have some predictive power.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">predicted_label_prob</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="nb">input</span><span class="p">:</span><span class="n">test_features</span><span class="p">})</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_up&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">index</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_down&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_label_prob</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;long_entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">test_data</span><span class="o">.</span><span class="n">p_up</span> <span class="o">&gt;</span> <span class="mf">0.55</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;short_entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">test_data</span><span class="o">.</span><span class="n">p_down</span> <span class="o">&gt;</span> <span class="mf">0.55</span><span class="p">)</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;long_entries&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;short_entries&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Evaluation">
+<h2>Evaluation<a class="headerlink" href="#Evaluation" title="Permalink to this headline">¶</a></h2>
+<p>Here we take the output of our test set and compute the probabilities
+from the softmax function. Since we have probabilities we want to trade
+when there is a “higher” chance that we will be right, instead of just a
+&gt;50% chance that the market will go in one direction. The goal is to
+find a signal, instead of trying to classify the market. Since the
+market is so noisy we want to only trade when we have an “edge” on the
+market. Moreover, trading frequently has higher fees (you have to pay
+each time you trade).</p>
+<p>We will say that if the prediction probability is greater than 55% (in
+either direction) we will take a position in the market. If it shows
+that the market will be up the next day with greater than 55%
+probability, we will take a 1-day long. If it is greater than a 55%
+chance that the next day will be below today’s position we will take
+1-day [short]
+(<a class="reference external" href="http://www.investopedia.com/university/shortselling/shortselling1.asp)(the">http://www.investopedia.com/university/shortselling/shortselling1.asp)(the</a>
+same as borrowing a stock and buying it back).</p>
+<p>We will then evaluate this timeseries performance by looking at some
+more metrics: average monthly return, standard deviation of monthly
+returns, the <a class="reference external" href="http://www.investopedia.com/terms/s/sharperatio.asp">Sharpe
+ratio</a>, and the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Drawdown_%28economics%29">Maximum
+drawdown</a>.
+The Sharpe ratio is the average return minus the risk free rate (which
+is basically zero) over the standard deviation of returns normalized to
+a year.</p>
+<div class="math">
+\[Sharpe = \frac{r_p - r_f}{\sigma_p}\]</div>
+<div class="math">
+\[r_p = \text{portfolio return}\]</div>
+<div class="math">
+\[r_f = \text{risk free rate}\]</div>
+<div class="math">
+\[\sigma_p = \text{standard deviation of portfolio return}\]</div>
+<p>Generally, the higher the Sharpe ratio, the better you are taking less
+risk for each unit of reward. This assumes the mean return and standard
+deviation are sufficient to describe the distribution of returns, akin
+to an assumption of normally distributed returns.</p>
+<p>A trading strategy can be profitable even if the winrate is 50% or
+lower, if the wins are greater than the losses you can have a less than
+50% winrate and still make some money (usually classified as momentum
+strategies). Finally, even if we do not beat the market by trading it
+individually, we can still outperform it by trading multiple assets that
+are uncorrelated with each other (or trade a basket of stocks to get
+market exposure; we are not trading each at the same time). However,
+that will not be covered in this tutorial.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_drawdowns</span><span class="p">(</span><span class="n">equity_curve</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculate the largest peak-to-trough drawdown of the PnL curve</span>
+<span class="sd">    as well as the duration of the drawdown. Requires that the</span>
+<span class="sd">    pnl_returns is a pandas Series.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    pnl - A pandas Series representing period percentage returns.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    drawdown, duration - Highest peak-to-trough drawdown and duration.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Calculate the cumulative returns curve</span>
+    <span class="c1"># and set up the High Water Mark</span>
+    <span class="c1"># Then create the drawdown and duration series</span>
+    <span class="n">hwm</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">eq_idx</span> <span class="o">=</span> <span class="n">equity_curve</span><span class="o">.</span><span class="n">index</span>
+    <span class="n">drawdown</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">eq_idx</span><span class="p">)</span>
+    <span class="n">duration</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">index</span> <span class="o">=</span> <span class="n">eq_idx</span><span class="p">)</span>
+
+    <span class="c1"># Loop over the index range</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">eq_idx</span><span class="p">)):</span>
+        <span class="n">cur_hwm</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">hwm</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">equity_curve</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
+        <span class="n">hwm</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cur_hwm</span><span class="p">)</span>
+        <span class="n">drawdown</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">=</span> <span class="p">(</span><span class="n">hwm</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">-</span> <span class="n">equity_curve</span><span class="p">[</span><span class="n">t</span><span class="p">])</span>
+        <span class="n">duration</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="n">drawdown</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">duration</span><span class="p">[</span><span class="n">t</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">drawdown</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">duration</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_up&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_down&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Distribution of Probabilities&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;p_up&quot;</span><span class="p">,</span> <span class="s2">&quot;p_down&quot;</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Frequency&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Probablity&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_24_0.png" src="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_24_0.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;pnl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">!=</span><span class="mi">0</span><span class="p">,</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;perc&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span> <span class="o">-</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">pnl</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">monthly_spy</span> <span class="o">=</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;perc&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">avg_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">monthly</span><span class="p">)</span>
+<span class="n">std_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">monthly</span><span class="p">)</span>
+<span class="n">sharpe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="n">avg_return</span> <span class="o">/</span> <span class="n">std_return</span>
+<span class="n">drawdown</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">monthly</span><span class="o">.</span><span class="n">cumsum</span><span class="p">())</span>
+<span class="n">spy_drawdown</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">())</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;TRADING STATS&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;AVG Monthly Return :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">avg_return</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;STD Monthly        :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">std_return</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SHARPE             :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sharpe</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;MAX DRAWDOWN       :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">drawdown</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;%, &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">drawdown</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; months&quot;</span> <span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Correlation to SPY :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;pnl&quot;</span><span class="p">],</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;NUMBER OF TRADES   :: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">test_data</span><span class="o">.</span><span class="n">positions</span><span class="o">.</span><span class="n">abs</span><span class="p">())))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;TOTAL TRADING DAYS :: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SPY MONTHLY RETURN :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SPY STD RETURN     :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SPY SHARPE         :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span><span class="o">/</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">std</span><span class="p">()</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">),</span><span class="mi">2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SPY DRAWDOWN       :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">spy_drawdown</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;%, &quot;</span>  <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">spy_drawdown</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; months&quot;</span> <span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">drawdown</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="p">(</span><span class="n">monthly</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;NN&quot;</span><span class="p">,</span> <span class="s2">&quot;SPY&quot;</span><span class="p">],</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;% Return&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;TRADING SPY OUT OF SAMPLE&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TRADING STATS
+AVG Monthly Return :: -0.45%
+STD Monthly        :: 3.17%
+SHARPE             :: -0.49
+MAX DRAWDOWN       :: 48.20%, nan months
+Correlation to SPY :: -0.01
+NUMBER OF TRADES   :: 1175
+TOTAL TRADING DAYS :: 4000
+SPY MONTHLY RETURN :: 1.19%
+SPY STD RETURN     :: 3.92%
+SPY SHARPE         :: 1.05
+SPY DRAWDOWN       :: 17.25%, 11.0 months
+0.482027152898
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_25_1.png" src="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_25_1.png" />
+</div>
+</div>
+<p>This plot shows the % returns when we trade using SPY and NN based
+models only when we are &gt; 55% sure of the predicted directionality.</p>
+<p>It is interesting to see here how the NN performs during the <a class="reference external" href="https://en.wikipedia.org/wiki/Financial_crisis_of_2007%E2%80%932008">financial
+crisis</a>.
+This strategy makes money when many are losing ( refer to the dip in the
+green line in the plot between 2008-2010)! More importantly, this
+strategy has a significantly lower volatility (lower standard deviation
+in the blue line relative to the green line).</p>
+<p>In the summary statistic, you can also see a lower maximum drawdown of
+13.62% for the NN model compared to the 55.37% for the SPY index over
+the same period of time. Similarly, a higher Sharpe ratio close to 1
+from the NN model compared to 0.6 from the SPY index for the same period
+indicates the NN based decisions to be more stable (less risky). Thus,
+from a quant perspective it is more likely to be profitable (it makes
+money in many different market time periods). More importantly, the NN
+strategy is relatively uncorrelated with the SPY index (only 0.06 close
+to 0).</p>
+<p><strong>Suggested task</strong>: Try to experiment with this network with different
+stocks and see what happens to the Sharpe ratio when you have multiple
+trading streams that are uncorrelated with each other.</p>
+<p>Remember when trading you can trade with leverage, and increase your
+return profile (as long as you are willing to handle the down times).
+The best trading strategies are the ones that can consistently make
+money no matter which market they are trading and no matter what is
+happening in the market. This “edge” is termed alpha in the quant
+industry.</p>
+<p>It is important to notice how much of a drawdown you will experience
+when trading
+(<a class="reference external" href="http://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp?lgl=no-infinite">http://www.investopedia.com/terms/m/maximum-drawdown-mdd.asp?lgl=no-infinite</a>).
+Since our current model is calculating only the percentage returns where
+returns are not reinvested, and we are not holding but trading, the
+larger the drawdown the harder it is to recover (if you lost 90% of your
+portfolio then have a 90% gain, you will only be at 19% of your starting
+value).</p>
+<p>Note, we should be tracking PNL on adjusted close prices(but not
+training), since the adjusted close prices incorporate data from the
+future (such as stock splits and dividends) which can incorporate bias
+into our network. Since Google Finance does not give adjusted prices,
+this is not a problem. However, PNL should be taken carefully due to
+splits and dividends.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_up&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">index</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;p_down&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">predicted_label_prob</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;long_entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">test_data</span><span class="o">.</span><span class="n">p_up</span> <span class="o">&gt;</span> <span class="mf">0.50</span><span class="p">)</span> <span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;short_entries&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">((</span><span class="n">test_data</span><span class="o">.</span><span class="n">p_down</span> <span class="o">&gt;</span> <span class="mf">0.50</span><span class="p">)</span> <span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;positions&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;long_entries&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">+</span> <span class="n">test_data</span><span class="p">[</span><span class="s1">&#39;short_entries&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;pnl&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">fillna</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">*</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;positions&quot;</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">]</span><span class="o">!=</span><span class="mi">0</span><span class="p">,</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;Close&quot;</span><span class="p">],</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">monthly</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">pnl</span><span class="o">.</span><span class="n">resample</span><span class="p">(</span><span class="s2">&quot;M&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">avg_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">monthly</span><span class="p">)</span>
+<span class="n">std_return</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">monthly</span><span class="p">)</span>
+<span class="n">sharpe</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span> <span class="o">*</span> <span class="n">avg_return</span> <span class="o">/</span> <span class="n">std_return</span>
+<span class="n">drawdown</span> <span class="o">=</span> <span class="n">create_drawdowns</span><span class="p">(</span><span class="n">monthly</span><span class="o">.</span><span class="n">cumsum</span><span class="p">())</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;TRADING STATS&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;AVG Monthly Return :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">avg_return</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;STD Monthly        :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">std_return</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span><span class="o">+</span> <span class="s2">&quot;%&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;SHARPE             :: &quot;</span> <span class="o">+</span><span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">sharpe</span><span class="p">,</span><span class="mi">2</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;MAX DRAWDOWN       :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">drawdown</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;%, &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">drawdown</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; months&quot;</span> <span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Correlation to SPY :: &quot;</span> <span class="o">+</span> <span class="s2">&quot;{0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;pnl&quot;</span><span class="p">],</span> <span class="n">test_data</span><span class="p">[</span><span class="s2">&quot;diff&quot;</span><span class="p">])[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span><span class="mi">2</span><span class="p">)))</span>
+<span class="p">(</span><span class="n">monthly</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="p">(</span><span class="n">monthly_spy</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s2">&quot;NN&quot;</span><span class="p">,</span> <span class="s2">&quot;SPY&quot;</span><span class="p">],</span><span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;% Return&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;TRADING SPY OUT OF SAMPLE&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+TRADING STATS
+AVG Monthly Return :: -0.75%
+STD Monthly        :: 5.42%
+SHARPE             :: -0.48
+MAX DRAWDOWN       :: 83.81%, 94.0 months
+Correlation to SPY :: 0.04
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_27_1.png" src="_images/CNTK_104_Finance_Timeseries_Basic_with_Pandas_Numpy_27_1.png" />
+</div>
+</div>
+<p>The plot above shows the % returns when we trade every day using SPY and
+NN based models as compared to a confidence based trading show in
+previous plot. With frequent trading the volatility is higher and
+transaction fees (not accounted in this plot) will greatly eat into any
+profits.</p>
+<p><strong>Suggested exercises</strong> Try changing the batch size, the network itself,
+the activation functions, and many other features and see how much it
+affects the output. Notice how it can change dramatically? This means
+what you have been training on might be noise and you need to refine
+either the model or more likely the inputs to the network itself.</p>
+<p>After you have completed the aforementioned exercise, experiment with
+applying the trained network to other timeseries data. Pick a stock in
+the S&amp;P 500, pick something that is uncorrelated with the S&amp;P 500, try a
+completely random dataset. How do you expect each of those to do? Should
+the performance match up with S&amp;P 500 out of sample performance? How
+about the random data?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Repeatable factor (used for runtime verification)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0.48
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Appendix">
+<h2>Appendix<a class="headerlink" href="#Appendix" title="Permalink to this headline">¶</a></h2>
+<p>A great resource for getting started as a Quant:
+<a class="reference external" href="https://www.quantstart.com/">https://www.quantstart.com/</a> An online back-testing and open source
+trading platform, hosts quant competitions and a forum:
+<a class="reference external" href="https://www.quantopian.com/">https://www.quantopian.com/</a> <a class="reference external" href="https://www.quantstart.com/articles/successful-backtesting-of-algorithmic-trading-strategies-part-i">A summary of backtesting and
+biases</a>
+<a class="reference external" href="https://github.com/blampe/IbPy">For those who want to automatically trade in
+python</a></p>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -1,0 +1,1047 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 106: Part B - Time series prediction with LSTM (IOT Data) &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 106: Part B - Time series prediction with LSTM (IOT Data)</a><ul>
+<li><a class="reference internal" href="#Data-generation">Data generation</a><ul>
+<li><a class="reference internal" href="#Pre-processing">Pre-processing</a></li>
+<li><a class="reference internal" href="#Training-/-Testing-/-Validation-data-preparation">Training / Testing / Validation data preparation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Data-caching">Data caching</a></li>
+<li><a class="reference internal" href="#Model-Creation-(LSTM-network)">Model Creation (LSTM network)</a></li>
+<li><a class="reference internal" href="#Training">Training</a></li>
+<li><a class="reference internal" href="#Visualize-results">Visualize results</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 106: Part B - Time series prediction with LSTM (IOT Data)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_106B_LSTM_Timeseries_with_IOT_Data.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-106:-Part-B---Time-series-prediction-with-LSTM-(IOT-Data)">
+<h1>CNTK 106: Part B - Time series prediction with LSTM (IOT Data)<a class="headerlink" href="#CNTK-106:-Part-B---Time-series-prediction-with-LSTM-(IOT-Data)" title="Permalink to this headline">¶</a></h1>
+<p>In <a class="reference internal" href="CNTK_106A_LSTM_Timeseries_with_Simulated_Data.html"><span class="doc">part A of this
+tutorial</span></a> we
+developed a simple LSTM network to predict future values in a time
+series. In part B we want to use the model on some real world
+internet-of-things
+(<a class="reference external" href="https://en.wikipedia.org/wiki/Internet_of_things">IOT</a>) data. As an
+example we want to predict the daily output of a solar panel base on the
+initial readings of the day.</p>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Solar_power_forecasting">Solar power
+forecasting</a>
+is a challenging and important problem. The solar energy generation
+forecasting problem is closely linked to the problem of weather
+variables forecasting. Indeed, this problem is usually split into two
+parts, on one hand focusing on the forecasting of solar PV or any other
+meteorological variable and on the other hand estimating the amount of
+energy that a concrete power plant will produce with the estimated
+meteorological resource. In general, the way to deal with this difficult
+problem is usually related to the spatial and temporal scales we are
+interested in. This tutorial focusses on a simplified forecasting model
+using previously generated data from solar panel to predict the future.</p>
+<p><strong>Goal</strong></p>
+<p>Using historic daily production of a solar panel, we want to predict the
+total power production of the solar panel array for a day. We will be
+using the LSTM based time series prediction model developed in part A to
+predict the daily output of a solar panel based on the initial readings
+of the day.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/rooftop-solar-power.jpg" />
+</div>
+<p>We train the model with historical data of the solar panel. In our
+example we want to predict the total power production of the solar panel
+array for the day starting with the initial readings of the day. We
+start predicting after the first 2 readings and adjust the prediction
+with each new reading.</p>
+<p>In this tutorial, we will use the LSTM model introduced in the CNTK
+106A. This tutorial has the following sub-sections: - Setup - Data
+generation - LSTM network modeling - Model training and evaluation</p>
+<p>For more details on how LSTMs work, see <a class="reference external" href="http://colah.github.io/posts/2015-08-Understanding-LSTMs">this excellent
+post</a>.</p>
+<p>We need a few imports and constants throughout the tutorial that we
+define here.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># to make things reproduceable, seed random</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>There are two run modes: - <em>Fast mode</em>: <code class="docutils literal"><span class="pre">isFast</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>.
+This is the default mode for the notebooks, which means we train for
+fewer iterations or train / test on limited data. This ensures
+functional correctness of the notebook though the models produced are
+far from what a completed training would produce.</p>
+<ul class="simple">
+<li><em>Slow mode</em>: We recommend the user to set this flag to <code class="docutils literal"><span class="pre">False</span></code> once
+the user has gained familiarity with the notebook content and wants
+to gain insight from running the notebooks for a longer period with
+different parameters for training.</li>
+</ul>
+<p>For <em>Fast mode</em> we train the model for 100 epochs and results have low
+accuracy but is good enough for development. The model yields good
+accuracy after 1000-2000 epochs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">isFast</span> <span class="o">=</span> <span class="bp">True</span>
+
+<span class="c1"># we need around 2000 epochs to see good accuracy. For testing 100 epochs will do.</span>
+<span class="n">EPOCHS</span> <span class="o">=</span> <span class="mi">100</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">2000</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Data-generation">
+<h2>Data generation<a class="headerlink" href="#Data-generation" title="Permalink to this headline">¶</a></h2>
+<p>Our solar panel, emits two measures at every 30 min interval: -
+<code class="docutils literal"><span class="pre">solar.current</span></code> is the current production in Watt - <code class="docutils literal"><span class="pre">solar.total</span></code> is
+the total produced for the day so far in Watt/hour</p>
+<p>Our prediction approach involves starting with the first 2 initial
+readings of the day. Based on these readings we start predicting and
+adjust the prediction with each new reading. The training data we are
+going to use comes as a csv file and has the following format:</p>
+<blockquote>
+<div><div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">time</span><span class="p">,</span><span class="n">solar</span><span class="o">.</span><span class="n">current</span><span class="p">,</span><span class="n">solar</span><span class="o">.</span><span class="n">total</span>
+<span class="mi">7</span><span class="n">am</span><span class="p">,</span><span class="mf">6.3</span><span class="p">,</span><span class="mf">1.7</span>
+<span class="mi">7</span><span class="p">:</span><span class="mi">30</span><span class="n">am</span><span class="p">,</span><span class="mf">44.3</span><span class="p">,</span><span class="mf">11.4</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+</div></blockquote>
+<p>The training dataset we use contains data captured for 3 years and can
+be found
+<a class="reference external" href="https://guschmueds.blob.core.windows.net/datasets/solar.csv">here</a>.
+The dataset is not pre-processed: it is raw data and contains smaller
+gaps and errors (like a panel failed to report).</p>
+<div class="section" id="Pre-processing">
+<h3>Pre-processing<a class="headerlink" href="#Pre-processing" title="Permalink to this headline">¶</a></h3>
+<p>Most of the code in this example is related to data preparation.
+Thankfully the pandas library make this easy.</p>
+<p><code class="docutils literal"><span class="pre">generate_solar_data()</span></code> function performs the following tasks: - read
+raw data into a pandas dataframe, - normalize the data, - groups by day
+and - append the columns “solar.current.max” and “solar.total.max”, and
+- generates the sequences for each day.</p>
+<p><em>Sequence generation</em>: All sequences are concatenated into a single list
+of sequences. There is <em>no more notion of timestamp</em> in our train input
+and <strong>only</strong> the sequences matter.</p>
+<p><strong>Note</strong> if we have less than 8 datapoints for a day we skip over the
+day assuming something is missing in the raw data. If we get more than
+14 data points in a day we truncate the readings.</p>
+</div>
+<div class="section" id="Training-/-Testing-/-Validation-data-preparation">
+<h3>Training / Testing / Validation data preparation<a class="headerlink" href="#Training-/-Testing-/-Validation-data-preparation" title="Permalink to this headline">¶</a></h3>
+<p>We start by reading the csv file for use with CNTK. The raw data is
+sorted by time and we should randomize it before splitting into
+training, validation and test datasets but this would make it
+impractical to visualize results in the tutorial. Hence, we split the
+dataset in the following manner: pick in sequence, 8 values for
+training, 1 for validation and 1 for test until there is no more data.
+This will spread training, validation and test datasets across the full
+timeline while preserving time order.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">generate_solar_data</span><span class="p">(</span><span class="n">input_url</span><span class="p">,</span> <span class="n">time_steps</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">val_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    generate sequences to feed to rnn based on data frame with solar panel data</span>
+<span class="sd">    the csv has the format: time ,solar.current, solar.total</span>
+<span class="sd">     (solar.current is the current output in Watt, solar.total is the total production</span>
+<span class="sd">      for the day so far in Watt hours)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># try to find the data file local. If it doesn&#39;t exists download it.</span>
+    <span class="n">cache_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;iot&quot;</span><span class="p">)</span>
+    <span class="n">cache_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cache_path</span><span class="p">,</span> <span class="s2">&quot;solar.csv&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_path</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">cache_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">cache_file</span><span class="p">):</span>
+        <span class="n">urlretrieve</span><span class="p">(</span><span class="n">input_url</span><span class="p">,</span> <span class="n">cache_file</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;downloaded data successfully from &quot;</span><span class="p">,</span> <span class="n">input_url</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;using cache for &quot;</span><span class="p">,</span> <span class="n">input_url</span><span class="p">)</span>
+
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">cache_file</span><span class="p">,</span> <span class="n">index_col</span><span class="o">=</span><span class="s2">&quot;time&quot;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="n">df</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">date</span>
+
+    <span class="c1"># normalize data</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;solar.current&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">normalize</span>
+    <span class="n">df</span><span class="p">[</span><span class="s1">&#39;solar.total&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="n">normalize</span>
+
+    <span class="c1"># group by day, find the max for a day and add a new column .max</span>
+    <span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">date</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+    <span class="n">grouped</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;solar.current.max&quot;</span><span class="p">,</span> <span class="s2">&quot;solar.total.max&quot;</span><span class="p">,</span> <span class="s2">&quot;date&quot;</span><span class="p">]</span>
+
+    <span class="c1"># merge continuous readings and daily max values into a single frame</span>
+    <span class="n">df_merged</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">grouped</span><span class="p">,</span> <span class="n">right_index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">on</span><span class="o">=</span><span class="s2">&quot;date&quot;</span><span class="p">)</span>
+    <span class="n">df_merged</span> <span class="o">=</span> <span class="n">df_merged</span><span class="p">[[</span><span class="s2">&quot;solar.current&quot;</span><span class="p">,</span> <span class="s2">&quot;solar.total&quot;</span><span class="p">,</span>
+                           <span class="s2">&quot;solar.current.max&quot;</span><span class="p">,</span> <span class="s2">&quot;solar.total.max&quot;</span><span class="p">]]</span>
+    <span class="c1"># we group by day so we can process a day at a time.</span>
+    <span class="n">grouped</span> <span class="o">=</span> <span class="n">df_merged</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">df_merged</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">date</span><span class="p">)</span>
+    <span class="n">per_day</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped</span><span class="p">:</span>
+        <span class="n">per_day</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+
+    <span class="c1"># split the dataset into train, validatation and test sets on day boundaries</span>
+    <span class="n">val_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">val_size</span><span class="p">)</span>
+    <span class="n">test_size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_day</span><span class="p">)</span> <span class="o">*</span> <span class="n">test_size</span><span class="p">)</span>
+    <span class="n">next_val</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">next_test</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">result_x</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+    <span class="n">result_y</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;train&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;val&quot;</span><span class="p">:</span> <span class="p">[],</span> <span class="s2">&quot;test&quot;</span><span class="p">:</span> <span class="p">[]}</span>
+
+    <span class="c1"># generate sequences a day at a time</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">day</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">per_day</span><span class="p">):</span>
+        <span class="c1"># if we have less than 8 datapoints for a day we skip over the</span>
+        <span class="c1"># day assuming something is missing in the raw data</span>
+        <span class="n">total</span> <span class="o">=</span> <span class="n">day</span><span class="p">[</span><span class="s2">&quot;solar.total&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">total</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">next_val</span><span class="p">:</span>
+            <span class="n">current_set</span> <span class="o">=</span> <span class="s2">&quot;val&quot;</span>
+            <span class="n">next_val</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_day</span><span class="p">)</span> <span class="o">/</span> <span class="n">val_size</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">next_test</span><span class="p">:</span>
+            <span class="n">current_set</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+            <span class="n">next_test</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">per_day</span><span class="p">)</span> <span class="o">/</span> <span class="n">test_size</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">current_set</span> <span class="o">=</span> <span class="s2">&quot;train&quot;</span>
+        <span class="n">max_total_for_day</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">day</span><span class="p">[</span><span class="s2">&quot;solar.total.max&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">total</span><span class="p">)):</span>
+            <span class="n">result_x</span><span class="p">[</span><span class="n">current_set</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">j</span><span class="p">])</span>
+            <span class="n">result_y</span><span class="p">[</span><span class="n">current_set</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">max_total_for_day</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">time_steps</span><span class="p">:</span>
+                <span class="k">break</span>
+    <span class="c1"># make result_y a numpy array</span>
+    <span class="k">for</span> <span class="n">ds</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]:</span>
+        <span class="n">result_y</span><span class="p">[</span><span class="n">ds</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">result_y</span><span class="p">[</span><span class="n">ds</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">result_x</span><span class="p">,</span> <span class="n">result_y</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-caching">
+<h2>Data caching<a class="headerlink" href="#Data-caching" title="Permalink to this headline">¶</a></h2>
+<p>For routine testing we would like to cache the data locally when
+available. If it is not available from the cache locations we shall
+download.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># We keep upto 14 inputs from a day</span>
+<span class="n">TIMESTEPS</span> <span class="o">=</span> <span class="mi">14</span>
+
+<span class="c1"># 20000 is the maximum total output in our dataset. We normalize all values with</span>
+<span class="c1"># this so our inputs are between 0.0 and 1.0 range.</span>
+<span class="n">NORMALIZE</span> <span class="o">=</span> <span class="mi">20000</span>
+
+<span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">generate_solar_data</span><span class="p">(</span><span class="s2">&quot;https://www.cntk.ai/jup/dat/solar.csv&quot;</span><span class="p">,</span>
+                           <span class="n">TIMESTEPS</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="n">NORMALIZE</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+using cache for  https://www.cntk.ai/jup/dat/solar.csv
+</pre></div></div>
+</div>
+<p><strong>Utility for data fetching</strong></p>
+<p><code class="docutils literal"><span class="pre">next_batch()</span></code> yields the next batch for training. We use variable
+size sequences supported by CNTK and batches are a list of numpy arrays
+where the numpy arrays have variable length.</p>
+<p>A standard practice is to shuffle batches with each epoch. We don’t do
+this here because we want to be able to graph the data that is easily
+interpretable.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># process batches of 10 days</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="n">TIMESTEPS</span> <span class="o">*</span> <span class="mi">10</span>
+
+<span class="k">def</span> <span class="nf">next_batch</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get the next batch for training&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">as_batch</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">start</span><span class="p">:</span><span class="n">start</span> <span class="o">+</span> <span class="n">count</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">ds</span><span class="p">]),</span> <span class="n">BATCH_SIZE</span><span class="p">):</span>
+        <span class="k">yield</span> <span class="n">as_batch</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">ds</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="n">BATCH_SIZE</span><span class="p">),</span> <span class="n">as_batch</span><span class="p">(</span><span class="n">Y</span><span class="p">[</span><span class="n">ds</span><span class="p">],</span> <span class="n">i</span><span class="p">,</span> <span class="n">BATCH_SIZE</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Understand the data format</strong></p>
+<p>You can now see the sequence we are going to feed to the LSTM. Note if
+we have less than 8 datapoints for a day we skip over the day assuming
+something is missing in the raw data. If we get more than 14 data points
+in a day we truncate the readings.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">X</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[7]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>[array([ 0.       ,  0.0006985], dtype=float32),
+ array([ 0.       ,  0.0006985,  0.0033175], dtype=float32),
+ array([ 0.       ,  0.0006985,  0.0033175,  0.010375 ], dtype=float32)]
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">Y</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([[ 0.23899999],
+       [ 0.23899999],
+       [ 0.23899999]], dtype=float32)
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Model-Creation-(LSTM-network)">
+<h2>Model Creation (LSTM network)<a class="headerlink" href="#Model-Creation-(LSTM-network)" title="Permalink to this headline">¶</a></h2>
+<p>Corresponding to the maximum possible 14 data points in the input
+sequence, we model our network with 14 LSTM cells, 1 cell for each data
+point we take during the day. Since the input sequences can be between 8
+and 14 data points per sequence, we take the advantage of CNTK support
+for variable sequences as input to a LSTM so we can feed our sequences
+as-is with no additional need for padding.</p>
+<p>The output of the neural network is the total output for the day and
+each sequence for a given day has the same total output.</p>
+<p>For example:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mf">1.7</span><span class="p">,</span><span class="mf">11.4</span> <span class="o">-&gt;</span> <span class="mi">10300</span>
+<span class="mf">1.7</span><span class="p">,</span><span class="mf">11.4</span><span class="p">,</span><span class="mf">67.5</span> <span class="o">-&gt;</span> <span class="mi">10300</span>
+<span class="mf">1.7</span><span class="p">,</span><span class="mf">11.4</span><span class="p">,</span><span class="mf">67.5</span><span class="p">,</span><span class="mf">250.5</span> <span class="o">...</span> <span class="o">-&gt;</span> <span class="mi">10300</span>
+<span class="mf">1.7</span><span class="p">,</span><span class="mf">11.4</span><span class="p">,</span><span class="mf">67.5</span><span class="p">,</span><span class="mf">250.5</span><span class="p">,</span><span class="mf">573.5</span> <span class="o">-&gt;</span> <span class="mi">10300</span>
+</pre></div>
+</div>
+<p>The outputs from the LSTMs are fed into a dense layer and we randomly
+dropout 20% of the values to not overfit the model to the training set.
+The output of the dense layer becomes the prediction our model
+generates.</p>
+<p>Notice: We lost the timestamp altogether; in our model only the
+sequences of readings matter.</p>
+<p>Our LSTM model has the following design: <img alt="lstm" src="https://guschmueds.blob.core.windows.net/datasets/2.png" /></p>
+<p>The network model is an exact translation of the network diagram above.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1">#Specify the internal-state dimensions of the LSTM cell</span>
+<span class="n">H_DIMS</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create the model for time series prediction&quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">):</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">H_DIMS</span><span class="p">))(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">last</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)(</span><span class="n">m</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1</span><span class="p">)(</span><span class="n">m</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">m</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p>Before we can start training we need to bind our input variables for the
+model and define what optimizer we want to use. For this example we
+choose the <code class="docutils literal"><span class="pre">adam</span></code> optimizer. We choose <code class="docutils literal"><span class="pre">squared_error</span></code> as our loss
+function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># input sequences</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># create the model</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># expected output (label), also the dynamic axes of the model output</span>
+<span class="c1"># is specified as the model of the label input</span>
+<span class="n">l</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">z</span><span class="o">.</span><span class="n">dynamic_axes</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">)</span>
+
+<span class="c1"># the learning rate</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">)</span>
+
+<span class="c1"># loss function</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">squared_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+
+<span class="c1"># use squared error to determine error for now</span>
+<span class="n">error</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">squared_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">l</span><span class="p">)</span>
+
+<span class="c1"># use adam optimizer</span>
+<span class="n">momentum_time_constant</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="n">BATCH_SIZE</span> <span class="o">/</span> <span class="o">-</span><span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.9</span><span class="p">))</span>
+<span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">fsadagrad</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                      <span class="n">lr</span> <span class="o">=</span> <span class="n">lr_schedule</span><span class="p">,</span>
+                      <span class="n">momentum</span> <span class="o">=</span> <span class="n">momentum_time_constant</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">error</span><span class="p">),</span> <span class="p">[</span><span class="n">learner</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>Time to start training.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># training</span>
+<span class="n">loss_summary</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">EPOCHS</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">x_batch</span><span class="p">,</span> <span class="n">l_batch</span> <span class="ow">in</span> <span class="n">next_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="s2">&quot;train&quot;</span><span class="p">):</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">({</span><span class="n">x</span><span class="p">:</span> <span class="n">x_batch</span><span class="p">,</span> <span class="n">l</span><span class="p">:</span> <span class="n">l_batch</span><span class="p">})</span>
+
+    <span class="k">if</span> <span class="n">epoch</span> <span class="o">%</span> <span class="p">(</span><span class="n">EPOCHS</span> <span class="o">/</span> <span class="mi">10</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">training_loss</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span>
+        <span class="n">loss_summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">training_loss</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;epoch: {}, loss: {:.4f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">))</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Training took {:.1f} sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+epoch: 0, loss: 0.0768
+epoch: 10, loss: 0.0265
+epoch: 20, loss: 0.0158
+epoch: 30, loss: 0.0104
+epoch: 40, loss: 0.0082
+epoch: 50, loss: 0.0081
+epoch: 60, loss: 0.0088
+epoch: 70, loss: 0.0080
+epoch: 80, loss: 0.0082
+epoch: 90, loss: 0.0077
+Training took 171.8 sec
+</pre></div></div>
+</div>
+<p>A look how the loss function shows how the model is converging:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">loss_summary</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;training loss&#39;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_106B_LSTM_Timeseries_with_IOT_Data_23_0.png" src="_images/CNTK_106B_LSTM_Timeseries_with_IOT_Data_23_0.png" />
+</div>
+</div>
+<p>Let us validate the training validation and test dataset. We use mean
+squared error as measure which might be a little simplistic. A method
+that would define a ratio how many predictions have been inside a given
+tolerance would make a better measure.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># validate</span>
+<span class="k">def</span> <span class="nf">get_mse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">Y</span><span class="p">,</span><span class="n">labeltxt</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span> <span class="ow">in</span> <span class="n">next_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">labeltxt</span><span class="p">):</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">({</span><span class="n">x</span> <span class="p">:</span> <span class="n">x1</span><span class="p">,</span> <span class="n">l</span> <span class="p">:</span> <span class="n">y1</span><span class="p">})</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="n">eval_error</span>
+    <span class="k">return</span> <span class="n">result</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">labeltxt</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Print the train and validation errors</span>
+<span class="k">for</span> <span class="n">labeltxt</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;train&quot;</span><span class="p">,</span> <span class="s2">&quot;val&quot;</span><span class="p">]:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;mse for {}: {:.6f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">labeltxt</span><span class="p">,</span> <span class="n">get_mse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">labeltxt</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+mse for train: 0.000079
+mse for val: 0.000077
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Print the test error</span>
+<span class="n">labeltxt</span> <span class="o">=</span> <span class="s2">&quot;test&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;mse for {}: {:.6f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">labeltxt</span><span class="p">,</span> <span class="n">get_mse</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">labeltxt</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+mse for test: 0.000076
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Visualize-results">
+<h2>Visualize results<a class="headerlink" href="#Visualize-results" title="Permalink to this headline">¶</a></h2>
+<p>Our model has been trained well, given the train, validation and test
+errors are in the same ball park. Predicted time series data renders
+well with visualization of the results. Let us take our newly created
+model, make predictions and plot them against the actual readings.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># predict</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">a</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">ds</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s2">&quot;val&quot;</span><span class="p">,</span> <span class="s2">&quot;test&quot;</span><span class="p">]):</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">x_batch</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">next_batch</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">ds</span><span class="p">):</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="n">x</span><span class="p">:</span> <span class="n">x_batch</span><span class="p">})</span>
+        <span class="n">results</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pred</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="c1"># because we normalized the input data we need to multiply the prediction</span>
+    <span class="c1"># with SCALER to get the real values.</span>
+    <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">((</span><span class="n">Y</span><span class="p">[</span><span class="n">ds</span><span class="p">]</span> <span class="o">*</span> <span class="n">NORMALIZE</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">label</span><span class="o">=</span><span class="n">ds</span> <span class="o">+</span> <span class="s1">&#39; raw&#39;</span><span class="p">);</span>
+    <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="n">NORMALIZE</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">ds</span> <span class="o">+</span> <span class="s1">&#39; pred&#39;</span><span class="p">);</span>
+    <span class="n">a</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">();</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_106B_LSTM_Timeseries_with_IOT_Data_29_0.png" src="_images/CNTK_106B_LSTM_Timeseries_with_IOT_Data_29_0.png" />
+</div>
+</div>
+<p>If we let the model train for 2000 epochs the predictions are close to
+the actual data and follow the right pattern.</p>
+<p><strong>Suggested activity</strong></p>
+<p>So what we do with this model? A practical application would be to
+generate alerts if the actual output is not in line with the prediction,
+for example if one of the panels is failing. The solar array that goes
+with our dataset has 16 panels. If we’d want to detect failure without
+generating false alerts, the accuracy of our prediction would need to be
+at least 1 - 1/16, around 94%. Our model is close to this but would most
+likely generate occasional false alerts.</p>
+<ul class="simple">
+<li>Improve the model by training for more epochs.</li>
+<li>Further preprocess the training set to smooth-out missing values</li>
+<li>Try out more complex networks.</li>
+</ul>
+<p>However, in our experience with time series data one can achieve
+significant accuracy improvement comes from higher resolution training
+data, for example reading a data point every 5 minutes instead of every
+30 minutes.</p>
+<p>We hope this tutorial gets you started on time series prediction with
+neural networks.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

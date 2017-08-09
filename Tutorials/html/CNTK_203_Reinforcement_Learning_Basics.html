@@ -1,0 +1,1584 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 203: Reinforcement Learning Basics &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 203: Reinforcement Learning Basics</a><ul>
+<li><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#CartPole:-Data-and-Environment">CartPole: Data and Environment</a></li>
+<li><a class="reference internal" href="#Part-1:-DQN">Part 1: DQN</a><ul>
+<li><a class="reference internal" href="#Model:-DQN">Model: DQN</a></li>
+<li><a class="reference internal" href="#Training">Training</a></li>
+<li><a class="reference internal" href="#Exploration---exploitation-trade-off">Exploration - exploitation trade-off</a></li>
+<li><a class="reference internal" href="#Running-the-DQN-model">Running the DQN model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Part-2:-Policy-gradient-(PG)">Part 2: Policy gradient (PG)</a><ul>
+<li><a class="reference internal" href="#Rewards">Rewards</a></li>
+<li><a class="reference internal" href="#Model:-Policy-Gradient">Model: Policy Gradient</a></li>
+<li><a class="reference internal" href="#Running-the-PG-model">Running the PG model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 203: Reinforcement Learning Basics</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_203_Reinforcement_Learning_Basics.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-203:-Reinforcement-Learning-Basics">
+<h1>CNTK 203: Reinforcement Learning Basics<a class="headerlink" href="#CNTK-203:-Reinforcement-Learning-Basics" title="Permalink to this headline">¶</a></h1>
+<p>Reinforcement learning (RL) is an area of machine learning inspired by
+behaviorist psychology, concerned with how <a class="reference external" href="https://en.wikipedia.org/wiki/Software_agent">software
+agents</a> ought to take
+<a class="reference external" href="https://en.wikipedia.org/wiki/Action_selection">actions</a> in an
+environment so as to maximize some notion of cumulative reward. In
+machine learning, the environment is typically formulated as a <a class="reference external" href="https://en.wikipedia.org/wiki/Markov_decision_process">Markov
+decision
+process</a> (MDP)
+as many reinforcement learning algorithms for this context utilize
+<a class="reference external" href="https://en.wikipedia.org/wiki/Dynamic_programming">dynamic
+programming</a>
+techniques.</p>
+<p>In some machine learning settings, we do not have immediate access to
+labels, so we cannot rely on supervised learning techniques. If,
+however, there is something we can interact with and thereby get some
+feedback that tells us occasionally, whether our previous behavior was
+good or not, we can use RL to learn how to improve our behavior.</p>
+<p>Unlike in supervised learning, in RL, labeled correct input/output pairs
+are never presented and sub-optimal actions are never explicitly
+corrected. This mimics many of the online learning paradigms which
+involves finding a balance between exploration (of conditions or actions
+never learnt before) and exploitation (of already learnt conditions or
+actions from previous encounters). Multi-arm bandit problems is one of
+the category of RL algorithms where exploration vs. exploitation
+trade-off have been thoroughly studied. See figure below for
+<a class="reference external" href="http://www.simongrant.org/pubs/thesis/3/2.html">reference</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/polecart.gif&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/polecart.gif" width="300" height="300"/></div>
+</div>
+<p><strong>Problem</strong></p>
+<p>We will use the <a class="reference external" href="https://gym.openai.com/envs/CartPole-v0">CartPole</a>
+environment from OpenAI’s <a class="reference external" href="https://github.com/openai/gym">gym</a>
+simulator to teach a cart to balance a pole. As described in the link
+above, in the CartPole example, a pole is attached by an un-actuated
+joint to a cart, which moves along a frictionless track. The system is
+controlled by applying a force of +1 or -1 to the cart. A reward of +1
+is provided for every timestep that the pole remains upright. The
+episode ends when the pole is more than 15 degrees from vertical, or the
+cart moves more than 2.4 units from the center. See figure below for
+reference.</p>
+<p><strong>Goal</strong></p>
+<p>Our goal is to prevent the pole from falling over as the cart moves with
+the pole in upright position (perpendicular to the cart) as the starting
+state. More specifically if the pole is less than 15 degrees from
+vertical while the cart is within 2.4 units of the center we will
+collect reward. In this tutorial, we will train till we learn a set of
+actions (policies) that lead to an average reward of 200 or more over
+last 50 batches.</p>
+<p>In, RL terminology, the goal is to find <em>policies</em> <span class="math">\(a\)</span>, that
+maximize the <em>reward</em> <span class="math">\(r\)</span> (feedback) through interaction with some
+environment (in this case the pole being balanced on the cart). So given
+a series of experiences</p>
+<div class="math">
+\[s \xrightarrow{a} r, s'\]</div>
+<p>we then can learn how to choose action <span class="math">\(a\)</span> in a given state
+<span class="math">\(s\)</span> to maximize the accumulated reward <span class="math">\(r\)</span> over time:</p>
+<div class="math">
+\[Q(s,a) = r_0 + \gamma r_1 + \gamma^2 r_2 + \ldots = r_0 + \gamma \max_a Q^*(s',a)\]</div>
+<p>where <span class="math">\(\gamma \in [0,1)\)</span> is the discount factor that controls how
+much we should value reward that is further away. This is called the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Bellman_equation">*Bellmann*-equation</a>.</p>
+<p>In this tutorial we will show how to model the state space, how to use
+the received reward to figure out which action yields the highest future
+reward.</p>
+<p>We present two different popular approaches here:</p>
+<p><strong>Deep Q-Networks</strong>: DQNs have become famous in 2015 when they were
+successfully used to train how to play Atari just form raw pixels. We
+train neural network to learn the <span class="math">\(Q(s,a)\)</span> values (thus <a href="#id1"><span class="problematic" id="id2">*</span></a>Q-Network
+<a href="#id3"><span class="problematic" id="id4">*</span></a>). From these <span class="math">\(Q\)</span> functions values we choose the best action.</p>
+<p><strong>Policy gradient</strong>: This method directly estimates the policy (set of
+actions) in the network. The outcome is a learning of an ordered set of
+actions which leads to maximize reward by probabilistically choosing a
+subset of actions. In this tutorial, we learn the actions using a
+gradient descent approach to learn the policies.</p>
+<p>In this tutorial, we focus how to implement RL in CNTK. We choose a
+straight forward shallow network. One can extend the approaches by
+replacing our shallow model with deeper networks that are introduced in
+other CNTK tutorials.</p>
+<p>Additionally, this tutorial is in its early stages and will be evolving
+in future updates.</p>
+<div class="section" id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>Please run the following cell from the menu above or select the cell
+below and hit <code class="docutils literal"><span class="pre">Shift</span> <span class="pre">+</span> <span class="pre">Enter</span></code> to ensure the environment is ready.
+Verify that the following imports work in your notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">style</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+
+<span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<p>We use the following construct to install the OpenAI gym package if it
+is not installed. For users new to Jupyter environment, this construct
+can be used to install any python package.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">gym</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="o">!</span>pip install gym
+    <span class="kn">import</span> <span class="nn">gym</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Select the notebook run mode</strong></p>
+<p>There are two run modes: - <em>Fast mode</em>: <code class="docutils literal"><span class="pre">isFast</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>.
+This is the default mode for the notebooks, which means we train for
+fewer iterations or train / test on limited data. This ensures
+functional correctness of the notebook though the models produced are
+far from what a completed training would produce.</p>
+<ul class="simple">
+<li><em>Slow mode</em>: We recommend the user to set this flag to <code class="docutils literal"><span class="pre">False</span></code> once
+the user has gained familiarity with the notebook content and wants
+to gain insight from running the notebooks for a longer period with
+different parameters for training.</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">isFast</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="CartPole:-Data-and-Environment">
+<h2>CartPole: Data and Environment<a class="headerlink" href="#CartPole:-Data-and-Environment" title="Permalink to this headline">¶</a></h2>
+<p>We will use the <a class="reference external" href="https://gym.openai.com/envs/CartPole-v0">CartPole</a>
+environment from OpenAI’s <a class="reference external" href="https://github.com/openai/gym">gym</a>
+simulator to teach a cart to balance a pole. Please follow the links to
+get more details.</p>
+<p>In every time step, the agent * gets an observation
+<span class="math">\((x, \dot{x}, \theta, \dot{\theta})\)</span>, corresponding to <em>cart
+position</em>, <em>cart velocity</em>, <em>pole angle with the vertical</em>, <em>pole
+angular velocity</em>, * performs an action <code class="docutils literal"><span class="pre">LEFT</span></code> or <code class="docutils literal"><span class="pre">RIGHT</span></code>, and *
+receives * a reward of +1 for having survived another time step, and *
+a new state <span class="math">\((x', \dot{x}', \theta', \dot{\theta}')\)</span></p>
+<p>The episode ends, if * the pole is more than 15 degrees from vertical
+and/or * the cart is moving more than 2.4 units from center.</p>
+<p>The task is considered done, if * the agent achieved and averaged
+reward of 200 over the last 50 episodes (if you manage to get a reward
+of 200 averaged over the last 100 episode you can consider submitting it
+to OpenAI).</p>
+<p>In fast mode these targets are relaxed.</p>
+</div>
+<div class="section" id="Part-1:-DQN">
+<h2>Part 1: DQN<a class="headerlink" href="#Part-1:-DQN" title="Permalink to this headline">¶</a></h2>
+<p>After a transition <span class="math">\((s,a,r,s')\)</span>, we are trying to move our value
+function <span class="math">\(Q(s,a)\)</span> closer to our target
+<span class="math">\(r+\gamma \max_{a'}Q(s',a')\)</span>, where <span class="math">\(\gamma\)</span> is a discount
+factor for future rewards and ranges in value between 0 and 1.</p>
+<p>DQNs * learn the <em>Q-function</em> that maps observation (state, action) to
+a <code class="docutils literal"><span class="pre">score</span></code> * use memory replay (previously recorded <span class="math">\(Q\)</span> values
+corresponding to different <span class="math">\((s,a)\)</span> to decorrelate experiences
+(sequence state transitions) * use a second network to stabilize
+learning (<em>not</em> part of this tutorial)</p>
+<div class="section" id="Model:-DQN">
+<h3>Model: DQN<a class="headerlink" href="#Model:-DQN" title="Permalink to this headline">¶</a></h3>
+<div class="math">
+\[\begin{split}l_1 = relu( x W_1 + b_1) \\
+Q(s,a) = l_1 W_2 + b_2 \\\end{split}\]</div>
+<p>We will start with a slightly modified version for Keras,
+<a class="reference external" href="https://github.com/jaara/AI-blog/blob/master/CartPole-basic.py">https://github.com/jaara/AI-blog/blob/master/CartPole-basic.py</a>,
+published by Jaromír Janisch in his <a class="reference external" href="https://jaromiru.com/2016/09/27/lets-make-a-dqn-theory/">AI
+blog</a>, and
+will then incrementally convert it to use CNTK.</p>
+<p>We use a simple two-layer densely connected network, for simpler
+illustrations. More advance networks can be substituted.</p>
+<p><strong>CNTK</strong> concepts: The commented out code is meant to be an illustration
+of the similarity of concepts between CNTK API/abstractions against
+Keras.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+</pre></div>
+</div>
+</div>
+<p>In the block below, we check if we are running this notebook in the CNTK
+internal test machines by looking for environment variables defined
+there. We then select the right target device (GPU vs CPU) to test this
+notebook. In other cases, we use CNTK’s default policy to use the best
+available device (GPU, if available, else CPU).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Select the right target device when this notebook is being tested:</span>
+<span class="k">if</span> <span class="s1">&#39;TEST_DEVICE&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;TEST_DEVICE&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cpu&#39;</span><span class="p">:</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">try_set_default_device</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">try_set_default_device</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<p>STATE_COUNT = 4 (corresponding to
+<span class="math">\((x, \dot{x}, \theta, \dot{\theta})\)</span>),</p>
+<p>ACTION_COUNT = 2 (corresponding to <code class="docutils literal"><span class="pre">LEFT</span></code> or <code class="docutils literal"><span class="pre">RIGHT</span></code>)</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;CartPole-v0&#39;</span><span class="p">)</span>
+
+<span class="n">STATE_COUNT</span>  <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">ACTION_COUNT</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">n</span>
+
+<span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">ACTION_COUNT</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+[2017-05-16 20:19:32,618] Making new env: CartPole-v0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>(4, 2)
+</pre></div>
+</div>
+</div>
+<p>Note: in the cell below we highlight how one would do it in Keras. And a
+marked similarity with CNTK. While CNTK allows for more compact
+representation, we present a slightly verbose illustration for ease of
+learning.</p>
+<p>Additionally, you will note that, CNTK model doesn’t need to be compiled
+explicitly and is implicitly done when data is processed during
+training.</p>
+<p>CNTK effectively uses available memory on the system between minibatch
+execution. Thus the learning rates are stated as <strong>rates per sample</strong>
+instead of <strong>rates per minibatch</strong> (as with other toolkits).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Targetted reward</span>
+<span class="n">REWARD_TARGET</span> <span class="o">=</span> <span class="mi">30</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">200</span>
+<span class="c1"># Averaged over these these many episodes</span>
+<span class="n">BATCH_SIZE_BASELINE</span> <span class="o">=</span> <span class="mi">20</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">50</span>
+
+<span class="n">H</span> <span class="o">=</span> <span class="mi">64</span> <span class="c1"># hidden layer size</span>
+
+<span class="k">class</span> <span class="nc">Brain</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create</span><span class="p">()</span>
+        <span class="c1"># self.model.load_weights(&quot;cartpole-basic.h5&quot;)</span>
+
+    <span class="k">def</span> <span class="nf">_create</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">observation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+        <span class="n">q_target</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">ACTION_COUNT</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;q&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Following a style similar to Keras</span>
+        <span class="n">l1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)</span>
+        <span class="n">l2</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ACTION_COUNT</span><span class="p">)</span>
+        <span class="n">unbound_model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span><span class="n">l1</span><span class="p">,</span> <span class="n">l2</span><span class="p">])</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">unbound_model</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">W1</span><span class="o">=</span><span class="n">l1</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">b1</span><span class="o">=</span><span class="n">l1</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">W2</span><span class="o">=</span><span class="n">l2</span><span class="o">.</span><span class="n">W</span><span class="p">,</span> <span class="n">b2</span><span class="o">=</span><span class="n">l2</span><span class="o">.</span><span class="n">b</span><span class="p">)</span>
+
+        <span class="c1"># loss=&#39;mse&#39;</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">model</span> <span class="o">-</span> <span class="n">q_target</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">meas</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">model</span> <span class="o">-</span> <span class="n">q_target</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># optimizer</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.00025</span>
+        <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">)</span>
+        <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr_schedule</span><span class="p">,</span> <span class="n">gradient_clipping_threshold_per_sample</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">meas</span><span class="p">),</span> <span class="n">learner</span><span class="p">)</span>
+
+        <span class="c1"># CNTK: return trainer and loss as well</span>
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">trainer</span><span class="p">,</span> <span class="n">loss</span>
+
+    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="c1">#self.model.fit(x, y, batch_size=64, nb_epoch=epoch, verbose=verbose)</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">arguments</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">]))</span>
+        <span class="n">updated</span><span class="p">,</span> <span class="n">results</span> <span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="o">.</span><span class="n">output</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">s</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">Memory</span></code> class stores the different states, actions and rewards.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">class</span> <span class="nc">Memory</span><span class="p">:</span>   <span class="c1"># stored as ( s, a, r, s_ )</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">capacity</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">capacity</span> <span class="o">=</span> <span class="n">capacity</span>
+
+    <span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">capacity</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">samples</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">Agent</span></code> uses the <code class="docutils literal"><span class="pre">Brain</span></code> and <code class="docutils literal"><span class="pre">Memory</span></code> to replay the past
+actions to choose optimal set of actions that maximize the rewards.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">MEMORY_CAPACITY</span> <span class="o">=</span> <span class="mi">100000</span>
+<span class="n">BATCH_SIZE</span> <span class="o">=</span> <span class="mi">64</span>
+
+<span class="n">GAMMA</span> <span class="o">=</span> <span class="mf">0.99</span> <span class="c1"># discount factor</span>
+
+<span class="n">MAX_EPSILON</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">MIN_EPSILON</span> <span class="o">=</span> <span class="mf">0.01</span> <span class="c1"># stay a bit curious even when getting old</span>
+<span class="n">LAMBDA</span> <span class="o">=</span> <span class="mf">0.0001</span>    <span class="c1"># speed of decay</span>
+
+<span class="k">class</span> <span class="nc">Agent</span><span class="p">:</span>
+    <span class="n">steps</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">epsilon</span> <span class="o">=</span> <span class="n">MAX_EPSILON</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">brain</span> <span class="o">=</span> <span class="n">Brain</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span> <span class="o">=</span> <span class="n">Memory</span><span class="p">(</span><span class="n">MEMORY_CAPACITY</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">ACTION_COUNT</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">s</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">observe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sample</span><span class="p">):</span>  <span class="c1"># in (s, a, r, s_) format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sample</span><span class="p">)</span>
+
+        <span class="c1"># slowly decrease Epsilon based on our eperience</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">epsilon</span> <span class="o">=</span> <span class="n">MIN_EPSILON</span> <span class="o">+</span> <span class="p">(</span><span class="n">MAX_EPSILON</span> <span class="o">-</span> <span class="n">MIN_EPSILON</span><span class="p">)</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">LAMBDA</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">steps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">replay</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory</span><span class="o">.</span><span class="n">sample</span><span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">)</span>
+        <span class="n">batchLen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+
+        <span class="n">no_state</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">)</span>
+
+
+        <span class="c1"># CNTK: explicitly setting to float32</span>
+        <span class="n">states</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span> <span class="n">o</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">batch</span> <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">states_</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">no_state</span> <span class="k">if</span> <span class="n">o</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">o</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">batch</span> <span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="n">p</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">states</span><span class="p">)</span>
+        <span class="n">p_</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">states_</span><span class="p">)</span>
+
+        <span class="c1"># CNTK: explicitly setting to float32</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batchLen</span><span class="p">,</span> <span class="n">STATE_COUNT</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">batchLen</span><span class="p">,</span> <span class="n">ACTION_COUNT</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">batchLen</span><span class="p">):</span>
+            <span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s_</span> <span class="o">=</span> <span class="n">batch</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+            <span class="c1"># CNTK: [0] because of sequence dimension</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">s_</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">t</span><span class="p">[</span><span class="n">a</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span> <span class="o">+</span> <span class="n">GAMMA</span> <span class="o">*</span> <span class="n">numpy</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">p_</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">i</span><span class="p">])</span>
+
+            <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training">
+<h3>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h3>
+<p>As any learning experiences, we expect to see the initial state of
+actions to be wild exploratory and over the iterations the system learns
+the range of actions that yield longer runs and collect more rewards.
+The tutorial below implements the
+<a class="reference external" href="https://en.wikipedia.org/wiki/Reinforcement_learning">epsilon-greedy</a>
+approach (a.k.a. <span class="math">\(\epsilon\)</span>-greedy).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">plot_weights</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span><span class="mi">5</span><span class="p">)):</span>
+    <span class="sd">&#39;&#39;&#39;Heat map of weights to see which neurons play which role&#39;&#39;&#39;</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">style</span><span class="o">=</span><span class="s2">&quot;white&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">),</span> <span class="n">figsize</span><span class="o">=</span><span class="n">figsize</span><span class="p">)</span>
+    <span class="n">cmap</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">diverging_palette</span><span class="p">(</span><span class="mi">220</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">as_cmap</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">weights</span><span class="p">):</span>
+        <span class="n">axi</span> <span class="o">=</span> <span class="n">ax</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span><span class="o">==</span><span class="mi">1</span> <span class="k">else</span> <span class="n">ax</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">w</span><span class="p">,</span> <span class="n">title</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="n">axi</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="n">data</span>
+
+        <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">w</span><span class="o">.</span><span class="n">asarray</span><span class="p">(),</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">square</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">center</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="c1">#annot=True,</span>
+                    <span class="n">linewidths</span><span class="o">=.</span><span class="mi">5</span><span class="p">,</span> <span class="n">cbar_kws</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;shrink&quot;</span><span class="p">:</span> <span class="o">.</span><span class="mi">25</span><span class="p">},</span> <span class="n">ax</span><span class="o">=</span><span class="n">axi</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Exploration---exploitation-trade-off">
+<h3>Exploration - exploitation trade-off<a class="headerlink" href="#Exploration---exploitation-trade-off" title="Permalink to this headline">¶</a></h3>
+<p>Note that the initial <span class="math">\(\epsilon\)</span> is set to 1 which implies we are
+entirely exploring but as steps increase we reduce exploration and start
+leveraging the learnt space to collect rewards (a.k.a. exploitation) as
+well.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">epsilon</span><span class="p">(</span><span class="n">steps</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MIN_EPSILON</span> <span class="o">+</span> <span class="p">(</span><span class="n">MAX_EPSILON</span> <span class="o">-</span> <span class="n">MIN_EPSILON</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">LAMBDA</span> <span class="o">*</span> <span class="n">steps</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">),</span> <span class="p">[</span><span class="n">epsilon</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">)],</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step&#39;</span><span class="p">);</span><span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;$\epsilon$&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[13]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.text.Text at 0x21b66c1ad30&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_29_1.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_29_1.png" />
+</div>
+</div>
+<p>We are now ready to train our agent using <strong>DQN</strong>. Note this would take
+anywhere between 2-10 min and we stop whenever the learner hits the
+average reward of 200 over past 50 batches. One would get better results
+if they could train the learner until say one hits a reward of 200 or
+higher for say larger number of runs. This is left as an exercise.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">TOTAL_EPISODES</span> <span class="o">=</span> <span class="mi">2000</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">3000</span>
+
+<span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">agent</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="n">R</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="c1"># Uncomment the line below to visualize the cartpole</span>
+        <span class="c1"># env.render()</span>
+
+        <span class="c1"># CNTK: explicitly setting to float32</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">agent</span><span class="o">.</span><span class="n">act</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+
+        <span class="n">s_</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">done</span><span class="p">:</span> <span class="c1"># terminal state</span>
+            <span class="n">s_</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">agent</span><span class="o">.</span><span class="n">observe</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="n">s_</span><span class="p">))</span>
+        <span class="n">agent</span><span class="o">.</span><span class="n">replay</span><span class="p">()</span>
+
+        <span class="n">s</span> <span class="o">=</span> <span class="n">s_</span>
+        <span class="n">R</span> <span class="o">+=</span> <span class="n">r</span>
+
+        <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">R</span>
+
+<span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">()</span>
+
+<span class="n">episode_number</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">reward_sum</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">while</span> <span class="n">episode_number</span> <span class="o">&lt;</span> <span class="n">TOTAL_EPISODES</span><span class="p">:</span>
+    <span class="n">reward_sum</span> <span class="o">+=</span> <span class="n">run</span><span class="p">(</span><span class="n">agent</span><span class="p">)</span>
+    <span class="n">episode_number</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">episode_number</span> <span class="o">%</span> <span class="n">BATCH_SIZE_BASELINE</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Episode: </span><span class="si">%d</span><span class="s1">, Average reward for episode </span><span class="si">%f</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">episode_number</span><span class="p">,</span>
+                                                               <span class="n">reward_sum</span> <span class="o">/</span> <span class="n">BATCH_SIZE_BASELINE</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">episode_number</span><span class="o">%</span><span class="k">200</span>==0:
+            <span class="n">plot_weights</span><span class="p">([(</span><span class="n">agent</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;W1&#39;</span><span class="p">],</span> <span class="s1">&#39;Episode </span><span class="si">%i</span><span class="s1"> $W_1$&#39;</span><span class="o">%</span><span class="k">episode_number</span>)], figsize=(14,5))
+        <span class="k">if</span> <span class="n">reward_sum</span> <span class="o">/</span> <span class="n">BATCH_SIZE_BASELINE</span> <span class="o">&gt;</span> <span class="n">REWARD_TARGET</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Task solved in </span><span class="si">%d</span><span class="s1"> episodes&#39;</span> <span class="o">%</span> <span class="n">episode_number</span><span class="p">)</span>
+            <span class="n">plot_weights</span><span class="p">([(</span><span class="n">agent</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;W1&#39;</span><span class="p">],</span> <span class="s1">&#39;Episode </span><span class="si">%i</span><span class="s1"> $W_1$&#39;</span><span class="o">%</span><span class="k">episode_number</span>)], figsize=(14,5))
+            <span class="k">break</span>
+        <span class="n">reward_sum</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">agent</span><span class="o">.</span><span class="n">brain</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;dqn.mod&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Episode: 20, Average reward for episode 15.350000.
+Episode: 40, Average reward for episode 19.850000.
+Episode: 60, Average reward for episode 19.100000.
+Episode: 80, Average reward for episode 16.250000.
+Episode: 100, Average reward for episode 17.350000.
+Episode: 120, Average reward for episode 17.900000.
+Episode: 140, Average reward for episode 15.700000.
+Episode: 160, Average reward for episode 15.800000.
+Episode: 180, Average reward for episode 16.600000.
+Episode: 200, Average reward for episode 15.500000.
+Episode: 220, Average reward for episode 13.900000.
+Episode: 240, Average reward for episode 15.550000.
+Episode: 260, Average reward for episode 13.800000.
+Episode: 280, Average reward for episode 13.300000.
+Episode: 300, Average reward for episode 16.350000.
+Episode: 320, Average reward for episode 13.000000.
+Episode: 340, Average reward for episode 13.150000.
+Episode: 360, Average reward for episode 11.850000.
+Episode: 380, Average reward for episode 11.050000.
+Episode: 400, Average reward for episode 12.050000.
+Episode: 420, Average reward for episode 12.550000.
+Episode: 440, Average reward for episode 12.450000.
+Episode: 460, Average reward for episode 12.850000.
+Episode: 480, Average reward for episode 12.900000.
+Episode: 500, Average reward for episode 13.200000.
+Episode: 520, Average reward for episode 11.450000.
+Episode: 540, Average reward for episode 11.500000.
+Episode: 560, Average reward for episode 12.700000.
+Episode: 580, Average reward for episode 12.650000.
+Episode: 600, Average reward for episode 12.150000.
+Episode: 620, Average reward for episode 12.100000.
+Episode: 640, Average reward for episode 12.350000.
+Episode: 660, Average reward for episode 11.950000.
+Episode: 680, Average reward for episode 11.350000.
+Episode: 700, Average reward for episode 11.750000.
+Episode: 720, Average reward for episode 11.100000.
+Episode: 740, Average reward for episode 11.050000.
+Episode: 760, Average reward for episode 11.400000.
+Episode: 780, Average reward for episode 11.200000.
+Episode: 800, Average reward for episode 11.250000.
+Episode: 820, Average reward for episode 12.100000.
+Episode: 840, Average reward for episode 11.650000.
+Episode: 860, Average reward for episode 11.950000.
+Episode: 880, Average reward for episode 11.150000.
+Episode: 900, Average reward for episode 11.050000.
+Episode: 920, Average reward for episode 10.500000.
+Episode: 940, Average reward for episode 11.450000.
+Episode: 960, Average reward for episode 10.900000.
+Episode: 980, Average reward for episode 11.950000.
+Episode: 1000, Average reward for episode 11.050000.
+Episode: 1020, Average reward for episode 11.850000.
+Episode: 1040, Average reward for episode 13.000000.
+Episode: 1060, Average reward for episode 16.650000.
+Episode: 1080, Average reward for episode 17.000000.
+Episode: 1100, Average reward for episode 21.150000.
+Episode: 1120, Average reward for episode 26.050000.
+Episode: 1140, Average reward for episode 31.550000.
+Task solved in 1140 episodes
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_1.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_1.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_2.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_2.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_3.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_3.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_4.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_4.png" />
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_5.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_5.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_31_6.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_31_6.png" />
+</div>
+</div>
+<p>If you run it, you should see something like</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Episode</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">20.700000</span><span class="o">.</span>
+<span class="n">Episode</span><span class="p">:</span> <span class="mi">40</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">20.150000</span><span class="o">.</span>
+<span class="n">Episode</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">21.100000</span><span class="o">.</span>
+<span class="o">...</span>
+<span class="n">Episode</span><span class="p">:</span> <span class="mi">960</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">20.150000</span><span class="o">.</span>
+<span class="n">Episode</span><span class="p">:</span> <span class="mi">980</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">26.700000</span><span class="o">.</span>
+<span class="n">Episode</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">Average</span> <span class="n">reward</span> <span class="k">for</span> <span class="n">episode</span> <span class="mf">32.900000</span><span class="o">.</span>
+<span class="n">Task</span> <span class="n">solved</span> <span class="ow">in</span> <span class="mi">1000</span> <span class="n">episodes</span>
+</pre></div>
+</div>
+<p><strong>Task 1.1</strong> Rewrite the model without using the layer lib.</p>
+<p><strong>Task 1.2</strong> Play with different
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.learner.html#module-cntk.learner">learners</a>.
+Which one works better? Worse? Think about which parameters you would
+need to adapt when switching from one learner to the other.</p>
+</div>
+<div class="section" id="Running-the-DQN-model">
+<h3>Running the DQN model<a class="headerlink" href="#Running-the-DQN-model" title="Permalink to this headline">¶</a></h3>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">env</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">make</span><span class="p">(</span><span class="s1">&#39;CartPole-v0&#39;</span><span class="p">)</span>
+
+<span class="n">num_episodes</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># number of episodes to run</span>
+
+<span class="n">modelPath</span> <span class="o">=</span> <span class="s1">&#39;dqn.mod&#39;</span>
+<span class="n">root</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="n">modelPath</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i_episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_episodes</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">i_episode</span><span class="p">)</span>
+    <span class="n">observation</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># reset environment for new episode</span>
+    <span class="n">done</span> <span class="o">=</span> <span class="bp">False</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="s1">&#39;TEST_DEVICE&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+        <span class="n">action</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">eval</span><span class="p">([</span><span class="n">observation</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)]))</span>
+        <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span>  <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="stderr output_area docutils container">
+<div class="highlight"><pre>
+[2017-05-16 20:21:24,188] Making new env: CartPole-v0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Part-2:-Policy-gradient-(PG)">
+<h2>Part 2: Policy gradient (PG)<a class="headerlink" href="#Part-2:-Policy-gradient-(PG)" title="Permalink to this headline">¶</a></h2>
+<p><strong>Goal:</strong></p>
+<div class="math">
+\[\text{maximize } E [R | \pi_\theta]\]</div>
+<p><strong>Approach:</strong> 1. Collect experience (sample a bunch of trajectories
+through <span class="math">\((s,a)\)</span> space) 2. Update the policy so that <em>good</em>
+experiences become more probable</p>
+<p><a href="#id5"><span class="problematic" id="id6">**</span></a>Difference to DQN: ** * we don’t consider single <span class="math">\((s,a,r,s')\)</span>
+transitions, but rather use whole episodes for the gradient updates *
+our parameters directly model the policy (output is an action
+probability), whereas in DQN they model the value function (output is
+raw score)</p>
+<div class="section" id="Rewards">
+<h3>Rewards<a class="headerlink" href="#Rewards" title="Permalink to this headline">¶</a></h3>
+<p>Remember, we get +1 reward for every time step, in which we still were
+in the game.</p>
+<p>The problem: we normally do not know, which action led to a continuation
+of the game, and which was actually a bad one. Our simple heuristic:
+actions in the beginning of the episode are good, and those towards the
+end are likely bad (they led to losing the game after all).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">discount_rewards</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.999</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Take 1D float array of rewards and compute discounted reward &quot;&quot;&quot;</span>
+    <span class="n">discounted_r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">running_add</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">r</span><span class="o">.</span><span class="n">size</span><span class="p">)):</span>
+        <span class="n">running_add</span> <span class="o">=</span> <span class="n">running_add</span> <span class="o">*</span> <span class="n">gamma</span> <span class="o">+</span> <span class="n">r</span><span class="p">[</span><span class="n">t</span><span class="p">]</span>
+        <span class="n">discounted_r</span><span class="p">[</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">running_add</span>
+    <span class="k">return</span> <span class="n">discounted_r</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">discounted_epr</span> <span class="o">=</span> <span class="n">discount_rewards</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">discounted_epr</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[17]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x21b79d49470&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_39_1.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_39_1.png" />
+</div>
+</div>
+<p>We normalize the rewards so that they tank below zero towards the end.
+gamma controls how late the rewards tank.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">discounted_epr_cent</span> <span class="o">=</span> <span class="n">discounted_epr</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discounted_epr</span><span class="p">)</span>
+<span class="n">discounted_epr_norm</span> <span class="o">=</span> <span class="n">discounted_epr_cent</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">discounted_epr_cent</span><span class="p">)</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">discounted_epr_norm</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[18]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x21b79f31668&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_41_1.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_41_1.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">discounted_epr</span> <span class="o">=</span> <span class="n">discount_rewards</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">10</span><span class="p">),</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">discounted_epr_cent</span> <span class="o">=</span> <span class="n">discounted_epr</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discounted_epr</span><span class="p">)</span>
+<span class="n">discounted_epr_norm</span> <span class="o">=</span> <span class="n">discounted_epr_cent</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">discounted_epr_cent</span><span class="p">)</span>
+<span class="n">f</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">discounted_epr</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)),</span> <span class="n">discounted_epr_norm</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;steelblue&quot;</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[19]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.axes._subplots.AxesSubplot at 0x21b7f82d048&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_203_Reinforcement_Learning_Basics_42_1.png" src="_images/CNTK_203_Reinforcement_Learning_Basics_42_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Model:-Policy-Gradient">
+<h3>Model: Policy Gradient<a class="headerlink" href="#Model:-Policy-Gradient" title="Permalink to this headline">¶</a></h3>
+<div class="math">
+\[\begin{split}l_1 = relu( x W_1 + b_1) \\
+l_2 = l_1 W_2 + b_2 \\
+\pi(a|s) = sigmoid(l_2)\end{split}\]</div>
+<p>Note: in policy gradient approach, the output of the dense layer is
+mapped into to a 0-1 range via the sigmoid function.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">TOTAL_EPISODES</span> <span class="o">=</span> <span class="mi">2000</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">10000</span>
+
+<span class="n">D</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># input dimensionality</span>
+<span class="n">H</span> <span class="o">=</span> <span class="mi">10</span> <span class="c1"># number of hidden layer neurons</span>
+
+<span class="n">observations</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;obs&quot;</span><span class="p">)</span>
+
+<span class="n">W1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W1&quot;</span><span class="p">)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;b1&quot;</span><span class="p">)</span>
+<span class="n">layer1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">W1</span><span class="p">)</span> <span class="o">+</span> <span class="n">b1</span><span class="p">)</span>
+
+<span class="n">W2</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">ACTION_COUNT</span><span class="p">),</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W2&quot;</span><span class="p">)</span>
+<span class="n">b2</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">ACTION_COUNT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;b2&quot;</span><span class="p">)</span>
+<span class="n">score</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">layer1</span><span class="p">,</span> <span class="n">W2</span><span class="p">)</span> <span class="o">+</span> <span class="n">b2</span>
+<span class="c1"># Until here it was similar to DQN</span>
+
+<span class="n">probability</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">score</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;prob&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Running-the-PG-model">
+<h3>Running the PG model<a class="headerlink" href="#Running-the-PG-model" title="Permalink to this headline">¶</a></h3>
+<p><strong>Policy Search</strong>: The optimal policy search can be carried out with
+either gradient free approaches or by computing gradients over the
+policy space (<span class="math">\(\pi_\theta\)</span>) which is parameterized by
+<span class="math">\(\theta\)</span>. In this tutorial, we use the classic forward
+(<code class="docutils literal"><span class="pre">loss.forward</span></code>) and back (<code class="docutils literal"><span class="pre">loss.backward</span></code>) propagation of errors
+over the parameterized space <span class="math">\(\theta\)</span>. In this case,
+<span class="math">\(\theta = \{W_1, b_1, W_2, b_2\}\)</span>, our model parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;input_y&quot;</span><span class="p">)</span>
+<span class="n">advantages</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;advt&quot;</span><span class="p">)</span>
+
+<span class="n">loss</span> <span class="o">=</span> <span class="o">-</span><span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">input_y</span> <span class="o">-</span> <span class="n">probability</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1e-4</span><span class="p">)</span> <span class="o">*</span> <span class="n">advantages</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;loss&#39;</span><span class="p">)</span>
+
+<span class="n">lr</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">)</span>
+<span class="n">sgd</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sgd</span><span class="p">([</span><span class="n">W1</span><span class="p">,</span> <span class="n">W2</span><span class="p">],</span> <span class="n">lr_schedule</span><span class="p">)</span>
+
+<span class="n">gradBuffer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span> <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">loss</span><span class="o">.</span><span class="n">parameters</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;W1&#39;</span><span class="p">,</span> <span class="s1">&#39;W2&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">])</span>
+
+<span class="n">xs</span><span class="p">,</span> <span class="n">hs</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">drs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="n">running_reward</span> <span class="o">=</span> <span class="bp">None</span>
+<span class="n">reward_sum</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">episode_number</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">observation</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+<span class="k">while</span> <span class="n">episode_number</span> <span class="o">&lt;=</span> <span class="n">TOTAL_EPISODES</span><span class="p">:</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">observation</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="n">STATE_COUNT</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+    <span class="c1"># Run the policy network and get an action to take.</span>
+    <span class="n">prob</span> <span class="o">=</span> <span class="n">probability</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arguments</span><span class="o">=</span><span class="p">{</span><span class="n">observations</span><span class="p">:</span> <span class="n">x</span><span class="p">})[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">prob</span> <span class="k">else</span> <span class="mi">0</span>
+
+    <span class="n">xs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>  <span class="c1"># observation</span>
+    <span class="c1"># grad that encourages the action that was taken to be taken</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">action</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">0</span>  <span class="c1"># a &quot;fake label&quot;</span>
+    <span class="n">label</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># step the environment and get new measurements</span>
+    <span class="n">observation</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+    <span class="n">reward_sum</span> <span class="o">+=</span> <span class="nb">float</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+
+    <span class="c1"># Record reward (has to be done after we call step() to get reward for previous action)</span>
+    <span class="n">drs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">reward</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">done</span><span class="p">:</span>
+        <span class="c1"># Stack together all inputs, hidden states, action gradients, and rewards for this episode</span>
+        <span class="n">epx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">xs</span><span class="p">)</span>
+        <span class="n">epl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">epr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">drs</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">xs</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">drs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>  <span class="c1"># reset array memory</span>
+
+        <span class="c1"># Compute the discounted reward backwards through time.</span>
+        <span class="n">discounted_epr</span> <span class="o">=</span> <span class="n">discount_rewards</span><span class="p">(</span><span class="n">epr</span><span class="p">)</span>
+        <span class="c1"># Size the rewards to be unit normal (helps control the gradient estimator variance)</span>
+        <span class="n">discounted_epr</span> <span class="o">-=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">discounted_epr</span><span class="p">)</span>
+        <span class="n">discounted_epr</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">discounted_epr</span><span class="p">)</span>
+
+        <span class="c1"># Forward pass</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">{</span><span class="n">observations</span><span class="p">:</span> <span class="n">epx</span><span class="p">,</span> <span class="n">input_y</span><span class="p">:</span> <span class="n">epl</span><span class="p">,</span> <span class="n">advantages</span><span class="p">:</span> <span class="n">discounted_epr</span><span class="p">}</span>
+        <span class="n">state</span><span class="p">,</span> <span class="n">outputs_map</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">arguments</span><span class="p">,</span> <span class="n">outputs</span><span class="o">=</span><span class="n">loss</span><span class="o">.</span><span class="n">outputs</span><span class="p">,</span>
+                                          <span class="n">keep_for_backward</span><span class="o">=</span><span class="n">loss</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+
+        <span class="c1"># Backward psas</span>
+        <span class="n">root_gradients</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">o</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span><span class="p">,</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">outputs_map</span><span class="o">.</span><span class="n">items</span><span class="p">()}</span>
+        <span class="n">vargrads_map</span> <span class="o">=</span> <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">root_gradients</span><span class="p">,</span> <span class="n">variables</span><span class="o">=</span><span class="nb">set</span><span class="p">([</span><span class="n">W1</span><span class="p">,</span> <span class="n">W2</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">var</span><span class="p">,</span> <span class="n">grad</span> <span class="ow">in</span> <span class="n">vargrads_map</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">gradBuffer</span><span class="p">[</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">grad</span>
+
+        <span class="c1"># Wait for some batches to finish to reduce noise</span>
+        <span class="k">if</span> <span class="n">episode_number</span> <span class="o">%</span> <span class="n">BATCH_SIZE_BASELINE</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">grads</span> <span class="o">=</span> <span class="p">{</span><span class="n">W1</span><span class="p">:</span> <span class="n">gradBuffer</span><span class="p">[</span><span class="s1">&#39;W1&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                     <span class="n">W2</span><span class="p">:</span> <span class="n">gradBuffer</span><span class="p">[</span><span class="s1">&#39;W2&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)}</span>
+            <span class="n">updated</span> <span class="o">=</span> <span class="n">sgd</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">grads</span><span class="p">,</span> <span class="n">BATCH_SIZE_BASELINE</span><span class="p">)</span>
+
+            <span class="c1"># reset the gradBuffer</span>
+            <span class="n">gradBuffer</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">var</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+                              <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">loss</span><span class="o">.</span><span class="n">parameters</span> <span class="k">if</span> <span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;W1&#39;</span><span class="p">,</span> <span class="s1">&#39;W2&#39;</span><span class="p">,</span> <span class="s1">&#39;b1&#39;</span><span class="p">,</span> <span class="s1">&#39;b2&#39;</span><span class="p">])</span>
+
+            <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Episode: </span><span class="si">%d</span><span class="s1">. Average reward for episode </span><span class="si">%f</span><span class="s1">.&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">episode_number</span><span class="p">,</span> <span class="n">reward_sum</span> <span class="o">/</span> <span class="n">BATCH_SIZE_BASELINE</span><span class="p">))</span>
+
+            <span class="k">if</span> <span class="n">reward_sum</span> <span class="o">/</span> <span class="n">BATCH_SIZE_BASELINE</span> <span class="o">&gt;</span> <span class="n">REWARD_TARGET</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Task solved in: </span><span class="si">%d</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">episode_number</span><span class="p">)</span>
+                <span class="k">break</span>
+
+            <span class="n">reward_sum</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="n">observation</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>  <span class="c1"># reset env</span>
+        <span class="n">episode_number</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">probability</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;pg.mod&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Episode: 20. Average reward for episode 21.800000.
+Episode: 40. Average reward for episode 23.450000.
+Episode: 60. Average reward for episode 20.650000.
+Episode: 80. Average reward for episode 23.900000.
+Episode: 100. Average reward for episode 17.750000.
+Episode: 120. Average reward for episode 27.550000.
+Episode: 140. Average reward for episode 20.300000.
+Episode: 160. Average reward for episode 20.450000.
+Episode: 180. Average reward for episode 14.700000.
+Episode: 200. Average reward for episode 18.900000.
+Episode: 220. Average reward for episode 18.350000.
+Episode: 240. Average reward for episode 20.050000.
+Episode: 260. Average reward for episode 19.600000.
+Episode: 280. Average reward for episode 22.150000.
+Episode: 300. Average reward for episode 16.000000.
+Episode: 320. Average reward for episode 21.300000.
+Episode: 340. Average reward for episode 19.250000.
+Episode: 360. Average reward for episode 17.550000.
+Episode: 380. Average reward for episode 20.050000.
+Episode: 400. Average reward for episode 20.250000.
+Episode: 420. Average reward for episode 20.200000.
+Episode: 440. Average reward for episode 21.100000.
+Episode: 460. Average reward for episode 23.400000.
+Episode: 480. Average reward for episode 20.100000.
+Episode: 500. Average reward for episode 18.400000.
+Episode: 520. Average reward for episode 15.550000.
+Episode: 540. Average reward for episode 16.850000.
+Episode: 560. Average reward for episode 18.000000.
+Episode: 580. Average reward for episode 23.650000.
+Episode: 600. Average reward for episode 16.550000.
+Episode: 620. Average reward for episode 21.200000.
+Episode: 640. Average reward for episode 19.100000.
+Episode: 660. Average reward for episode 25.150000.
+Episode: 680. Average reward for episode 22.400000.
+Episode: 700. Average reward for episode 19.150000.
+Episode: 720. Average reward for episode 19.900000.
+Episode: 740. Average reward for episode 26.500000.
+Episode: 760. Average reward for episode 20.500000.
+Episode: 780. Average reward for episode 19.300000.
+Episode: 800. Average reward for episode 21.250000.
+Episode: 820. Average reward for episode 27.900000.
+Episode: 840. Average reward for episode 25.600000.
+Episode: 860. Average reward for episode 27.250000.
+Episode: 880. Average reward for episode 27.000000.
+Episode: 900. Average reward for episode 29.900000.
+Episode: 920. Average reward for episode 28.900000.
+Episode: 940. Average reward for episode 30.200000.
+Task solved in: 940
+</pre></div></div>
+</div>
+<p><strong>Solutions</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">observation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;s&quot;</span><span class="p">)</span>
+
+<span class="n">W1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">STATE_COUNT</span><span class="p">,</span> <span class="n">H</span><span class="p">),</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W1&quot;</span><span class="p">)</span>
+<span class="n">b1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">H</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;b1&quot;</span><span class="p">)</span>
+<span class="n">layer1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">observation</span><span class="p">,</span> <span class="n">W1</span><span class="p">)</span> <span class="o">+</span> <span class="n">b1</span><span class="p">)</span>
+
+<span class="n">W2</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">ACTION_COUNT</span><span class="p">),</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;W2&quot;</span><span class="p">)</span>
+<span class="n">b2</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">parameter</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">ACTION_COUNT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;b2&quot;</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">layer1</span><span class="p">,</span> <span class="n">W2</span><span class="p">)</span> <span class="o">+</span> <span class="n">b2</span>
+<span class="n">W1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">b1</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">W2</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">b2</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[22]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>((4, 10), (10,), (10, 2), (2,), (2,))
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Correspoding layers implementation - Preferred solution</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;layer1&quot;</span><span class="p">),</span>
+                                 <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">ACTION_COUNT</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;layer2&quot;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">z</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">observation</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">layer1</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">layer1</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">layer2</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">layer2</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">shape</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[23]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>((4, 10), (10,), (10, 2), (2,), (2,))
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

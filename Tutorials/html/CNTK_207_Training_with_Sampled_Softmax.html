@@ -1,0 +1,994 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 207: Sampled Softmax &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 207: Sampled Softmax</a><ul>
+<li><a class="reference internal" href="#Basic-concept">Basic concept</a></li>
+<li><a class="reference internal" href="#Sampled-Softmax">Sampled Softmax</a></li>
+<li><a class="reference internal" href="#A-toy-example">A toy example</a></li>
+<li><a class="reference internal" href="#Importance-sampling">Importance sampling</a></li>
+<li><a class="reference internal" href="#What-speedups-to-expect?">What speedups to expect?</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 207: Sampled Softmax</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_207_Training_with_Sampled_Softmax.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-207:-Sampled-Softmax">
+<h1>CNTK 207: Sampled Softmax<a class="headerlink" href="#CNTK-207:-Sampled-Softmax" title="Permalink to this headline">¶</a></h1>
+<p>For classification and prediction problems a typical criterion function
+is cross-entropy with softmax. If the number of output classes is high
+the computation of this criterion and the corresponding gradients could
+be quite costly. Sampled Softmax is a heuristic to speed up training in
+these cases. (see: <a class="reference external" href="http://www.iro.umontreal.ca/~lisa/pointeurs/importance_samplingIEEEtnn.pdf">Adaptive Importance Sampling to Accelerate Training
+of a Neural Probabilistic Language
+Model</a>,
+<a class="reference external" href="https://arxiv.org/pdf/1602.02410v1.pdf">Exploring the Limits of Language
+Modeling</a>, <a class="reference external" href="https://www.tensorflow.org/extras/candidate_sampling.pdf">What is Candidate
+Sampling</a>)</p>
+<p><strong>Select the notebook runtime environment devices / settings</strong></p>
+<p>Before we dive into the details we run some setup that is required for
+automated testing of this notebook.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Basic-concept">
+<h2>Basic concept<a class="headerlink" href="#Basic-concept" title="Permalink to this headline">¶</a></h2>
+<p>The softmax function is used in neural networks if we want to interpret
+the network output as a probability distribution over a set of classes
+<span class="math">\(C\)</span> with <span class="math">\(|C|=N_C\)</span>.</p>
+<p>Softmax maps an <span class="math">\(N_C\)</span>-dimensional vector <span class="math">\(z\)</span>, which has
+unrestricted values, to an <span class="math">\(N_C\)</span> dimensional vector <span class="math">\(p\)</span> with
+non-negative values that sum up to 1 so that they can be interpreted as
+probabilities. More precisely:</p>
+<div class="math">
+\[\begin{split}\begin{align}
+p_i &amp;= softmax(z, i)\\
+    &amp;= \frac{exp(z_i)}{\sum_{k\in C} exp(z_k)}\\
+\end{align}\end{split}\]</div>
+<p>In what follows we assume that the input <span class="math">\(z\)</span> to the softmax is
+computed from some hidden vector <span class="math">\(h\)</span> of dimension <span class="math">\(N_h\)</span> in a
+specific way, namely:</p>
+<div class="math">
+\[z = W h + b\]</div>
+<p>where <span class="math">\(W\)</span> is a learnable weight matrix of dimension
+<span class="math">\((N_c, N_h)\)</span> and <span class="math">\(b\)</span> is a learnable bias vector. We restrict
+ourselves to this specific choice of <span class="math">\(z\)</span> because it helps in
+implementing an efficient sampled softmax.</p>
+<p>In a typical use-case like for example a recurrent language model, the
+hidden vector <span class="math">\(h\)</span> would be the output of the recurrent layers and
+<span class="math">\(C\)</span> would be the set of words to predict.</p>
+<p>As a training criterion, we use cross-entropy which is a function of the
+expected (true) class <span class="math">\(t\in C\)</span> and the probability predicted for
+it:</p>
+<div class="math">
+\[cross\_entropy := -log(p_t)\]</div>
+</div>
+<div class="section" id="Sampled-Softmax">
+<h2>Sampled Softmax<a class="headerlink" href="#Sampled-Softmax" title="Permalink to this headline">¶</a></h2>
+<p>For the normal softmax the CNTK Python-api provides the function
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.ops.html?highlight=softmax#cntk.ops.cross_entropy_with_softmax">cross_entropy_with_softmax</a>.
+This takes as input the <span class="math">\(N_C\)</span>-dimensional vector <span class="math">\(z\)</span>. As
+mentioned for our sampled softmax implementation we assume that this z
+is computed by $ z = W h + b $. In sampled softmax this has to be part
+of the whole implementation of the criterion.</p>
+<p>Below we show the code for
+<code class="docutils literal"><span class="pre">cross_entropy_with_sampled_softmax_and_embedding</span></code>. Let’s look at the
+signature first.</p>
+<p>One fundamental difference to the corresponding function in the
+Python-api (<code class="docutils literal"><span class="pre">cross_entropy_with_softmax</span></code>) is that in the Python api
+function the input corresponds to <span class="math">\(z\)</span> and must have the same
+dimension as the target vector, while in
+cross_entropy_with_full_softmax the input corresponds to our hidden
+vector <span class="math">\(h\)</span> can have any dimension (hidden_dim). Actually,
+hidden_dim will be typically much lower than the dimension of the
+target vector.</p>
+<p>We also have some additional parameters
+<code class="docutils literal"><span class="pre">num_samples,</span> <span class="pre">sampling_weights,</span> <span class="pre">allow_duplicates</span></code> that control the
+random sampling. Another difference to the api function is that we
+return a triple (z, cross_entropy_on_samples, error_on_samples).</p>
+<p>We will come back to the details of the implementation below.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Creates a subgraph computing cross-entropy with sampled softmax.</span>
+<span class="k">def</span> <span class="nf">cross_entropy_with_sampled_softmax_and_embedding</span><span class="p">(</span>
+    <span class="n">hidden_vector</span><span class="p">,</span>            <span class="c1"># Node providing hidden input</span>
+    <span class="n">target_vector</span><span class="p">,</span>            <span class="c1"># Node providing the expected labels (as sparse vectors)</span>
+    <span class="n">num_classes</span><span class="p">,</span>              <span class="c1"># Number of classes</span>
+    <span class="n">hidden_dim</span><span class="p">,</span>               <span class="c1"># Dimension of the hidden vector</span>
+    <span class="n">num_samples</span><span class="p">,</span>              <span class="c1"># Number of samples to use for sampled softmax</span>
+    <span class="n">sampling_weights</span><span class="p">,</span>         <span class="c1"># Node providing weights to be used for the weighted sampling</span>
+    <span class="n">allow_duplicates</span> <span class="o">=</span> <span class="bp">True</span><span class="p">,</span>  <span class="c1"># Boolean flag to control whether to use sampling with replacemement</span>
+                              <span class="c1"># (allow_duplicates == True) or without replacement.</span>
+    <span class="p">):</span>
+    <span class="c1"># define the parameters learnable parameters</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">init</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span> <span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">())</span>
+
+    <span class="c1"># Define the node that generates a set of random samples per minibatch</span>
+    <span class="c1"># Sparse matrix (num_samples * num_classes)</span>
+    <span class="n">sample_selector</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">random_sample</span><span class="p">(</span><span class="n">sampling_weights</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">allow_duplicates</span><span class="p">)</span>
+
+    <span class="c1"># For each of the samples we also need the probablity that it in the sampled set.</span>
+    <span class="n">inclusion_probs</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">random_sample_inclusion_frequency</span><span class="p">(</span><span class="n">sampling_weights</span><span class="p">,</span> <span class="n">num_samples</span><span class="p">,</span> <span class="n">allow_duplicates</span><span class="p">)</span> <span class="c1"># dense row [1 * vocab_size]</span>
+    <span class="n">log_prior</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">inclusion_probs</span><span class="p">)</span> <span class="c1"># dense row [1 * num_classes]</span>
+
+    <span class="c1"># Create a submatrix wS of &#39;weights</span>
+    <span class="n">W_sampled</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">sample_selector</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span> <span class="c1"># [num_samples * hidden_dim]</span>
+    <span class="n">z_sampled</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">W_sampled</span><span class="p">,</span> <span class="n">hidden_vector</span><span class="p">)</span> <span class="o">+</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">sample_selector</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span> <span class="p">(</span><span class="n">sample_selector</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">)</span><span class="c1"># [num_samples]</span>
+
+    <span class="c1"># Getting the weight vector for the true label. Dimension hidden_dim</span>
+    <span class="n">W_target</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">target_vector</span><span class="p">,</span> <span class="n">W</span><span class="p">)</span> <span class="c1"># [1 * hidden_dim]</span>
+    <span class="n">z_target</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">W_target</span><span class="p">,</span> <span class="n">hidden_vector</span><span class="p">)</span> <span class="o">+</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">target_vector</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="o">-</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">target_vector</span><span class="p">,</span> <span class="n">log_prior</span><span class="p">)</span> <span class="c1"># [1]</span>
+
+
+    <span class="n">z_reduced</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_log_sum_exp</span><span class="p">(</span><span class="n">z_sampled</span><span class="p">)</span>
+
+    <span class="c1"># Compute the cross entropy that is used for training.</span>
+    <span class="c1"># We don&#39;t check whether any of the classes in the random samples conincides with the true label, so it might</span>
+    <span class="c1"># happen that the true class is counted</span>
+    <span class="c1"># twice in the normalising demnominator of sampled softmax.</span>
+    <span class="n">cross_entropy_on_samples</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">log_add_exp</span><span class="p">(</span><span class="n">z_target</span><span class="p">,</span> <span class="n">z_reduced</span><span class="p">)</span> <span class="o">-</span> <span class="n">z_target</span>
+
+    <span class="c1"># For applying the model we also output a node providing the input for the full softmax</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">hidden_vector</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_classes</span><span class="p">))</span>
+
+    <span class="n">zSMax</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">z_sampled</span><span class="p">)</span>
+    <span class="n">error_on_samples</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">z_target</span><span class="p">,</span> <span class="n">zSMax</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cross_entropy_on_samples</span><span class="p">,</span> <span class="n">error_on_samples</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<p>To give a better idea of what the inputs and outputs are and how this
+all differs from the normal softmax we give below a corresponding
+function using normal softmax:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Creates subgraph computing cross-entropy with (full) softmax.</span>
+<span class="k">def</span> <span class="nf">cross_entropy_with_softmax_and_embedding</span><span class="p">(</span>
+    <span class="n">hidden_vector</span><span class="p">,</span>  <span class="c1"># Node providing hidden input</span>
+    <span class="n">target_vector</span><span class="p">,</span>  <span class="c1"># Node providing the expected labels (as sparse vectors)</span>
+    <span class="n">num_classes</span><span class="p">,</span>    <span class="c1"># Number of classes</span>
+    <span class="n">hidden_dim</span>      <span class="c1"># Dimension of the hidden vector</span>
+    <span class="p">):</span>
+    <span class="c1"># Setup bias and weights</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">init</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">hidden_dim</span><span class="p">),</span> <span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">())</span>
+
+
+    <span class="n">z</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">hidden_vector</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_classes</span><span class="p">))</span>
+
+    <span class="c1"># Use cross_entropy_with_softmax</span>
+    <span class="n">cross_entropy</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">)</span>
+
+    <span class="n">zMax</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_max</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">zT</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">target_vector</span><span class="p">)</span>
+    <span class="n">error_on_samples</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">less</span><span class="p">(</span><span class="n">zT</span><span class="p">,</span> <span class="n">zMax</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">cross_entropy</span><span class="p">,</span> <span class="n">error_on_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>As you can see the main differences to the api function
+<code class="docutils literal"><span class="pre">cross_entropy_with_softmax</span></code> are: * We include the mapping $ z = W h
++ b $ into the function. * We return a triple (z, cross_entropy,
+error_on_samples) instead of just returning the cross entropy.</p>
+</div>
+<div class="section" id="A-toy-example">
+<h2>A toy example<a class="headerlink" href="#A-toy-example" title="Permalink to this headline">¶</a></h2>
+<p>To explain how to integrate sampled softmax let us look at a toy
+example. In this toy example we first transform one-hot input vectors
+via some random projection into a lower dimensional vector <span class="math">\(h\)</span>.
+The modeling task is to reverse this mapping using (sampled) softmax.
+Well, as already said this is a toy example.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">log</span><span class="p">,</span> <span class="n">exp</span><span class="p">,</span> <span class="n">sqrt</span>
+<span class="kn">from</span> <span class="nn">cntk.logging</span> <span class="kn">import</span> <span class="n">ProgressPrinter</span>
+<span class="kn">import</span> <span class="nn">timeit</span>
+
+<span class="c1"># A class with all parameters</span>
+<span class="k">class</span> <span class="nc">Param</span><span class="p">:</span>
+    <span class="c1"># Learning parameters</span>
+    <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.03</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">num_minbatches</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">test_set_size</span> <span class="o">=</span> <span class="mi">1000</span>
+    <span class="n">momentum_time_constant</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">minibatch_size</span>
+    <span class="n">reporting_interval</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">allow_duplicates</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c1"># Parameters for sampled softmax</span>
+    <span class="n">use_sampled_softmax</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">use_sparse</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">softmax_sample_size</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="c1"># Details of data and model</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">50</span>
+    <span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">data_sampling_distribution</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+<span class="n">softmax_sampling_weights</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+<span class="c1"># Creates random one-hot vectors of dimension &#39;num_classes&#39;.</span>
+<span class="c1"># Returns a tuple with a list of one-hot vectors, and list with the indices they encode.</span>
+<span class="k">def</span> <span class="nf">get_random_one_hot_data</span><span class="p">(</span><span class="n">num_vectors</span><span class="p">):</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span>
+        <span class="nb">range</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">),</span>
+        <span class="n">size</span><span class="o">=</span><span class="n">num_vectors</span><span class="p">,</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">data_sampling_distribution</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">num_vectors</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">list_of_vectors</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Value</span><span class="o">.</span><span class="n">one_hot</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">list_of_vectors</span><span class="p">,</span> <span class="n">indices</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+
+<span class="c1"># Create a network that:</span>
+<span class="c1"># * Transforms the input one hot-vectors with a constant random embedding</span>
+<span class="c1"># * Applies a linear decoding with parameters we want to learn</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">labels</span><span class="p">):</span>
+    <span class="c1"># random projection matrix</span>
+    <span class="n">random_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">scale</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">Param</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">random_matrix</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">value</span> <span class="o">=</span> <span class="n">random_data</span><span class="p">)</span>
+
+    <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">random_matrix</span><span class="p">)</span>
+
+    <span class="c1"># Connect the latent output to (sampled/full) softmax.</span>
+    <span class="k">if</span> <span class="n">Param</span><span class="o">.</span><span class="n">use_sampled_softmax</span><span class="p">:</span>
+        <span class="n">sampling_weights</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">softmax_sampling_weights</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">sampling_weights</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">))</span>
+        <span class="n">softmax_input</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">errs</span> <span class="o">=</span> <span class="n">cross_entropy_with_sampled_softmax_and_embedding</span><span class="p">(</span>
+            <span class="n">h</span><span class="p">,</span>
+            <span class="n">labels</span><span class="p">,</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">,</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">softmax_sample_size</span><span class="p">,</span>
+            <span class="n">softmax_sampling_weights</span><span class="p">(),</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">allow_duplicates</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">softmax_input</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">errs</span> <span class="o">=</span> <span class="n">cross_entropy_with_softmax_and_embedding</span><span class="p">(</span>
+            <span class="n">h</span><span class="p">,</span>
+            <span class="n">labels</span><span class="p">,</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span>
+            <span class="n">Param</span><span class="o">.</span><span class="n">hidden_dim</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">softmax_input</span><span class="p">,</span> <span class="n">ce</span><span class="p">,</span> <span class="n">errs</span>
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">do_print_progress</span><span class="p">):</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">is_sparse</span> <span class="o">=</span> <span class="n">Param</span><span class="o">.</span><span class="n">use_sparse</span><span class="p">)</span>
+    <span class="n">z</span><span class="p">,</span> <span class="n">cross_entropy</span><span class="p">,</span> <span class="n">errs</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+
+    <span class="c1"># Setup the trainer</span>
+    <span class="n">learning_rate_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">)</span>
+    <span class="n">momentum_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">momentum_time_constant</span><span class="p">)</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_sgd</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">learning_rate_schedule</span><span class="p">,</span> <span class="n">momentum_schedule</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+    <span class="n">progress_writers</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="k">if</span> <span class="n">do_print_progress</span><span class="p">:</span>
+        <span class="n">progress_writers</span> <span class="o">=</span> <span class="p">[</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="n">Param</span><span class="o">.</span><span class="n">reporting_interval</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)]</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">cross_entropy</span><span class="p">,</span> <span class="n">errs</span><span class="p">),</span> <span class="n">learner</span><span class="p">,</span> <span class="n">progress_writers</span><span class="p">)</span>
+
+    <span class="n">minbatch</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">average_cross_entropy</span> <span class="o">=</span> <span class="n">compute_average_cross_entropy</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="n">minbatch_data</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># store minibatch values</span>
+    <span class="n">cross_entropy_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">average_cross_entropy</span><span class="p">]</span> <span class="c1"># store cross_entropy values</span>
+
+    <span class="c1"># Run training</span>
+    <span class="n">t_total</span><span class="o">=</span> <span class="mi">0</span>
+
+    <span class="c1"># Run training</span>
+    <span class="k">for</span> <span class="n">minbatch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">Param</span><span class="o">.</span><span class="n">num_minbatches</span><span class="p">):</span>
+        <span class="c1"># Specify the mapping of input variables in the model to actual minibatch data to be trained with</span>
+        <span class="n">label_data</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">get_random_one_hot_data</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">minibatch_size</span><span class="p">)</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="p">({</span><span class="n">labels</span> <span class="p">:</span> <span class="n">label_data</span><span class="p">})</span>
+
+        <span class="c1"># If do_print_progress is True, this will automatically print the progress using ProgressPrinter</span>
+        <span class="c1"># The printed loss numbers are computed using the sampled softmax criterion</span>
+        <span class="n">t_start</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span>
+        <span class="n">t_end</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">default_timer</span><span class="p">()</span>
+
+        <span class="n">t_delta</span> <span class="o">=</span> <span class="n">t_end</span> <span class="o">-</span> <span class="n">t_start</span>
+        <span class="n">samples_per_second</span> <span class="o">=</span> <span class="n">Param</span><span class="o">.</span><span class="n">minibatch_size</span> <span class="o">/</span> <span class="n">t_delta</span>
+
+        <span class="c1"># We ignore the time measurements of the first two minibatches</span>
+        <span class="k">if</span> <span class="n">minbatch</span> <span class="o">&gt;</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">t_total</span> <span class="o">+=</span> <span class="n">t_delta</span>
+
+        <span class="c1"># For comparison also print result using the full criterion</span>
+        <span class="k">if</span> <span class="n">minbatch</span> <span class="o">%</span> <span class="n">Param</span><span class="o">.</span><span class="n">reporting_interval</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">reporting_interval</span><span class="o">/</span><span class="mi">2</span><span class="p">):</span>
+            <span class="c1"># memorize the progress data for plotting</span>
+            <span class="n">average_cross_entropy</span> <span class="o">=</span> <span class="n">compute_average_cross_entropy</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+            <span class="n">minbatch_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">minbatch</span><span class="p">)</span>
+            <span class="n">cross_entropy_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">average_cross_entropy</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">do_print_progress</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Minbatch=</span><span class="si">%d</span><span class="s2"> Cross-entropy from full softmax = </span><span class="si">%.3f</span><span class="s2"> perplexity = </span><span class="si">%.3f</span><span class="s2"> samples/s = </span><span class="si">%.1f</span><span class="s2">&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">minbatch</span><span class="p">,</span> <span class="n">average_cross_entropy</span><span class="p">,</span> <span class="n">exp</span><span class="p">(</span><span class="n">average_cross_entropy</span><span class="p">),</span> <span class="n">samples_per_second</span><span class="p">))</span>
+
+    <span class="c1"># Number of samples we measured. First two minbatches were ignored</span>
+    <span class="n">samples_measured</span> <span class="o">=</span> <span class="n">Param</span><span class="o">.</span><span class="n">minibatch_size</span> <span class="o">*</span> <span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">num_minbatches</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">overall_samples_per_second</span> <span class="o">=</span> <span class="n">samples_measured</span> <span class="o">/</span> <span class="n">t_total</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">minbatch_data</span><span class="p">,</span> <span class="n">cross_entropy_data</span><span class="p">,</span> <span class="n">overall_samples_per_second</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">compute_average_cross_entropy</span><span class="p">(</span><span class="n">softmax_input</span><span class="p">):</span>
+    <span class="n">vectors</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">get_random_one_hot_data</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">test_set_size</span><span class="p">)</span>
+    <span class="n">total_cross_entropy</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">arguments</span> <span class="o">=</span> <span class="p">(</span><span class="n">vectors</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">softmax_input</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">test_set_size</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)):</span>
+        <span class="n">log_p</span> <span class="o">=</span> <span class="n">log_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">indices</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">total_cross_entropy</span> <span class="o">-=</span> <span class="n">log_p</span>
+
+    <span class="k">return</span> <span class="n">total_cross_entropy</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+
+<span class="c1"># Computes log(softmax(z,index)) for a one-dimensional numpy array z in an numerically stable way.</span>
+<span class="k">def</span> <span class="nf">log_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span>    <span class="c1"># numpy array</span>
+                <span class="n">index</span> <span class="c1"># index into the array</span>
+            <span class="p">):</span>
+    <span class="n">max_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">z</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">-</span> <span class="n">max_z</span> <span class="o">-</span> <span class="n">log</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">z</span> <span class="o">-</span> <span class="n">max_z</span><span class="p">)))</span>
+
+
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;start...&quot;</span><span class="p">)</span>
+<span class="n">train</span><span class="p">(</span><span class="n">do_print_progress</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;done.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+start...
+Learning rate per sample: 0.03
+Momentum per sample: 0.9980019986673331
+
+Minbatch=5 Cross-entropy from full softmax = 3.844 perplexity = 46.705 samples/s = 10573.8
+ Minibatch[   1-  10]: loss = 2.332016 * 1000, metric = 78.00% * 1000;
+
+Minbatch=15 Cross-entropy from full softmax = 3.467 perplexity = 32.042 samples/s = 10810.8
+ Minibatch[  11-  20]: loss = 2.038090 * 1000, metric = 59.20% * 1000;
+
+Minbatch=25 Cross-entropy from full softmax = 3.067 perplexity = 21.484 samples/s = 11505.3
+ Minibatch[  21-  30]: loss = 1.704383 * 1000, metric = 34.70% * 1000;
+
+Minbatch=35 Cross-entropy from full softmax = 2.777 perplexity = 16.074 samples/s = 12133.0
+ Minibatch[  31-  40]: loss = 1.471806 * 1000, metric = 28.00% * 1000;
+
+Minbatch=45 Cross-entropy from full softmax = 2.459 perplexity = 11.688 samples/s = 10162.4
+ Minibatch[  41-  50]: loss = 1.231298 * 1000, metric = 12.90% * 1000;
+
+Minbatch=55 Cross-entropy from full softmax = 2.269 perplexity = 9.671 samples/s = 5888.6
+ Minibatch[  51-  60]: loss = 1.045713 * 1000, metric = 7.70% * 1000;
+
+Minbatch=65 Cross-entropy from full softmax = 2.104 perplexity = 8.203 samples/s = 10744.0
+ Minibatch[  61-  70]: loss = 0.974900 * 1000, metric = 7.80% * 1000;
+
+Minbatch=75 Cross-entropy from full softmax = 1.937 perplexity = 6.941 samples/s = 9944.0
+ Minibatch[  71-  80]: loss = 0.901665 * 1000, metric = 4.70% * 1000;
+
+Minbatch=85 Cross-entropy from full softmax = 1.798 perplexity = 6.036 samples/s = 8191.8
+ Minibatch[  81-  90]: loss = 0.781453 * 1000, metric = 4.10% * 1000;
+
+Minbatch=95 Cross-entropy from full softmax = 1.707 perplexity = 5.514 samples/s = 3975.5
+done.
+</pre></div></div>
+</div>
+<p>In the above code we use two different methods to report training
+progress: 1. Using a function that computes the average cross entropy on
+full softmax. 2. Using the built-in ProgressPrinter</p>
+<p>ProgressPrinter reports how the value of the training criterion changes
+over time. In our case the training criterion is cross-entropy from
+<strong>sampled</strong> softmax. The same is true for the error rate computed by
+progress printer, this is computed only for true-class vs
+sampled-classes and will therefore underestimate the true error rate.</p>
+<p>Therefore while ProgressPrinter already gives us some idea how training
+goes on, if we want to compare the behavior for different sampling
+strategies (sample size, sampling weights, …) we should not rely on
+numbers that are computed only using the sampled subset of classes.</p>
+</div>
+<div class="section" id="Importance-sampling">
+<h2>Importance sampling<a class="headerlink" href="#Importance-sampling" title="Permalink to this headline">¶</a></h2>
+<p>Often the we don’t have uniform distribution for the classes on the
+output side. The typical example is when we have words as output
+classes. A typical example are words where e.g. ‘the’ will be much more
+frequent than most others.</p>
+<p>In such cases one often uses a non uniform distribution for drawing the
+samples in sampled softmax but instead increases the sampling weight for
+the frequent classes. This is also called importane sampling. In our
+example the sampling distribution is controlled by the weight array
+<code class="docutils literal"><span class="pre">softmax_sampling_weights</span></code>.</p>
+<p>As an example let’s look at the case where the classes are distrubted
+according to zipf-distrubtion like:</p>
+<div class="math">
+\[ \begin{align}\begin{aligned}  p[i] \propto \frac{1}{i+5},\\actually we use this distribution already in our example.\end{aligned}\end{align} \]</div>
+<p>How does training behavior change if we switch uniform sampling to
+sampling with the zipfian distribution in sampled softmax?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># We want to lot the data</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1"># Define weights of zipfian distributuion</span>
+<span class="k">def</span> <span class="nf">zipf</span><span class="p">(</span><span class="n">index</span><span class="p">):</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># Use zipifian distribution for the classes</span>
+<span class="k">def</span> <span class="nf">zipf_sampling_weights</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span> <span class="n">zipf</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+<span class="n">data_sampling_distribution</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">zipf_sampling_weights</span><span class="p">()</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">zipf_sampling_weights</span><span class="p">())</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;start...&quot;</span><span class="p">)</span>
+
+
+<span class="c1"># Train using uniform sampling (like before)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">softmax_sampling_weights</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+<span class="n">minibatch_data</span><span class="p">,</span> <span class="n">cross_entropy_data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">do_print_progress</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Train using importance sampling</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">softmax_sampling_weights</span> <span class="o">=</span> <span class="n">zipf_sampling_weights</span>
+<span class="n">minibatch_data2</span><span class="p">,</span> <span class="n">cross_entropy_data2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">do_print_progress</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">minibatch_data</span><span class="p">,</span> <span class="n">cross_entropy_data</span><span class="p">,</span> <span class="s1">&#39;r--&#39;</span><span class="p">,</span><span class="n">minibatch_data</span><span class="p">,</span> <span class="n">cross_entropy_data2</span><span class="p">,</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;number of mini-batches&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;cross entropy&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+start...
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_207_Training_with_Sampled_Softmax_10_1.png" src="_images/CNTK_207_Training_with_Sampled_Softmax_10_1.png" />
+</div>
+</div>
+<p>In the example above we compare uniform sampling (red) vs sampling with
+the same distribution the classes have (blue). You will need to
+experiment to find the best settings for all the softmax parameters.</p>
+</div>
+<div class="section" id="What-speedups-to-expect?">
+<h2>What speedups to expect?<a class="headerlink" href="#What-speedups-to-expect?" title="Permalink to this headline">¶</a></h2>
+<p>The speed difference between full softmax and sampled softmax in terms
+of training instances depends strongly on the concrete settings, namely
+* Number of classes. Typically the speed-up will increase the more
+output classes you have. * Number of samples used in sampled softmax *
+Dimension of hiddlen layer input * Minibatch size * Hardware</p>
+<p>Also you need to test how much you can reduce sample size without
+degradation of the result.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;start...&quot;</span><span class="p">)</span>
+
+<span class="c1"># Reset parameters</span>
+<span class="k">class</span> <span class="nc">Param</span><span class="p">:</span>
+    <span class="c1"># Learning parameters</span>
+    <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.03</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">8</span>
+    <span class="n">num_minbatches</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">test_set_size</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># we are only interrested in speed</span>
+    <span class="n">momentum_time_constant</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">*</span> <span class="n">minibatch_size</span>
+    <span class="n">reporting_interval</span> <span class="o">=</span> <span class="mi">1000000</span> <span class="c1"># Switch off reporting to speed up</span>
+    <span class="n">allow_duplicates</span> <span class="o">=</span> <span class="bp">False</span>
+
+    <span class="c1"># Parameters for sampled softmax</span>
+    <span class="n">use_sampled_softmax</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">use_sparse</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">softmax_sample_size</span> <span class="o">=</span> <span class="mi">10</span>
+
+    <span class="c1"># Details of data and model</span>
+    <span class="n">num_classes</span> <span class="o">=</span> <span class="mi">50000</span>
+    <span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">data_sampling_distribution</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+<span class="n">softmax_sampling_weights</span> <span class="o">=</span> <span class="k">lambda</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">/</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">,</span> <span class="n">Param</span><span class="o">.</span><span class="n">num_classes</span><span class="p">)</span>
+
+
+<span class="n">sample_sizes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">1000</span><span class="p">]</span>
+<span class="n">speed_with_sampled_softmax</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Get the speed with sampled softmax for different sizes</span>
+<span class="k">for</span> <span class="n">sample_size</span> <span class="ow">in</span> <span class="n">sample_sizes</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Measuring speed of sampled softmax for sample size </span><span class="si">%d</span><span class="s2"> ...&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">sample_size</span><span class="p">))</span>
+    <span class="n">Param</span><span class="o">.</span><span class="n">use_sampled_softmax</span> <span class="o">=</span> <span class="bp">True</span>
+    <span class="n">Param</span><span class="o">.</span><span class="n">softmax_sample_size</span> <span class="o">=</span> <span class="n">sample_size</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>  <span class="n">samples_per_second</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">do_print_progress</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+    <span class="n">speed_with_sampled_softmax</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">samples_per_second</span><span class="p">)</span>
+
+<span class="c1"># Get the speed with full softmax</span>
+<span class="n">Param</span><span class="o">.</span><span class="n">use_sampled_softmax</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Measuring speed of full softmax ...&quot;</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span>  <span class="n">samples_per_second</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">do_print_progress</span> <span class="o">=</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">speed_without_sampled_softmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">samples_per_second</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sample_sizes</span><span class="p">))</span>
+
+<span class="c1"># Plot the speed of sampled softmax (blue) as a function of sample sizes</span>
+<span class="c1"># and compare it to the speed with full softmax (red).</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">sample_sizes</span><span class="p">,</span> <span class="n">speed_without_sampled_softmax</span><span class="p">,</span> <span class="s1">&#39;r--&#39;</span><span class="p">,</span><span class="n">sample_sizes</span><span class="p">,</span> <span class="n">speed_with_sampled_softmax</span><span class="p">,</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;softmax sample size&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;speed: instances / second&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Speed &#39;sampled softmax&#39; (blue) vs. &#39;full softmax&#39; (red)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="n">ymin</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+start...
+Measuring speed of sampled softmax for sample size 5 ...
+Measuring speed of sampled softmax for sample size 10 ...
+Measuring speed of sampled softmax for sample size 100 ...
+Measuring speed of sampled softmax for sample size 1000 ...
+Measuring speed of full softmax ...
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_207_Training_with_Sampled_Softmax_13_1.png" src="_images/CNTK_207_Training_with_Sampled_Softmax_13_1.png" />
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

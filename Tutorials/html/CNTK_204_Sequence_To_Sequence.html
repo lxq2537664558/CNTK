@@ -1,0 +1,1831 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 204: Sequence to Sequence Networks with Text Data &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 204: Sequence to Sequence Networks with Text Data</a><ul>
+<li><a class="reference internal" href="#Introduction-and-Background">Introduction and Background</a></li>
+<li><a class="reference internal" href="#Basic-theory">Basic theory</a></li>
+<li><a class="reference internal" href="#Problem:-Grapheme-to-Phoneme-Conversion">Problem: Grapheme-to-Phoneme Conversion</a><ul>
+<li><a class="reference internal" href="#Downloading-the-data">Downloading the data</a></li>
+<li><a class="reference internal" href="#Data-Reader">Data Reader</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Model-Creation">Model Creation</a></li>
+<li><a class="reference internal" href="#Step-1:-setup-the-input-to-the-network">Step 1: setup the input to the network</a><ul>
+<li><a class="reference internal" href="#Dynamic-axes-in-CNTK-(Key-concept)">Dynamic axes in CNTK (Key concept)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Step-2:-define-the-network">Step 2: define the network</a></li>
+<li><a class="reference internal" href="#Training">Training</a></li>
+<li><a class="reference internal" href="#Testing-the-network">Testing the network</a></li>
+<li><a class="reference internal" href="#Interactive-session">Interactive session</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 204: Sequence to Sequence Networks with Text Data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_204_Sequence_To_Sequence.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-204:-Sequence-to-Sequence-Networks-with-Text-Data">
+<h1>CNTK 204: Sequence to Sequence Networks with Text Data<a class="headerlink" href="#CNTK-204:-Sequence-to-Sequence-Networks-with-Text-Data" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="Introduction-and-Background">
+<h2>Introduction and Background<a class="headerlink" href="#Introduction-and-Background" title="Permalink to this headline">¶</a></h2>
+<p>This hands-on tutorial will take you through both the basics of
+sequence-to-sequence networks, and how to implement them in the
+Microsoft Cognitive Toolkit. In particular, we will implement a
+sequence-to-sequence model with attention to perform grapheme to phoneme
+translation. We will start with some basic theory and then explain the
+data in more detail, and how you can download it.</p>
+<p>Andrej Karpathy has a <a class="reference external" href="http://karpathy.github.io/2015/05/21/rnn-effectiveness/">nice
+visualization</a>
+of five common paradigms of neural network architectures:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://cntk.ai/jup/paradigms.jpg&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">750</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://cntk.ai/jup/paradigms.jpg" width="750"/></div>
+</div>
+<p>In this tutorial, we are going to be talking about the fourth paradigm:
+many-to-many where the length of the output does not necessarily equal
+the length of the input, also known as sequence-to-sequence networks.
+The input is a sequence with a dynamic length, and the output is also a
+sequence with some dynamic length. It is the logical extension of the
+many-to-one paradigm in that previously we were predicting some category
+(which could easily be one of <code class="docutils literal"><span class="pre">V</span></code> words where <code class="docutils literal"><span class="pre">V</span></code> is an entire
+vocabulary) and now we want to predict a whole sequence of those
+categories.</p>
+<p>The applications of sequence-to-sequence networks are nearly limitless.
+It is a natural fit for machine translation (e.g. English input
+sequences, French output sequences); automatic text summarization (e.g.
+full document input sequence, summary output sequence); word to
+pronunciation models (e.g. character [grapheme] input sequence,
+pronunciation [phoneme] output sequence); and even parse tree generation
+(e.g. regular text input, flat parse tree output).</p>
+</div>
+<div class="section" id="Basic-theory">
+<h2>Basic theory<a class="headerlink" href="#Basic-theory" title="Permalink to this headline">¶</a></h2>
+<p>A sequence-to-sequence model consists of two main pieces: (1) an
+encoder; and (2) a decoder. Both the encoder and the decoder are
+recurrent neural network (RNN) layers that can be implemented using a
+vanilla RNN, an LSTM, or GRU Blocks (here we will use LSTM). In the
+basic sequence-to-sequence model, the encoder processes the input
+sequence into a fixed representation that is fed into the decoder as a
+context. The decoder then uses some mechanism (discussed below) to
+decode the processed information into an output sequence. The decoder is
+a language model that is augmented with some “strong context” by the
+encoder, and so each symbol that it generates is fed back into the
+decoder for additional context (like a traditional LM). For an English
+to German translation task, the most basic setup might look something
+like this:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 2</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://cntk.ai/jup/s2s.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">700</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://cntk.ai/jup/s2s.png" width="700"/></div>
+</div>
+<p>The basic sequence-to-sequence network passes the information from the
+encoder to the decoder by initializing the decoder RNN with the final
+hidden state of the encoder as its initial hidden state. The input is
+then a “sequence start” tag (<code class="docutils literal"><span class="pre">&lt;s&gt;</span></code> in the diagram above) which primes
+the decoder to start generating an output sequence. Then, whatever word
+(or note or image, etc.) it generates at that step is fed in as the
+input for the next step. The decoder keeps generating outputs until it
+hits the special “end sequence” tag (<code class="docutils literal"><span class="pre">&lt;/s&gt;</span></code> above).</p>
+<p>A more complex and powerful version of the basic sequence-to-sequence
+network uses an attention model. While the above setup works well, it
+can start to break down when the input sequences get long. At each step,
+the hidden state <code class="docutils literal"><span class="pre">h</span></code> is getting updated with the most recent
+information, and therefore <code class="docutils literal"><span class="pre">h</span></code> might be getting “diluted” in
+information as it processes each token. Further, even with a relatively
+short sequence, the last token will always get the last say and
+therefore the thought vector will be somewhat biased/weighted towards
+that last word. To deal with this problem, we use an “attention”
+mechanism that allows the decoder to look not only at all of the hidden
+states from the input, but it also learns which hidden states, for each
+step in decoding, to put the most weight on. In this tutorial we will
+implement a sequence-to-sequence network that can be run either with or
+without attention enabled.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 3</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/cntk204_s2s2.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">700</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/cntk204_s2s2.png" width="700"/></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">Attention</span></code> layer above takes the current value of the hidden
+state in the Decoder, all of the hidden states in the Encoder, and
+calculates an augmented version of the hidden state to use. More
+specifically, the contribution from the Encoder’s hidden states will
+represent a weighted sum of all of its hidden states where the highest
+weight corresponds both to the biggest contribution to the augmented
+hidden state and to the hidden state that will be most important for the
+Decoder to consider when generating the next word.</p>
+</div>
+<div class="section" id="Problem:-Grapheme-to-Phoneme-Conversion">
+<h2>Problem: Grapheme-to-Phoneme Conversion<a class="headerlink" href="#Problem:-Grapheme-to-Phoneme-Conversion" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference external" href="https://en.wikipedia.org/wiki/Grapheme">grapheme</a> to
+<a class="reference external" href="https://en.wikipedia.org/wiki/Phoneme">phoneme</a> problem is a
+translation task that takes the letters of a word as the input sequence
+(the graphemes are the smallest units of a writing system) and outputs
+the corresponding phonemes; that is, the units of sound that make up a
+language. In other words, the system aims to generate an unambigious
+representation of how to pronounce a given input word.</p>
+<p><strong>Example</strong></p>
+<p>The graphemes or the letters are translated into corresponding phonemes:</p>
+<blockquote>
+<div><div class="line-block">
+<div class="line"><strong>Grapheme</strong> : <strong>|</strong> T <strong>|</strong> A <strong>|</strong> N <strong>|</strong> G <strong>|</strong> E <strong>|</strong>
+R <strong>|</strong></div>
+<div class="line"><strong>Phonemes</strong> : <strong>|</strong> ~T <strong>|</strong> ~AE <strong>|</strong> ~NG <strong>|</strong> ~ER <strong>|</strong></div>
+</div>
+</div></blockquote>
+<p><strong>Model structure overview</strong></p>
+<p>As discussed above, the task we are interested in solving is creating a
+model that takes some sequence as an input, and generates an output
+sequence based on the contents of the input. The model’s job is to learn
+the mapping from the input sequence to the output sequence that it will
+generate. The job of the encoder is to come up with a good
+representation of the input that the decoder can use to generate a good
+output. For both the encoder and the decoder, the LSTM does a good job
+at this.</p>
+<p>Note that the LSTM is simply one of a whole set of different types of
+Blocks that can be used to implement an RNN. This is the code that is
+run for each step in the recurrence. In the Layers library, there are
+three built-in recurrent Blocks: the (vanilla) <code class="docutils literal"><span class="pre">RNN</span></code>, the <code class="docutils literal"><span class="pre">GRU</span></code>, and
+the <code class="docutils literal"><span class="pre">LSTM</span></code>. Each processes its input slightly differently and each has
+its own benefits and drawbacks for different types of tasks and
+networks. To get these blocks to run for each of the elements
+recurrently in a network, we create a <code class="docutils literal"><span class="pre">Recurrence</span></code> over them. This
+“unrolls” the network to the number of steps that are in the given input
+for the RNN layer.</p>
+<p><strong>Importing CNTK and other useful libraries</strong></p>
+<p>CNTK is a Python module that contains several submodules like <code class="docutils literal"><span class="pre">io</span></code>,
+<code class="docutils literal"><span class="pre">learner</span></code>, <code class="docutils literal"><span class="pre">graph</span></code>, etc. We make extensive use of numpy as well.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Check if this is a test environment</span>
+<span class="k">def</span> <span class="nf">isTest</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;TEST_DEVICE&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Downloading-the-data">
+<h3>Downloading the data<a class="headerlink" href="#Downloading-the-data" title="Permalink to this headline">¶</a></h3>
+<p>In this tutorial we will use a lightly pre-processed version of the
+CMUDict (version 0.7b) dataset from
+<a class="reference external" href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">http://www.speech.cs.cmu.edu/cgi-bin/cmudict</a>. The CMUDict data refers to
+the Carnegie Mellon University Pronouncing Dictionary and is an
+open-source machine-readable pronunciation dictionary for North American
+English. The data is in the CNTKTextFormatReader format. Here is an
+example sequence pair from the data, where the input sequence (S0) is in
+the left column, and the output sequence (S1) is on the right:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">3</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># &lt;s&gt;   |S1 3:1 |# &lt;s&gt;</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">4</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># A       |S1 32:1 |# ~AH</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">5</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># B       |S1 36:1 |# ~B</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">4</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># A       |S1 31:1 |# ~AE</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">7</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># D       |S1 38:1 |# ~D</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">12</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># I       |S1 47:1 |# ~IY</span>
+<span class="mi">0</span>   <span class="o">|</span><span class="n">S0</span> <span class="mi">1</span><span class="p">:</span><span class="mi">1</span>  <span class="o">|</span><span class="c1"># &lt;/s&gt;     |S1 1:1 |# &lt;/s&gt;</span>
+</pre></div>
+</div>
+<p>The code below will download the required files (training, testing, the
+single sequence above for visual validation, and a small vocab file) and
+put them in a local folder (the training file is ~34 MB, testing is
+~4MB, and the validation file and vocab file are both less than 1KB).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; utility function to download a file &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">():</span>
+            <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">MODEL_DIR</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
+<span class="n">DATA_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;Examples&#39;</span><span class="p">,</span> <span class="s1">&#39;SequenceToSequence&#39;</span><span class="p">,</span> <span class="s1">&#39;CMUDict&#39;</span><span class="p">,</span> <span class="s1">&#39;Data&#39;</span><span class="p">)</span>
+<span class="c1"># If above directory does not exist, just use current.</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">):</span>
+    <span class="n">DATA_DIR</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span>
+
+<span class="n">dataPath</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">&#39;validation&#39;</span><span class="p">:</span> <span class="s1">&#39;tiny.ctf&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;training&#39;</span><span class="p">:</span> <span class="s1">&#39;cmudict-0.7b.train-dev-20-21.ctf&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;testing&#39;</span><span class="p">:</span> <span class="s1">&#39;cmudict-0.7b.test.ctf&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;vocab_file&#39;</span><span class="p">:</span> <span class="s1">&#39;cmudict-0.7b.mapping&#39;</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dataPath</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">DATA_DIR</span><span class="p">,</span> <span class="n">dataPath</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reusing locally cached:&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Starting download:&quot;</span><span class="p">,</span> <span class="n">dataPath</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/Microsoft/CNTK/blob/release/2.1/Examples/SequenceToSequence/CMUDict/Data/</span><span class="si">%s</span><span class="s2">?raw=true&quot;</span><span class="o">%</span><span class="k">dataPath</span>[k]
+        <span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Download completed&quot;</span><span class="p">)</span>
+    <span class="n">dataPath</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Reusing locally cached: ..\Examples\SequenceToSequence\CMUDict\Data\cmudict-0.7b.test.ctf
+Reusing locally cached: ..\Examples\SequenceToSequence\CMUDict\Data\cmudict-0.7b.train-dev-20-21.ctf
+Reusing locally cached: ..\Examples\SequenceToSequence\CMUDict\Data\tiny.ctf
+Reusing locally cached: ..\Examples\SequenceToSequence\CMUDict\Data\cmudict-0.7b.mapping
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Data-Reader">
+<h3>Data Reader<a class="headerlink" href="#Data-Reader" title="Permalink to this headline">¶</a></h3>
+<p>To efficiently collect our data, randomize it for training, and pass it
+to the network, we use the CNTKTextFormat reader. We will create a small
+function that will be called when training (or testing) that defines the
+names of the streams in our data, and how they are referred to in the
+raw training data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Helper function to load the model vocabulary file</span>
+<span class="k">def</span> <span class="nf">get_vocab</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="c1"># get the vocab for printing output sequences in plaintext</span>
+    <span class="n">vocab</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span><span class="o">.</span><span class="n">readlines</span><span class="p">()]</span>
+    <span class="n">i2w</span> <span class="o">=</span> <span class="p">{</span> <span class="n">i</span><span class="p">:</span><span class="n">w</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="p">}</span>
+    <span class="n">w2i</span> <span class="o">=</span> <span class="p">{</span> <span class="n">w</span><span class="p">:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">w</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)</span> <span class="p">}</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">w2i</span><span class="p">)</span>
+
+<span class="c1"># Read vocabulary data and generate their corresponding indices</span>
+<span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">w2i</span> <span class="o">=</span> <span class="n">get_vocab</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;vocab_file&#39;</span><span class="p">])</span>
+
+<span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">MinibatchSource</span><span class="p">(</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S0&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">input_vocab_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="n">labels</span>   <span class="o">=</span> <span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">label_vocab_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="p">)),</span> <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_vocab_dim</span>  <span class="o">=</span> <span class="mi">69</span>
+<span class="n">label_vocab_dim</span>  <span class="o">=</span> <span class="mi">69</span>
+
+<span class="c1"># Print vocab and the correspoding mapping to the phonemes</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Vocabulary size is&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">vocab</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;First 15 letters are:&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">vocab</span><span class="p">[:</span><span class="mi">15</span><span class="p">])</span>
+<span class="k">print</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Print dictionary with the vocabulary mapping:&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">i2w</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Vocabulary size is 69
+First 15 letters are:
+[&#34;&#39;&#34;, &#39;&lt;/s&gt;&#39;, &#39;&lt;s/&gt;&#39;, &#39;&lt;s&gt;&#39;, &#39;A&#39;, &#39;B&#39;, &#39;C&#39;, &#39;D&#39;, &#39;E&#39;, &#39;F&#39;, &#39;G&#39;, &#39;H&#39;, &#39;I&#39;, &#39;J&#39;, &#39;K&#39;]
+
+Print dictionary with the vocabulary mapping:
+{0: &#34;&#39;&#34;, 1: &#39;&lt;/s&gt;&#39;, 2: &#39;&lt;s/&gt;&#39;, 3: &#39;&lt;s&gt;&#39;, 4: &#39;A&#39;, 5: &#39;B&#39;, 6: &#39;C&#39;, 7: &#39;D&#39;, 8: &#39;E&#39;, 9: &#39;F&#39;, 10: &#39;G&#39;, 11: &#39;H&#39;, 12: &#39;I&#39;, 13: &#39;J&#39;, 14: &#39;K&#39;, 15: &#39;L&#39;, 16: &#39;M&#39;, 17: &#39;N&#39;, 18: &#39;O&#39;, 19: &#39;P&#39;, 20: &#39;Q&#39;, 21: &#39;R&#39;, 22: &#39;S&#39;, 23: &#39;T&#39;, 24: &#39;U&#39;, 25: &#39;V&#39;, 26: &#39;W&#39;, 27: &#39;X&#39;, 28: &#39;Y&#39;, 29: &#39;Z&#39;, 30: &#39;~AA&#39;, 31: &#39;~AE&#39;, 32: &#39;~AH&#39;, 33: &#39;~AO&#39;, 34: &#39;~AW&#39;, 35: &#39;~AY&#39;, 36: &#39;~B&#39;, 37: &#39;~CH&#39;, 38: &#39;~D&#39;, 39: &#39;~DH&#39;, 40: &#39;~EH&#39;, 41: &#39;~ER&#39;, 42: &#39;~EY&#39;, 43: &#39;~F&#39;, 44: &#39;~G&#39;, 45: &#39;~HH&#39;, 46: &#39;~IH&#39;, 47: &#39;~IY&#39;, 48: &#39;~JH&#39;, 49: &#39;~K&#39;, 50: &#39;~L&#39;, 51: &#39;~M&#39;, 52: &#39;~N&#39;, 53: &#39;~NG&#39;, 54: &#39;~OW&#39;, 55: &#39;~OY&#39;, 56: &#39;~P&#39;, 57: &#39;~R&#39;, 58: &#39;~S&#39;, 59: &#39;~SH&#39;, 60: &#39;~T&#39;, 61: &#39;~TH&#39;, 62: &#39;~UH&#39;, 63: &#39;~UW&#39;, 64: &#39;~V&#39;, 65: &#39;~W&#39;, 66: &#39;~Y&#39;, 67: &#39;~Z&#39;, 68: &#39;~ZH&#39;}
+</pre></div></div>
+</div>
+<p>We will use the above to create a reader for our training data. Let’s
+create it now:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S0&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">input_vocab_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+        <span class="n">labels</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">label_vocab_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="p">)),</span> <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># Train data reader</span>
+<span class="n">train_reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="c1"># Validation data reader</span>
+<span class="n">valid_reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;validation&#39;</span><span class="p">],</span> <span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Set our model hyperparameters</strong></p>
+<p>We have a number of settings that control the complexity of our network,
+the shapes of our inputs, and other options such as whether we will use
+an embedding (and what size to use), and whether or not we will employ
+attention. We set them now as they will be made use of when we build the
+network graph in the following sections.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">num_layers</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">attention_dim</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">attention_span</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">attention_axis</span> <span class="o">=</span> <span class="o">-</span><span class="mi">3</span>
+<span class="n">use_attention</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">use_embedding</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">embedding_dim</span> <span class="o">=</span> <span class="mi">200</span>
+<span class="n">vocab</span> <span class="o">=</span> <span class="p">([</span><span class="n">w</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;vocab_file&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">readlines</span><span class="p">()])</span> <span class="c1"># all lines of vocab_file in a list</span>
+<span class="n">length_increase</span> <span class="o">=</span> <span class="mf">1.5</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Model-Creation">
+<h2>Model Creation<a class="headerlink" href="#Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>We will set two more parameters now: the symbols used to denote the
+start of a sequence (sometimes called ‘BOS’) and the end of a sequence
+(sometimes called ‘EOS’). In this case, our sequence-start symbol is the
+tag <span class="math">\(&lt;s&gt;\)</span> and our sequence-end symbol is the end-tag <span class="math">\(&lt;/s&gt;\)</span>.</p>
+<p>Sequence start and end tags are important in sequence-to-sequence
+networks for two reasons. The sequence start tag is a “primer” for the
+decoder; in other words, because we are generating an output sequence
+and RNNs require some input, the sequence start token “primes” the
+decoder to cause it to emit its first generated token. The sequence end
+token is important because the decoder will learn to output this token
+when the sequence is finished. Otherwise the network wouldn’t know how
+long of a sequence to generate. For the code below, we setup the
+sequence start symbol as a <code class="docutils literal"><span class="pre">Constant</span></code> so that it can later be passed
+to the Decoder LSTM as its <code class="docutils literal"><span class="pre">initial_state</span></code>. Further, we get the
+sequence end symbol’s index so that the Decoder can use it to know when
+to stop generating tokens.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">sentence_start</span> <span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">w</span><span class="o">==</span><span class="s1">&#39;&lt;s&gt;&#39;</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">vocab</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">sentence_end_index</span> <span class="o">=</span> <span class="n">vocab</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;&lt;/s&gt;&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Step-1:-setup-the-input-to-the-network">
+<h2>Step 1: setup the input to the network<a class="headerlink" href="#Step-1:-setup-the-input-to-the-network" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Dynamic-axes-in-CNTK-(Key-concept)">
+<h3>Dynamic axes in CNTK (Key concept)<a class="headerlink" href="#Dynamic-axes-in-CNTK-(Key-concept)" title="Permalink to this headline">¶</a></h3>
+<p>One of the important concepts in understanding CNTK is the idea of two
+types of axes: - <strong>static axes</strong>, which are the traditional axes of a
+variable’s shape, and - <strong>dynamic axes</strong>, which have dimensions that are
+unknown until the variable is bound to real data at computation time.</p>
+<p>The dynamic axes are particularly important in the world of recurrent
+neural networks. Instead of having to decide a maximum sequence length
+ahead of time, padding your sequences to that size, and wasting
+computation, CNTK’s dynamic axes allow for variable sequence lengths
+that are automatically packed in minibatches to be as efficient as
+possible.</p>
+<p>When setting up sequences, there are <em>two dynamic axes</em> that are
+important to consider. The first is the <em>batch axis</em>, which is the axis
+along which multiple sequences are batched. The second is the dynamic
+axis particular to that sequence. The latter is specific to a particular
+input because of variable sequence lengths in your data. For example, in
+sequence to sequence networks, we have two sequences: the <strong>input
+sequence</strong>, and the <strong>output (or ‘label’) sequence</strong>. One of the things
+that makes this type of network so powerful is that the length of the
+input sequence and the output sequence do not have to correspond to each
+other. Therefore, both the input sequence and the output sequence
+require their own unique dynamic axis.</p>
+<p>We first create the <code class="docutils literal"><span class="pre">inputAxis</span></code> for the input sequence and the
+<code class="docutils literal"><span class="pre">labelAxis</span></code> for the output sequence. We then define the inputs to the
+model by creating sequences over these two unique dynamic axes. Note
+that <code class="docutils literal"><span class="pre">InputSequence</span></code> and <code class="docutils literal"><span class="pre">LabelSequence</span></code> are <em>type declarations</em>.
+This means that the <code class="docutils literal"><span class="pre">InputSequence</span></code> is a type that consists of a
+sequence over the <code class="docutils literal"><span class="pre">inputAxis</span></code> axis.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Source and target inputs to the model</span>
+<span class="n">inputAxis</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="s1">&#39;inputAxis&#39;</span><span class="p">)</span>
+<span class="n">labelAxis</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Axis</span><span class="p">(</span><span class="s1">&#39;labelAxis&#39;</span><span class="p">)</span>
+<span class="n">InputSequence</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">SequenceOver</span><span class="p">[</span><span class="n">inputAxis</span><span class="p">]</span>
+<span class="n">LabelSequence</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">SequenceOver</span><span class="p">[</span><span class="n">labelAxis</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Step-2:-define-the-network">
+<h2>Step 2: define the network<a class="headerlink" href="#Step-2:-define-the-network" title="Permalink to this headline">¶</a></h2>
+<p>As discussed before, the sequence-to-sequence network is, at its most
+basic, an RNN (LSTM) encoder followed by an RNN (LSTM) decoder, and a
+dense output layer. We will implement both the Encoder and the Decoder
+using the CNTK Layers library. Both of these will be created as CNTK
+Functions. Our <code class="docutils literal"><span class="pre">create_model()</span></code> Python function creates both the
+<code class="docutils literal"><span class="pre">encode</span></code> and <code class="docutils literal"><span class="pre">decode</span></code> CNTK Functions. The <code class="docutils literal"><span class="pre">decode</span></code> function
+directly makes use of the <code class="docutils literal"><span class="pre">encode</span></code> function and the return value of
+<code class="docutils literal"><span class="pre">create_model()</span></code> is the CNTK Function <code class="docutils literal"><span class="pre">decode</span></code> itself.</p>
+<p>We start by passing the input through an embedding (learned as part of
+the training process). So that this function can be used in the
+<code class="docutils literal"><span class="pre">Sequential</span></code> block of the Encoder and the Decoder whether we want an
+embedding or not, we will use the <code class="docutils literal"><span class="pre">identity</span></code> function if the
+<code class="docutils literal"><span class="pre">use_embedding</span></code> parameter is <code class="docutils literal"><span class="pre">False</span></code>. We then declare the Encoder
+layers as follows:</p>
+<p>First, we pass the input through our <code class="docutils literal"><span class="pre">embed</span></code> function and then we
+stabilize it. This adds an additional scalar parameter to the learning
+that can help our network converge more quickly during training. Then,
+for each of the number of LSTM layers that we want in our encoder,
+except the final one, we set up an LSTM recurrence. The final recurrence
+will be a <code class="docutils literal"><span class="pre">Fold</span></code> if we are not using attention because we only pass
+the final hidden state to the decoder. If we are using attention,
+however, then we use another normal LSTM <code class="docutils literal"><span class="pre">Recurrence</span></code> that the Decoder
+will put its attention over later on.</p>
+<p>Below we see a diagram of how the layered version of the
+sequence-to-sequence network with attention works. As the code shows
+below, the output of each layer of the Encoder and Decoder is used as
+the input to the layer just above it. The Attention model focuses on the
+top layer of the Encoder and informs the first layer of the Decoder.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 4</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/cntk204_s2s3.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">900</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[14]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/cntk204_s2s3.png" width="900"/></div>
+</div>
+<p>For the decoder, we first define several sub-layers: the <code class="docutils literal"><span class="pre">Stabilizer</span></code>
+for the decoder input, the <code class="docutils literal"><span class="pre">Recurrence</span></code> blocks for each of the
+decoder’s layers, the <code class="docutils literal"><span class="pre">Stabilizer</span></code> for the output of the stack of
+LSTMs, and the final <code class="docutils literal"><span class="pre">Dense</span></code> output layer. If we are using attention,
+then we also create an <code class="docutils literal"><span class="pre">AttentionModel</span></code> function <code class="docutils literal"><span class="pre">attention_model</span></code>
+which returns an augmented version of the decoder’s hidden state with
+emphasis placed on the encoder hidden states that should be most used
+for the given step while generating the next output token.</p>
+<p>We then build the CNTK Function <code class="docutils literal"><span class="pre">decode</span></code>. The decorator <code class="docutils literal"><span class="pre">&#64;Function</span></code>
+turns a regular Python function into a proper CNTK Function with the
+given arguments and return value. The Decoder works differently during
+training than it does during test time. During training, the history
+(i.e. input) to the Decoder <code class="docutils literal"><span class="pre">Recurrence</span></code> consists of the ground-truth
+labels. This means that while generating <span class="math">\(y^{(t=2)}\)</span>, for example,
+the input will be <span class="math">\(y^{(t=1)}\)</span>. During evaluation, or “test time”,
+however, the input to the Decoder will be the actual output of the
+model. For a greedy decoder – which we are implementing here – that
+input is therefore the <code class="docutils literal"><span class="pre">hardmax</span></code> of the final <code class="docutils literal"><span class="pre">Dense</span></code> layer.</p>
+<p>The Decoder Function <code class="docutils literal"><span class="pre">decode</span></code> takes two arguments: (1) the <code class="docutils literal"><span class="pre">input</span></code>
+sequence; and (2) the Decoder <code class="docutils literal"><span class="pre">history</span></code>. First, it runs the <code class="docutils literal"><span class="pre">input</span></code>
+sequence through the Encoder function <code class="docutils literal"><span class="pre">encode</span></code> that we setup earlier.
+We then get the <code class="docutils literal"><span class="pre">history</span></code> and map it to its embedding if necessary.
+Then the embedded representation is stabilized before running it through
+the Decoder’s <code class="docutils literal"><span class="pre">Recurrence</span></code>. For each layer of <code class="docutils literal"><span class="pre">Recurrence</span></code>, we run
+the embedded <code class="docutils literal"><span class="pre">history</span></code> (now represented as <code class="docutils literal"><span class="pre">r</span></code>) through the
+<code class="docutils literal"><span class="pre">Recurrence</span></code>’s LSTM. If we are not using attention, we run it through
+the <code class="docutils literal"><span class="pre">Recurrence</span></code> with its initial state set to the value of the final
+hidden state of the encoder (note that since we run the Encoder
+backwards when not using attention that the “final” hidden state is
+actually the first hidden state in chronological time). If we are using
+attention, however, then we calculate the auxiliary input <code class="docutils literal"><span class="pre">h_att</span></code>
+using our <code class="docutils literal"><span class="pre">attention_model</span></code> function and we splice that onto the input
+<code class="docutils literal"><span class="pre">x</span></code>. This augmented <code class="docutils literal"><span class="pre">x</span></code> is then used as input for the Decoder’s
+<code class="docutils literal"><span class="pre">Recurrence</span></code>.</p>
+<p>Finally, we stabilize the output of the Decoder, put it through the
+final <code class="docutils literal"><span class="pre">Dense</span></code> layer <code class="docutils literal"><span class="pre">proj_out</span></code>, and label the output using the
+<code class="docutils literal"><span class="pre">Label</span></code> layer which allows for simple access to that layer later on.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># create the s2s model</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span> <span class="c1"># :: (history*, input*) -&gt; logP(w)*</span>
+
+    <span class="c1"># Embedding: (input*) --&gt; embedded_input*</span>
+    <span class="n">embed</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">embedding_dim</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;embed&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">use_embedding</span> <span class="k">else</span> <span class="n">identity</span>
+
+    <span class="c1"># Encoder: (input*) --&gt; (h0, c0)</span>
+    <span class="c1"># Create multiple layers of LSTMs by passing the output of the i-th layer</span>
+    <span class="c1"># to the (i+1)th layer as its input</span>
+    <span class="c1"># Note: We go_backwards for the plain model, but forward for the attention model.</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">enable_self_stabilization</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">go_backwards</span><span class="o">=</span><span class="ow">not</span> <span class="n">use_attention</span><span class="p">):</span>
+        <span class="n">LastRecurrence</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Fold</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">use_attention</span> <span class="k">else</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span>
+        <span class="n">encode</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">embed</span><span class="p">,</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Stabilizer</span><span class="p">(),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="k">lambda</span><span class="p">:</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">))),</span>
+            <span class="n">LastRecurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">return_full_state</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+            <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s1">&#39;encoded_h&#39;</span><span class="p">),</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s1">&#39;encoded_c&#39;</span><span class="p">)),</span>
+        <span class="p">])</span>
+
+    <span class="c1"># Decoder: (history*, input*) --&gt; unnormalized_word_logp*</span>
+    <span class="c1"># where history is one of these, delayed by 1 step and &lt;s&gt; prepended:</span>
+    <span class="c1">#  - training: labels</span>
+    <span class="c1">#  - testing:  its own output hardmax(z) (greedy decoder)</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">enable_self_stabilization</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+        <span class="c1"># sub-layers</span>
+        <span class="n">stab_in</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Stabilizer</span><span class="p">()</span>
+        <span class="n">rec_blocks</span> <span class="o">=</span> <span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">)]</span>
+        <span class="n">stab_out</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Stabilizer</span><span class="p">()</span>
+        <span class="n">proj_out</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">label_vocab_dim</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;out_proj&#39;</span><span class="p">)</span>
+        <span class="c1"># attention model</span>
+        <span class="k">if</span> <span class="n">use_attention</span><span class="p">:</span> <span class="c1"># maps a decoder hidden state and all the encoder states into an augmented state</span>
+            <span class="n">attention_model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">AttentionModel</span><span class="p">(</span><span class="n">attention_dim</span><span class="p">,</span>
+                                                      <span class="n">attention_span</span><span class="p">,</span>
+                                                      <span class="n">attention_axis</span><span class="p">,</span>
+                                                      <span class="n">name</span><span class="o">=</span><span class="s1">&#39;attention_model&#39;</span><span class="p">)</span> <span class="c1"># :: (h_enc*, h_dec) -&gt; (h_dec augmented)</span>
+        <span class="c1"># layer function</span>
+        <span class="nd">@C.Function</span>
+        <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+            <span class="n">encoded_input</span> <span class="o">=</span> <span class="n">encode</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">history</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">embed</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">stab_in</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_layers</span><span class="p">):</span>
+                <span class="n">rec_block</span> <span class="o">=</span> <span class="n">rec_blocks</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>   <span class="c1"># LSTM(hidden_dim)  # :: (dh, dc, x) -&gt; (h, c)</span>
+                <span class="k">if</span> <span class="n">use_attention</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="nd">@C.Function</span>
+                        <span class="k">def</span> <span class="nf">lstm_with_attention</span><span class="p">(</span><span class="n">dh</span><span class="p">,</span> <span class="n">dc</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+                            <span class="n">h_att</span> <span class="o">=</span> <span class="n">attention_model</span><span class="p">(</span><span class="n">encoded_input</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dh</span><span class="p">)</span>
+                            <span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">splice</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">h_att</span><span class="p">)</span>
+                            <span class="k">return</span> <span class="n">rec_block</span><span class="p">(</span><span class="n">dh</span><span class="p">,</span> <span class="n">dc</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+                        <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">lstm_with_attention</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">rec_block</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># unlike Recurrence(), the RecurrenceFrom() layer takes the initial hidden state as a data input</span>
+                    <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">RecurrenceFrom</span><span class="p">(</span><span class="n">rec_block</span><span class="p">)(</span><span class="o">*</span><span class="p">(</span><span class="n">encoded_input</span><span class="o">.</span><span class="n">outputs</span> <span class="o">+</span> <span class="p">(</span><span class="n">r</span><span class="p">,)))</span> <span class="c1"># :: h0, c0, r -&gt; h</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">stab_out</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">proj_out</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Label</span><span class="p">(</span><span class="s1">&#39;out_proj_out&#39;</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+    <span class="k">return</span> <span class="n">decode</span>
+</pre></div>
+</div>
+</div>
+<p>The network that we defined above can be thought of as an “abstract”
+model that must first be wrapped to be used. In this case, we will use
+it first to create a “training” version of the model (where the history
+for the Decoder will be the ground-truth labels), and then we will use
+it to create a greedy “decoding” version of the model where the history
+for the Decoder will be the <code class="docutils literal"><span class="pre">hardmax</span></code> output of the network. Let’s set
+up these model wrappers next.</p>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p>Before starting training, we will define the training wrapper, the
+greedy decoding wrapper, and the criterion function used for training
+the model. Let’s start with the training wrapper.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_model_train</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">):</span>
+    <span class="c1"># model used in training (history is known from labels)</span>
+    <span class="c1"># note: the labels must NOT contain the initial &lt;s&gt;</span>
+    <span class="nd">@C.Function</span>
+    <span class="k">def</span> <span class="nf">model_train</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span> <span class="c1"># (input*, labels*) --&gt; (word_logp*)</span>
+
+        <span class="c1"># The input to the decoder always starts with the special label sequence start token.</span>
+        <span class="c1"># Then, use the previous value of the label sequence (for training) or the output (for execution).</span>
+        <span class="n">past_labels</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Delay</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="n">sentence_start</span><span class="p">)(</span><span class="n">labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">s2smodel</span><span class="p">(</span><span class="n">past_labels</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model_train</span>
+</pre></div>
+</div>
+</div>
+<p>Above, we create the CNTK Function <code class="docutils literal"><span class="pre">model_train</span></code> again using the
+<code class="docutils literal"><span class="pre">&#64;Function</span></code> decorator. This function takes the input sequence
+<code class="docutils literal"><span class="pre">input</span></code> and the output sequence <code class="docutils literal"><span class="pre">labels</span></code> as arguments. The
+<code class="docutils literal"><span class="pre">past_labels</span></code> are setup as the <code class="docutils literal"><span class="pre">history</span></code> for the model we created
+earlier by using the <code class="docutils literal"><span class="pre">Delay</span></code> layer. This will return the previous
+time-step value for the input <code class="docutils literal"><span class="pre">labels</span></code> with an <code class="docutils literal"><span class="pre">initial_state</span></code> of
+<code class="docutils literal"><span class="pre">sentence_start</span></code>. Therefore, if we give the labels
+<code class="docutils literal"><span class="pre">['a',</span> <span class="pre">'b',</span> <span class="pre">'c']</span></code>, then <code class="docutils literal"><span class="pre">past_labels</span></code> will contain
+<code class="docutils literal"><span class="pre">['&lt;s&gt;',</span> <span class="pre">'a',</span> <span class="pre">'b',</span> <span class="pre">'c']</span></code> and then return our abstract base model
+called with the history <code class="docutils literal"><span class="pre">past_labels</span></code> and the input <code class="docutils literal"><span class="pre">input</span></code>.</p>
+<p>Let’s go ahead and create the greedy decoding model wrapper now as well:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_model_greedy</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">):</span>
+    <span class="c1"># model used in (greedy) decoding (history is decoder&#39;s own output)</span>
+    <span class="nd">@C.Function</span>
+    <span class="nd">@C.layers.Signature</span><span class="p">(</span><span class="n">InputSequence</span><span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Tensor</span><span class="p">[</span><span class="n">input_vocab_dim</span><span class="p">]])</span>
+    <span class="k">def</span> <span class="nf">model_greedy</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span> <span class="c1"># (input*) --&gt; (word_sequence*)</span>
+
+        <span class="c1"># Decoding is an unfold() operation starting from sentence_start.</span>
+        <span class="c1"># We must transform s2smodel (history*, input* -&gt; word_logp*) into a generator (history* -&gt; output*)</span>
+        <span class="c1"># which holds &#39;input&#39; in its closure.</span>
+        <span class="n">unfold</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">UnfoldFrom</span><span class="p">(</span><span class="k">lambda</span> <span class="n">history</span><span class="p">:</span> <span class="n">s2smodel</span><span class="p">(</span><span class="n">history</span><span class="p">,</span> <span class="nb">input</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="n">C</span><span class="o">.</span><span class="n">hardmax</span><span class="p">,</span>
+                            <span class="c1"># stop once sentence_end_index was max-scoring output</span>
+                            <span class="n">until_predicate</span><span class="o">=</span><span class="k">lambda</span> <span class="n">w</span><span class="p">:</span> <span class="n">w</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">sentence_end_index</span><span class="p">],</span>
+                            <span class="n">length_increase</span><span class="o">=</span><span class="n">length_increase</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">unfold</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="n">sentence_start</span><span class="p">,</span> <span class="n">dynamic_axes_like</span><span class="o">=</span><span class="nb">input</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">model_greedy</span>
+</pre></div>
+</div>
+</div>
+<p>Above we create a new CNTK Function <code class="docutils literal"><span class="pre">model_greedy</span></code> which this time
+only takes a single argument. This is of course because when using the
+model at test time we don’t have any labels – it is the model’s job to
+create them for us! In this case, we use the <code class="docutils literal"><span class="pre">UnfoldFrom</span></code> layer which
+runs the base model with the current <code class="docutils literal"><span class="pre">history</span></code> and funnels it into the
+<code class="docutils literal"><span class="pre">hardmax</span></code>. The <code class="docutils literal"><span class="pre">hardmax</span></code>’s output then becomes part of the
+<code class="docutils literal"><span class="pre">history</span></code> and we keep unfolding the <code class="docutils literal"><span class="pre">Recurrence</span></code> until the
+<code class="docutils literal"><span class="pre">sentence_end_index</span></code> has been reached. The maximum length of the
+output sequence (the maximum unfolding of the Decoder) is determined by
+a multiplier passed to <code class="docutils literal"><span class="pre">length_increase</span></code>. In this case we set
+<code class="docutils literal"><span class="pre">length_increase</span></code> to <code class="docutils literal"><span class="pre">1.5</span></code> above so the maximum length of each
+output sequence is 1.5x its input.</p>
+<p>The last thing we will do before setting up the training loop is define
+the function that will create the criterion function for our model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_criterion_function</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="nd">@C.Function</span>
+    <span class="nd">@C.layers.Signature</span><span class="p">(</span><span class="nb">input</span><span class="o">=</span><span class="n">InputSequence</span><span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Tensor</span><span class="p">[</span><span class="n">input_vocab_dim</span><span class="p">]],</span>
+                        <span class="n">labels</span><span class="o">=</span><span class="n">LabelSequence</span><span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Tensor</span><span class="p">[</span><span class="n">label_vocab_dim</span><span class="p">]])</span>
+    <span class="k">def</span> <span class="nf">criterion</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+        <span class="c1"># criterion function must drop the &lt;s&gt; from the labels</span>
+        <span class="n">postprocessed_labels</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># &lt;s&gt; A B C &lt;/s&gt; --&gt; A B C &lt;/s&gt;</span>
+        <span class="n">z</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">postprocessed_labels</span><span class="p">)</span>
+        <span class="n">ce</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">postprocessed_labels</span><span class="p">)</span>
+        <span class="n">errs</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">postprocessed_labels</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">errs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">criterion</span>
+</pre></div>
+</div>
+</div>
+<p>Above, we create the criterion function which drops the sequence-start
+symbol from our labels for us, runs the model with the given <code class="docutils literal"><span class="pre">input</span></code>
+and <code class="docutils literal"><span class="pre">labels</span></code>, and uses the output to compare to our ground truth. We
+use the loss function <code class="docutils literal"><span class="pre">cross_entropy_with_softmax</span></code> and get the
+<code class="docutils literal"><span class="pre">classification_error</span></code> which gives us the percent-error per-word of
+our generation accuracy. The CNTK Function <code class="docutils literal"><span class="pre">criterion</span></code> returns these
+values as a tuple and the Python function
+<code class="docutils literal"><span class="pre">create_criterion_function(model)</span></code> returns that CNTK Function.</p>
+<p>Now let’s move on to creating the training loop…</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">train_reader</span><span class="p">,</span> <span class="n">valid_reader</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">s2smodel</span><span class="p">,</span> <span class="n">max_epochs</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">):</span>
+
+    <span class="c1"># create the training wrapper for the s2smodel, as well as the criterion function</span>
+    <span class="n">model_train</span> <span class="o">=</span> <span class="n">create_model_train</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">)</span>
+    <span class="n">criterion</span> <span class="o">=</span> <span class="n">create_criterion_function</span><span class="p">(</span><span class="n">model_train</span><span class="p">)</span>
+
+    <span class="c1"># also wire in a greedy decoder so that we can properly log progress on a validation example</span>
+    <span class="c1"># This is not used for the actual training process.</span>
+    <span class="n">model_greedy</span> <span class="o">=</span> <span class="n">create_model_greedy</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the trainer object to drive the model training</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">72</span>
+    <span class="n">lr</span> <span class="o">=</span> <span class="mf">0.001</span> <span class="k">if</span> <span class="n">use_attention</span> <span class="k">else</span> <span class="mf">0.005</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">fsadagrad</span><span class="p">(</span><span class="n">model_train</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                          <span class="n">lr</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">([</span><span class="n">lr</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span><span class="o">+</span><span class="p">[</span><span class="n">lr</span><span class="o">/</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span><span class="o">+</span><span class="p">[</span><span class="n">lr</span><span class="o">/</span><span class="mi">4</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">),</span>
+                          <span class="n">momentum</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="mi">1100</span><span class="p">),</span>
+                          <span class="n">gradient_clipping_threshold_per_sample</span><span class="o">=</span><span class="mf">2.3</span><span class="p">,</span>
+                          <span class="n">gradient_clipping_with_truncation</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">criterion</span><span class="p">,</span> <span class="n">learner</span><span class="p">)</span>
+
+    <span class="c1"># Get minibatches of sequences to train with and perform model training</span>
+    <span class="n">total_samples</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">mbs</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">eval_freq</span> <span class="o">=</span> <span class="mi">100</span>
+
+    <span class="c1"># print out some useful training information</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">log_number_of_parameters</span><span class="p">(</span><span class="n">model_train</span><span class="p">)</span> <span class="p">;</span> <span class="k">print</span><span class="p">()</span>
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">freq</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
+
+    <span class="c1"># a hack to allow us to print sparse vectors</span>
+    <span class="n">sparse_to_dense</span> <span class="o">=</span> <span class="n">create_sparse_to_dense</span><span class="p">(</span><span class="n">input_vocab_dim</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_epochs</span><span class="p">):</span>
+        <span class="k">while</span> <span class="n">total_samples</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">epoch_size</span><span class="p">:</span>
+            <span class="c1"># get next minibatch of training data</span>
+            <span class="n">mb_train</span> <span class="o">=</span> <span class="n">train_reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">)</span>
+
+            <span class="c1"># do the training</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">({</span><span class="n">criterion</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">mb_train</span><span class="p">[</span><span class="n">train_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">],</span>
+                                     <span class="n">criterion</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">mb_train</span><span class="p">[</span><span class="n">train_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">]})</span>
+
+            <span class="n">progress_printer</span><span class="o">.</span><span class="n">update_with_trainer</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">with_metric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="c1"># log progress</span>
+
+            <span class="c1"># every N MBs evaluate on a test sequence to visually show how we&#39;re doing</span>
+            <span class="k">if</span> <span class="n">mbs</span> <span class="o">%</span> <span class="n">eval_freq</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">mb_valid</span> <span class="o">=</span> <span class="n">valid_reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+                <span class="c1"># run an eval on the decoder output model (i.e. don&#39;t use the groundtruth)</span>
+                <span class="n">e</span> <span class="o">=</span> <span class="n">model_greedy</span><span class="p">(</span><span class="n">mb_valid</span><span class="p">[</span><span class="n">valid_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">])</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">format_sequences</span><span class="p">(</span><span class="n">sparse_to_dense</span><span class="p">(</span><span class="n">mb_valid</span><span class="p">[</span><span class="n">valid_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">]),</span> <span class="n">i2w</span><span class="p">))</span>
+                <span class="k">print</span><span class="p">(</span><span class="s2">&quot;-&gt;&quot;</span><span class="p">)</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">format_sequences</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">i2w</span><span class="p">))</span>
+
+                <span class="c1"># visualizing attention window</span>
+                <span class="k">if</span> <span class="n">use_attention</span><span class="p">:</span>
+                    <span class="n">debug_attention</span><span class="p">(</span><span class="n">model_greedy</span><span class="p">,</span> <span class="n">mb_valid</span><span class="p">[</span><span class="n">valid_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">])</span>
+
+            <span class="n">total_samples</span> <span class="o">+=</span> <span class="n">mb_train</span><span class="p">[</span><span class="n">train_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">]</span><span class="o">.</span><span class="n">num_samples</span>
+            <span class="n">mbs</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># log a summary of the stats for the epoch</span>
+        <span class="n">progress_printer</span><span class="o">.</span><span class="n">epoch_summary</span><span class="p">(</span><span class="n">with_metric</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c1"># done: save the final model</span>
+    <span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;model_</span><span class="si">%d</span><span class="s2">.cmf&quot;</span> <span class="o">%</span> <span class="n">epoch</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Saving final model to &#39;</span><span class="si">%s</span><span class="s2">&#39;&quot;</span> <span class="o">%</span> <span class="n">model_path</span><span class="p">)</span>
+    <span class="n">s2smodel</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> epochs complete.&quot;</span> <span class="o">%</span> <span class="n">max_epochs</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>In the above function, we created one version of the model for training
+(plus its associated criterion function) and one version of the model
+for evaluation. Normally this latter version would not be required but
+here we have done it so that we can periodically sample from the
+non-training model to visually understand how our model is converging by
+seeing the kinds of sequences that it generates as the training
+progresses.</p>
+<p>We then setup some standard variables required for the training loop. We
+set the <code class="docutils literal"><span class="pre">minibatch_size</span></code> (which refers to the total number of elements
+– NOT sequences – in a minibatch), the initial learning rate <code class="docutils literal"><span class="pre">lr</span></code>,
+we initialize a <code class="docutils literal"><span class="pre">learner</span></code> using the <code class="docutils literal"><span class="pre">adam_sgd</span></code> algorithm and a
+<code class="docutils literal"><span class="pre">learning_rate_schedule</span></code> that slowly reduces our learning rate. We
+make use of gradient clipping to help control exploding gradients, and
+we finally create our <code class="docutils literal"><span class="pre">Trainer</span></code> object <code class="docutils literal"><span class="pre">trainer</span></code>.</p>
+<p>We make use of CNTK’s <code class="docutils literal"><span class="pre">ProgressPrinter</span></code> class which takes care of
+calculating average metrics per minibatch/epoch and we set it to update
+every 30 minibatches. And finally, before starting the training loop, we
+initialize a function called <code class="docutils literal"><span class="pre">sparse_to_dense</span></code> which we use to
+properly print out the input sequence data that we use for validation
+because it is sparse. That function is defined just below:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># dummy for printing the input sequence below. Currently needed because input is sparse.</span>
+<span class="k">def</span> <span class="nf">create_sparse_to_dense</span><span class="p">(</span><span class="n">input_vocab_dim</span><span class="p">):</span>
+    <span class="n">I</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">input_vocab_dim</span><span class="p">))</span>
+    <span class="nd">@C.Function</span>
+    <span class="nd">@C.layers.Signature</span><span class="p">(</span><span class="n">InputSequence</span><span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">[</span><span class="n">input_vocab_dim</span><span class="p">]])</span>
+    <span class="k">def</span> <span class="nf">no_op</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">times</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">I</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">no_op</span>
+</pre></div>
+</div>
+</div>
+<p>Inside the training loop, we proceed much like many other CNTK networks.
+We request the next bunch of minibatch data, we perform our training,
+and we print our progress to the screen using the <code class="docutils literal"><span class="pre">progress_printer</span></code>.
+Where we diverge from the norm, however, is where we run an evaluation
+using our <code class="docutils literal"><span class="pre">model_greedy</span></code> version of the network and run a single
+sequence, “ABADI” through to see what the network is currently
+predicting.</p>
+<p>Another difference in the training loop is the optional attention window
+visualization. Calling the function <code class="docutils literal"><span class="pre">debug_attention</span></code> shows the weight
+that the Decoder put on each of the Encoder’s hidden states for each of
+the output tokens that it generated. This function, along with the
+<code class="docutils literal"><span class="pre">format_sequences</span></code> function required to print the input/output
+sequences to the screen, are given below.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Given a vocab and tensor, print the output</span>
+<span class="k">def</span> <span class="nf">format_sequences</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">i2w</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">[</span><span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">i2w</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">w</span><span class="p">)]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">s</span><span class="p">])</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">sequences</span><span class="p">]</span>
+
+<span class="c1"># to help debug the attention window</span>
+<span class="k">def</span> <span class="nf">debug_attention</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">model</span><span class="p">,</span> <span class="n">model</span><span class="o">.</span><span class="n">attention_model</span><span class="o">.</span><span class="n">attention_weights</span><span class="p">])</span>
+    <span class="c1">#words, p = q(input) # Python 3</span>
+    <span class="n">words_p</span> <span class="o">=</span> <span class="n">q</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">words</span> <span class="o">=</span> <span class="n">words_p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">p</span>     <span class="o">=</span> <span class="n">words_p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">seq_len</span> <span class="o">=</span> <span class="n">words</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="n">attention_axis</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="mi">7</span> <span class="c1">#attention_span  #7 # test sentence is 7 tokens long</span>
+    <span class="n">p_sq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="n">seq_len</span><span class="p">,:</span><span class="n">span</span><span class="p">,</span><span class="mi">0</span><span class="p">,:])</span> <span class="c1"># (batch, len, attention_span, 1, vector_dim)</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">get_printoptions</span><span class="p">()</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">p_sq</span><span class="p">)</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="o">**</span><span class="n">opts</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let’s try training our network for a small part of an epoch. In
+particular, we’ll run through 25,000 tokens (about 3% of one epoch):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">model</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>
+<span class="n">train</span><span class="p">(</span><span class="n">train_reader</span><span class="p">,</span> <span class="n">valid_reader</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">epoch_size</span><span class="o">=</span><span class="mi">25000</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 7561400 parameters in 29 parameter tensors.
+
+[&#39;&lt;s&gt; A B A D I &lt;/s&gt;&#39;]
+-&gt;
+[&#39;O O ~K ~K X X X X ~JH ~JH ~JH&#39;]
+[[ 0.14327  0.14396  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14396  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14328  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14396  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14396  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14395  0.14337  0.14305  0.14248  0.1422   0.14166]
+ [ 0.14327  0.14396  0.14337  0.14305  0.14248  0.1422   0.14166]]
+ Minibatch[   1-  30]: loss = 4.145903 * 1601, metric = 87.32% * 1601;
+ Minibatch[  31-  60]: loss = 3.648827 * 1601, metric = 86.45% * 1601;
+ Minibatch[  61-  90]: loss = 3.320400 * 1548, metric = 88.44% * 1548;
+[&#39;&lt;s&gt; A B A D I &lt;/s&gt;&#39;]
+-&gt;
+[&#39;~N ~N &lt;/s&gt;&#39;]
+[[ 0.14276  0.14348  0.14298  0.1428   0.1425   0.14266  0.14281]
+ [ 0.14276  0.14348  0.14298  0.14281  0.1425   0.14266  0.14281]
+ [ 0.14276  0.14348  0.14298  0.14281  0.1425   0.14266  0.14281]]
+ Minibatch[  91- 120]: loss = 3.231915 * 1567, metric = 86.02% * 1567;
+ Minibatch[ 121- 150]: loss = 3.212445 * 1580, metric = 83.54% * 1580;
+ Minibatch[ 151- 180]: loss = 3.214926 * 1544, metric = 84.26% * 1544;
+[&#39;&lt;s&gt; A B A D I &lt;/s&gt;&#39;]
+-&gt;
+[&#39;~R ~R ~AH ~AH ~AH &lt;/s&gt;&#39;]
+[[ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]
+ [ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]
+ [ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]
+ [ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]
+ [ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]
+ [ 0.14293  0.14362  0.14306  0.14283  0.14246  0.14252  0.14259]]
+ Minibatch[ 181- 210]: loss = 3.144272 * 1565, metric = 82.75% * 1565;
+ Minibatch[ 211- 240]: loss = 3.185484 * 1583, metric = 83.20% * 1583;
+ Minibatch[ 241- 270]: loss = 3.126284 * 1562, metric = 83.03% * 1562;
+ Minibatch[ 271- 300]: loss = 3.150704 * 1551, metric = 83.56% * 1551;
+[&#39;&lt;s&gt; A B A D I &lt;/s&gt;&#39;]
+-&gt;
+[&#39;~R ~R ~R ~AH &lt;/s&gt;&#39;]
+[[ 0.14318  0.14385  0.14318  0.14286  0.14238  0.1423   0.14224]
+ [ 0.14318  0.14385  0.14318  0.14286  0.14238  0.1423   0.14224]
+ [ 0.14318  0.14385  0.14318  0.14287  0.14238  0.1423   0.14224]
+ [ 0.14318  0.14385  0.14318  0.14287  0.14239  0.1423   0.14224]
+ [ 0.14318  0.14385  0.14318  0.14287  0.14239  0.1423   0.14224]]
+ Minibatch[ 301- 330]: loss = 3.131863 * 1575, metric = 82.41% * 1575;
+ Minibatch[ 331- 360]: loss = 3.095721 * 1569, metric = 82.98% * 1569;
+ Minibatch[ 361- 390]: loss = 3.098615 * 1567, metric = 82.32% * 1567;
+[&#39;&lt;s&gt; A B A D I &lt;/s&gt;&#39;]
+-&gt;
+[&#39;~K ~R ~R ~AH &lt;/s&gt;&#39;]
+[[ 0.14352  0.14416  0.14335  0.14292  0.1423   0.14201  0.14173]
+ [ 0.1435   0.14414  0.14335  0.14293  0.14231  0.14202  0.14174]
+ [ 0.14351  0.14415  0.14335  0.14293  0.1423   0.14202  0.14174]
+ [ 0.14351  0.14415  0.14335  0.14293  0.1423   0.14202  0.14174]
+ [ 0.14351  0.14415  0.14335  0.14293  0.1423   0.14202  0.14174]]
+ Minibatch[ 391- 420]: loss = 3.115971 * 1601, metric = 81.70% * 1601;
+Finished Epoch[1 of 300]: [Training] loss = 3.274279 * 22067, metric = 84.14% * 22067 64.263s (343.4 samples/s);
+Saving final model to &#39;model_0.cmf&#39;
+1 epochs complete.
+</pre></div></div>
+</div>
+<p>As we can see above, while the loss has come down quite a ways, the
+output sequence is still quite a ways off from what we expect. Uncomment
+the code below to run for a full epoch (notice that we switch the
+<code class="docutils literal"><span class="pre">epoch_size</span></code> parameter to the actual size of the training data) and by
+the end of the first epoch you will already see a very good
+grapheme-to-phoneme translation model running!</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Uncomment the line below to train the model for a full epoch</span>
+<span class="c1">#train(train_reader, valid_reader, vocab, i2w, model, max_epochs=1, epoch_size=908241)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Testing-the-network">
+<h2>Testing the network<a class="headerlink" href="#Testing-the-network" title="Permalink to this headline">¶</a></h2>
+<p>Now that we’ve trained a sequence-to-sequence network for
+graphme-to-phoneme translation, there are two important things we should
+do with it. First, we should test its accuracy on a held-out test set.
+Then, we should try it out in an interactive environment so that we can
+put in our own input sequences and see what the model predicts. Let’s
+start by determining the test string error rate.</p>
+<p>At the end of training, we saved the model using the line
+<code class="docutils literal"><span class="pre">s2smodel.save(model_path)</span></code>. Therefore, to test it, we will need to
+first <code class="docutils literal"><span class="pre">load</span></code> that model and then run some test data through it. Let’s
+<code class="docutils literal"><span class="pre">load</span></code> the model, then create a reader configured to access our
+testing data. Note that we pass <code class="docutils literal"><span class="pre">False</span></code> to the <code class="docutils literal"><span class="pre">create_reader</span></code>
+function this time to denote that we are in testing mode so we should
+only pass over the data a single time.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># load the model for epoch 0</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="s2">&quot;model_0.cmf&quot;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
+
+<span class="c1"># create a reader pointing at our testing data</span>
+<span class="n">test_reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;testing&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Now we need to define our testing function. We pass the <code class="docutils literal"><span class="pre">reader</span></code>, the
+learned <code class="docutils literal"><span class="pre">s2smodel</span></code>, and the vocabulary map <code class="docutils literal"><span class="pre">i2w</span></code> so that we can
+directly compare the model’s predictions to the test set labels. We loop
+over the test set, evaluate the model on minibatches of size 512 for
+efficiency, and keep track of the error rate. Note that below we test
+<em>per-sequence</em>. This means that every single token in a generated
+sequence must match the tokens in the label for that sequence to be
+considered as correct.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># This decodes the test set and counts the string error rate.</span>
+<span class="k">def</span> <span class="nf">evaluate_decoding</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">s2smodel</span><span class="p">,</span> <span class="n">i2w</span><span class="p">):</span>
+
+    <span class="n">model_decoding</span> <span class="o">=</span> <span class="n">create_model_greedy</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">)</span> <span class="c1"># wrap the greedy decoder around the model</span>
+
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Evaluation&#39;</span><span class="p">)</span>
+
+    <span class="n">sparse_to_dense</span> <span class="o">=</span> <span class="n">create_sparse_to_dense</span><span class="p">(</span><span class="n">input_vocab_dim</span><span class="p">)</span>
+
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">num_total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_wrong</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">mb</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mb</span><span class="p">:</span> <span class="c1"># finish when end of test set reached</span>
+            <span class="k">break</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">model_decoding</span><span class="p">(</span><span class="n">mb</span><span class="p">[</span><span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">])</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">format_sequences</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">i2w</span><span class="p">)</span>
+        <span class="n">labels</span>  <span class="o">=</span> <span class="n">format_sequences</span><span class="p">(</span><span class="n">sparse_to_dense</span><span class="p">(</span><span class="n">mb</span><span class="p">[</span><span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">]),</span> <span class="n">i2w</span><span class="p">)</span>
+        <span class="c1"># prepend sentence start for comparison</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&lt;s&gt; &quot;</span> <span class="o">+</span> <span class="n">output</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+
+        <span class="n">num_total</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+        <span class="n">num_wrong</span> <span class="o">+=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">label</span> <span class="o">!=</span> <span class="n">output</span> <span class="k">for</span> <span class="n">output</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">outputs</span><span class="p">,</span> <span class="n">labels</span><span class="p">)])</span>
+
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">num_wrong</span> <span class="o">/</span> <span class="n">num_total</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;string error rate of {:.1f}</span><span class="si">% i</span><span class="s2">n {} samples&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">rate</span><span class="p">,</span> <span class="n">num_total</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">rate</span>
+</pre></div>
+</div>
+</div>
+<p>Now we will evaluate the decoding using the above function. If you use
+the version of the model we trained above with just a small 50000 sample
+of the training data, you will get an error rate of 100% because we
+cannot possibly get every single token correct with such a small amount
+of training. However, if you uncommented the training line above that
+trains the network for a full epoch, you should have ended up with a
+much-improved model that showed approximately the following training
+statistics:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Finished</span> <span class="n">Epoch</span><span class="p">[</span><span class="mi">1</span> <span class="n">of</span> <span class="mi">300</span><span class="p">]:</span> <span class="p">[</span><span class="n">Training</span><span class="p">]</span> <span class="n">loss</span> <span class="o">=</span> <span class="mf">0.878420</span> <span class="o">*</span> <span class="mi">799303</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="mf">26.23</span><span class="o">%</span> <span class="o">*</span> <span class="mi">799303</span> <span class="mf">1755.985</span><span class="n">s</span> <span class="p">(</span><span class="mf">455.2</span> <span class="n">samples</span><span class="o">/</span><span class="n">s</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Now let’s evaluate the model’s test set performance below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># print the string error rate</span>
+<span class="n">evaluate_decoding</span><span class="p">(</span><span class="n">test_reader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">i2w</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+string error rate of 100.0% in 12855 samples
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[26]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>1.0
+</pre></div>
+</div>
+</div>
+<p>If you did not run the training for the full first epoch, the output
+above will be a <code class="docutils literal"><span class="pre">1.0</span></code> meaning 100% string error rate. If, however, you
+uncommented the line to perform training for a full epoch, you should
+get an output of <code class="docutils literal"><span class="pre">0.569</span></code>. A string error rate of <code class="docutils literal"><span class="pre">56.9</span></code> is actually
+not bad for a single pass over the data. Let’s now modify the above
+<code class="docutils literal"><span class="pre">evaluate_decoding</span></code> function to output the per-phoneme error rate.
+This means that we are calculating the error at a higher precision and
+also makes things easier in some sense because with the string error
+rate we could have every phoneme correct but one in each example and
+still end up with a 100% error rate. Here is the modified version of
+that function:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># This decodes the test set and counts the string error rate.</span>
+<span class="k">def</span> <span class="nf">evaluate_decoding</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">s2smodel</span><span class="p">,</span> <span class="n">i2w</span><span class="p">):</span>
+
+    <span class="n">model_decoding</span> <span class="o">=</span> <span class="n">create_model_greedy</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">)</span> <span class="c1"># wrap the greedy decoder around the model</span>
+
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Evaluation&#39;</span><span class="p">)</span>
+
+    <span class="n">sparse_to_dense</span> <span class="o">=</span> <span class="n">create_sparse_to_dense</span><span class="p">(</span><span class="n">input_vocab_dim</span><span class="p">)</span>
+
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">num_total</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_wrong</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">mb</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">mb</span><span class="p">:</span> <span class="c1"># finish when end of test set reached</span>
+            <span class="k">break</span>
+        <span class="n">e</span> <span class="o">=</span> <span class="n">model_decoding</span><span class="p">(</span><span class="n">mb</span><span class="p">[</span><span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">])</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="n">format_sequences</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">i2w</span><span class="p">)</span>
+        <span class="n">labels</span>  <span class="o">=</span> <span class="n">format_sequences</span><span class="p">(</span><span class="n">sparse_to_dense</span><span class="p">(</span><span class="n">mb</span><span class="p">[</span><span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">]),</span> <span class="n">i2w</span><span class="p">)</span>
+        <span class="c1"># prepend sentence start for comparison</span>
+        <span class="n">outputs</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&lt;s&gt; &quot;</span> <span class="o">+</span> <span class="n">output</span> <span class="k">for</span> <span class="n">output</span> <span class="ow">in</span> <span class="n">outputs</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">labels</span><span class="p">[</span><span class="n">s</span><span class="p">])):</span>
+                <span class="n">num_total</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">w</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">outputs</span><span class="p">[</span><span class="n">s</span><span class="p">]):</span> <span class="c1"># in case the prediction is longer than the label</span>
+                    <span class="k">if</span> <span class="n">outputs</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">w</span><span class="p">]</span> <span class="o">!=</span> <span class="n">labels</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">w</span><span class="p">]:</span>
+                        <span class="n">num_wrong</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="n">rate</span> <span class="o">=</span> <span class="n">num_wrong</span> <span class="o">/</span> <span class="n">num_total</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;{:.1f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="mi">100</span> <span class="o">*</span> <span class="n">rate</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">rate</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># print the phoneme error rate</span>
+<span class="n">test_reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">dataPath</span><span class="p">[</span><span class="s1">&#39;testing&#39;</span><span class="p">],</span> <span class="bp">False</span><span class="p">)</span>
+<span class="n">evaluate_decoding</span><span class="p">(</span><span class="n">test_reader</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">i2w</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+45.0
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[28]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>0.45012815036309267
+</pre></div>
+</div>
+</div>
+<p>If you’re using the model that was trained for one full epoch, then you
+should get a phoneme error rate of around 10%. Not bad! This means that
+for each of the 383,294 phonemes in the test set, our model predicted
+nearly 90% of them correctly (if you used the quickly-trained version of
+the model then you will get an error rate of around 45%). Now, let’s
+work with an interactive session where we can input our own input
+sequences and see how the model predicts their pronunciation (i.e.
+phonemes). Additionally, we will visualize the Decoder’s attention for
+these samples to see which graphemes in the input it deemed to be
+important for each phoneme that it produces. Note that in the examples
+below the results will only be good if you use a model that has been
+trained for at least one epoch.</p>
+</div>
+<div class="section" id="Interactive-session">
+<h2>Interactive session<a class="headerlink" href="#Interactive-session" title="Permalink to this headline">¶</a></h2>
+<p>Here we will write an interactive function to make it easy to interact
+with the trained model and try out your own input sequences that do not
+appear in the test set. Please note that the results will be very poor
+if you just use the model that was trained for a very short amount of
+time. The model we used just above that was trained for one epoch does a
+good job, and if you have the time and patience to train the model for a
+full 30 epochs, it will perform very nicely.</p>
+<p>We will first import some graphics libraries that make the attention
+visualization possible and then we will define the <code class="docutils literal"><span class="pre">translate</span></code>
+function that takes a numpy-based representation of the input and runs
+our model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># imports required for showing the attention weight heatmap</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="kn">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+
+<span class="k">def</span> <span class="nf">translate</span><span class="p">(</span><span class="n">tokens</span><span class="p">,</span> <span class="n">model_decoding</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">show_attention</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="n">vdict</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">vocab</span><span class="p">)}</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="n">vdict</span><span class="p">[</span><span class="s2">&quot;&lt;s&gt;&quot;</span><span class="p">]]</span> <span class="o">+</span> <span class="p">[</span><span class="n">vdict</span><span class="p">[</span><span class="n">c</span><span class="p">]</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">tokens</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">vdict</span><span class="p">[</span><span class="s2">&quot;&lt;/s&gt;&quot;</span><span class="p">]]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Input contains an unexpected token.&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="c1"># convert to one_hot</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Value</span><span class="o">.</span><span class="n">one_hot</span><span class="p">([</span><span class="n">w</span><span class="p">],</span> <span class="nb">len</span><span class="p">(</span><span class="n">vdict</span><span class="p">))</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">model_decoding</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># first sequence (we only have one) -&gt; [len, vocab size]</span>
+    <span class="k">if</span> <span class="n">use_attention</span><span class="p">:</span>
+        <span class="n">pred</span> <span class="o">=</span> <span class="n">pred</span><span class="p">[:,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,:]</span> <span class="c1"># attention has extra dimensions</span>
+
+    <span class="c1"># print out translation and stop at the sequence-end tag</span>
+    <span class="n">prediction</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">translation</span> <span class="o">=</span> <span class="p">[</span><span class="n">i2w</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">prediction</span><span class="p">]</span>
+
+    <span class="c1"># show attention window (requires matplotlib, seaborn, and pandas)</span>
+    <span class="k">if</span> <span class="n">use_attention</span> <span class="ow">and</span> <span class="n">show_attention</span><span class="p">:</span>
+        <span class="n">q</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">model_decoding</span><span class="o">.</span><span class="n">attention_model</span><span class="o">.</span><span class="n">attention_weights</span><span class="p">])</span>
+        <span class="n">att_value</span> <span class="o">=</span> <span class="n">q</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+
+        <span class="c1"># get the attention data up to the length of the output (subset of the full window)</span>
+        <span class="n">att_value</span> <span class="o">=</span> <span class="n">att_value</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">prediction</span><span class="p">),</span><span class="mi">0</span><span class="p">:</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">),</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># -&gt; (len, span)</span>
+
+        <span class="c1"># set up the actual words/letters for the heatmap axis labels</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="n">i2w</span><span class="p">[</span><span class="n">ww</span><span class="p">]</span> <span class="k">for</span> <span class="n">ww</span> <span class="ow">in</span> <span class="n">prediction</span><span class="p">]</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="p">[</span><span class="n">i2w</span><span class="p">[</span><span class="n">ww</span><span class="p">]</span> <span class="k">for</span> <span class="n">ww</span> <span class="ow">in</span> <span class="n">w</span><span class="p">]</span>
+
+        <span class="n">dframe</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">att_value</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">dframe</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">translation</span>
+</pre></div>
+</div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">translate</span></code> function above takes a list of letters input by the
+user as <code class="docutils literal"><span class="pre">tokens</span></code>, the greedy decoding version of our model
+<code class="docutils literal"><span class="pre">model_decoding</span></code>, the vocabulary <code class="docutils literal"><span class="pre">vocab</span></code>, a map of index to vocab
+<code class="docutils literal"><span class="pre">i2w</span></code>, and the <code class="docutils literal"><span class="pre">show_attention</span></code> option which determines if we will
+visualize the attention vectors or not.</p>
+<p>We convert our input into a <code class="docutils literal"><span class="pre">one_hot</span></code> representation, run it through
+the model with <code class="docutils literal"><span class="pre">model_decoding(query)</span></code> and, since each prediction is
+actually a probability distribution over the entire vocabulary, we take
+the <code class="docutils literal"><span class="pre">argmax</span></code> to get the most probable token for each step.</p>
+<p>To visualize the attention window, we use <code class="docutils literal"><span class="pre">combine</span></code> to turn the
+<code class="docutils literal"><span class="pre">attention_weights</span></code> into a CNTK Function that takes the inputs that we
+expect. This way, when we run the function <code class="docutils literal"><span class="pre">q</span></code>, the output will be the
+values of the <code class="docutils literal"><span class="pre">attention_weights</span></code>. We do some data manipulation to get
+this data into the format that <code class="docutils literal"><span class="pre">sns</span></code> expects, and we show the
+visualization.</p>
+<p>Finally, we need to write the user-interaction loop which allows a user
+to enter multiple inputs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [30]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">interactive_session</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">show_attention</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+
+    <span class="n">model_decoding</span> <span class="o">=</span> <span class="n">create_model_greedy</span><span class="p">(</span><span class="n">s2smodel</span><span class="p">)</span> <span class="c1"># wrap the greedy decoder around the model</span>
+
+    <span class="kn">import</span> <span class="nn">sys</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Enter one or more words to see their phonetic transcription.&#39;</span><span class="p">)</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">isTest</span><span class="p">():</span> <span class="c1"># Testing a prefilled text for routine testing</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;psychology&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&gt; &quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;quit&quot;</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="c1"># tokenize. Our task is letter to sound.</span>
+        <span class="n">out_line</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+            <span class="n">in_tokens</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">word</span><span class="p">]</span>
+            <span class="n">out_tokens</span> <span class="o">=</span> <span class="n">translate</span><span class="p">(</span><span class="n">in_tokens</span><span class="p">,</span> <span class="n">model_decoding</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">show_attention</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+            <span class="n">out_line</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">out_tokens</span><span class="p">)</span>
+        <span class="n">out_line</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot; &quot;</span> <span class="k">if</span> <span class="n">tok</span> <span class="o">==</span> <span class="s1">&#39;&lt;/s&gt;&#39;</span> <span class="k">else</span> <span class="n">tok</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">tok</span> <span class="ow">in</span> <span class="n">out_line</span><span class="p">]</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">out_line</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">isTest</span><span class="p">():</span> <span class="c1">#If test environment we will test the translation only once</span>
+            <span class="k">break</span>
+</pre></div>
+</div>
+</div>
+<p>The above function simply creates a greedy decoder around our model and
+then continually asks the user for an input which we pass to our
+<code class="docutils literal"><span class="pre">translate</span></code> function. Visualizations of the attention will continue
+being appended to the notebook until you exit the loop by typing
+<code class="docutils literal"><span class="pre">quit</span></code>. Please uncomment the following line to try out the interaction
+session.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [31]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">interactive_session</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">vocab</span><span class="p">,</span> <span class="n">i2w</span><span class="p">,</span> <span class="n">show_attention</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Enter one or more words to see their phonetic transcription.
+&gt; blah
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_204_Sequence_To_Sequence_63_1.png" src="_images/CNTK_204_Sequence_To_Sequence_63_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+= R R IH AH N
+&gt; quit
+</pre></div></div>
+</div>
+<p>Notice how the attention weights show how important different parts of
+the input are for generating different tokens in the output. For tasks
+like machine translation, where the order of one-to-one words often
+changes due to grammatical differences between languages, this becomes
+very interesting as we see the attention window move further away from
+the diagonal that is mostly displayed in grapheme-to-phoneme
+translations.</p>
+<p><strong>What’s next</strong></p>
+<p>With the above model, you have the basics for training a powerful
+sequence-to-sequence model with attention in a number of distinct
+domains. The only major changes required are preparing a dataset with
+pairs input and output sequences and in general the rest of the building
+blocks will remain the same. Good luck, and have fun!</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

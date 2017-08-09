@@ -1,0 +1,1110 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 206 Part A: Basic GAN with MNIST data &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 206 Part A: Basic GAN with MNIST data</a><ul>
+<li><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li><a class="reference internal" href="#Data-Reading">Data Reading</a></li>
+<li><a class="reference internal" href="#Model-Creation">Model Creation</a><ul>
+<li><a class="reference internal" href="#Model-config">Model config</a></li>
+<li><a class="reference internal" href="#Model-components">Model components</a></li>
+<li><a class="reference internal" href="#Build-the-graph">Build the graph</a></li>
+<li><a class="reference internal" href="#Training-the-Model">Training the Model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Generating-Fake-(Synthetic)-Images">Generating Fake (Synthetic) Images</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 206 Part A: Basic GAN with MNIST data</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_206A_Basic_GAN.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-206-Part-A:-Basic-GAN-with-MNIST-data">
+<h1>CNTK 206 Part A: Basic GAN with MNIST data<a class="headerlink" href="#CNTK-206-Part-A:-Basic-GAN-with-MNIST-data" title="Permalink to this headline">¶</a></h1>
+<p><strong>Prerequisites</strong>: We assume that you have successfully downloaded the
+MNIST data by completing the tutorial titled
+CNTK_103A_MNIST_DataLoader.ipynb.</p>
+<div class="section" id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference external" href="https://en.wikipedia.org/wiki/Generative_model">Generative models</a>
+have gained a <a class="reference external" href="https://openai.com/blog/generative-models/">lot of
+attention</a> in deep
+learning community which has traditionally leveraged <a class="reference external" href="https://en.wikipedia.org/wiki/Discriminative_model">discriminative
+models</a> for
+(semi-supervised) and unsupervised learning. In generative modeling, the
+idea is to collect a huge amount of data in a domain of interest (e.g.,
+pictures, audio, words) and come up with a trained model that generates
+such real world data sets. This is an active area of research needing
+mechanisms to scale up training and having large datasets. As stated in
+the <a class="reference external" href="https://openai.com/blog/generative-models/">OpenAI blog</a>, such
+approaches may be used to perform computer aided art generation, or
+morph images to some word descriptions such as “make my smile wider”.
+This approach has found use in image denoising, inpainting,
+super-resolution, structured prediction, exploration in reinforcement
+learning, and neural network pretraining in cases where labeled data is
+expensive.</p>
+<p>Generating models that can produce realistic content (images, sounds
+etc.) mimicking real world observations is challenging. Generative
+Adversarial Network (GAN) is one of the approaches that holds promise. A
+<a class="reference external" href="https://www.quora.com/What-are-some-recent-and-potentially-upcoming-breakthroughs-in-deep-learning">quote</a>
+from Yann LeCun summarizes GAN and its variations as the most important
+idea in the last 10 years. The original idea was proposed by <a class="reference external" href="https://arxiv.org/pdf/1406.2661v1.pdf">Goodfellow
+et al</a> at NIPS 2014. In this
+tutorial, we show how to use the Cognitive Toolkit to create a basic GAN
+network for generating synthetic MNIST digits.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib</span> <span class="kn">as</span> <span class="nn">mpl</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<p>There are two run modes: - <em>Fast mode</em>: <code class="docutils literal"><span class="pre">isFast</span></code> is set to <code class="docutils literal"><span class="pre">True</span></code>.
+This is the default mode for the notebooks, which means we train for
+fewer iterations or train / test on limited data. This ensures
+functional correctness of the notebook though the models produced are
+far from what a completed training would produce.</p>
+<ul class="simple">
+<li><em>Slow mode</em>: We recommend the user to set this flag to <code class="docutils literal"><span class="pre">False</span></code> once
+the user has gained familiarity with the notebook content and wants
+to gain insight from running the notebooks for a longer period with
+different parameters for training.</li>
+</ul>
+<p><strong>Note</strong> If the <code class="docutils literal"><span class="pre">isFlag</span></code> is set to <code class="docutils literal"><span class="pre">False</span></code> the notebook will take a
+few hours on a GPU enabled machine. You can try fewer iterations by
+setting the <code class="docutils literal"><span class="pre">num_minibatches</span></code> to a smaller number say <code class="docutils literal"><span class="pre">20,000</span></code> which
+comes at the expense of quality of the generated images.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">isFast</span> <span class="o">=</span> <span class="bp">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-Reading">
+<h2>Data Reading<a class="headerlink" href="#Data-Reading" title="Permalink to this headline">¶</a></h2>
+<p>The input to the GAN will be a vector of random numbers. At the end of
+the traning, the GAN “learns” to generate images of hand written digits
+drawn from the <a class="reference external" href="https://en.wikipedia.org/wiki/MNIST_database">MNIST
+database</a>. We will be
+using the same MNIST data generated in tutorial 103A. A more in-depth
+discussion of the data format and reading methods can be seen in
+previous tutorials. For our purposes, just know that the following
+function returns an object that will be used to generate images from the
+MNIST dataset. Since we are building an unsupervised model, we only need
+to read in <code class="docutils literal"><span class="pre">features</span></code> and ignore the <code class="docutils literal"><span class="pre">labels</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Ensure the training data is generated and available for this tutorial</span>
+<span class="c1"># We search in two locations in the toolkit for the cached MNIST data set.</span>
+
+<span class="n">data_found</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">for</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;Image&quot;</span><span class="p">,</span> <span class="s2">&quot;DataSets&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">),</span>
+                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)]:</span>
+    <span class="n">train_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Train-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">train_file</span><span class="p">):</span>
+        <span class="n">data_found</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">break</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_found</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please generate the data by completing CNTK 103 Part A&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Data directory is {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data directory is ..\Examples\Image\DataSets\MNIST
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">label_dim</span><span class="p">):</span>
+    <span class="n">deserializer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">path</span><span class="p">,</span>
+        <span class="n">streams</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+            <span class="n">labels_unused</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">label_dim</span><span class="p">,</span> <span class="n">is_sparse</span> <span class="o">=</span> <span class="bp">False</span><span class="p">),</span>
+            <span class="n">features</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span> <span class="o">=</span> <span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">is_sparse</span> <span class="o">=</span> <span class="bp">False</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span>
+        <span class="n">deserializers</span> <span class="o">=</span> <span class="n">deserializer</span><span class="p">,</span>
+        <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span>
+        <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span>
+    <span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The random noise we will use to train the GAN is provided by the
+<code class="docutils literal"><span class="pre">noise_sample</span></code> function to generate random noise samples from a
+uniform distribution within the interval [-1, 1].</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">123</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">noise_sample</span><span class="p">(</span><span class="n">num_samples</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span>
+        <span class="n">low</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">high</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="p">[</span><span class="n">num_samples</span><span class="p">,</span> <span class="n">g_input_dim</span><span class="p">]</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Model-Creation">
+<h2>Model Creation<a class="headerlink" href="#Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>A GAN network is composed of two sub-networks, one called the Generator
+(<span class="math">\(G\)</span>) and the other Discriminator (<span class="math">\(D\)</span>). - The <strong>Generator</strong>
+takes random noise vector (<span class="math">\(z\)</span>) as input and strives to output
+synthetic (fake) image (<span class="math">\(x^*\)</span>) that is indistinguishable from the
+real image (<span class="math">\(x\)</span>) from the MNIST dataset. - The <strong>Discriminator</strong>
+strives to differentiate between the real image (<span class="math">\(x\)</span>) and the fake
+(<span class="math">\(x^*\)</span>) image.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://www.cntk.ai/jup/GAN_basic_flow.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/GAN_basic_flow.png"/></div>
+</div>
+<p>In each training iteration, the Generator produces more realistic fake
+images (in other words <em>minimizes</em> the difference between the real and
+generated counterpart) and also the Discriminator <em>maximizes</em> the
+probability of assigning the correct label (real vs. fake) to both real
+examples (from training set) and the generated fake ones. The two
+conflicting objectives between the sub-networks (<span class="math">\(G\)</span> and
+<span class="math">\(D\)</span>) leads to the GAN network (when trained) converge to an
+equilibrium, where the Generator produces realistic looking fake MNIST
+images and the Discriminator can at best randomly guess whether images
+are real or fake. The resulting Generator model once trained produces
+realistic MNIST image with the input being a random number.</p>
+<div class="section" id="Model-config">
+<h3>Model config<a class="headerlink" href="#Model-config" title="Permalink to this headline">¶</a></h3>
+<p>First, we establish some of the architectural and training
+hyper-parameters for our model.</p>
+<ul class="simple">
+<li>The generator network is a fully-connected network with a single
+hidden layer. The input will be a 100-dimensional random vector and
+the output will be a 784 dimensional vector, corresponding to a
+flattened version of a 28 x 28 fake image. The discriminator is also
+a single layer dense network. It takes as input the 784 dimensional
+output of the generator or a real MNIST image and outputs a single
+scalar - the estimated probability that the input image is a real
+MNIST image.</li>
+</ul>
+</div>
+<div class="section" id="Model-components">
+<h3>Model components<a class="headerlink" href="#Model-components" title="Permalink to this headline">¶</a></h3>
+<p>We build a computational graph for our model, one each for the generator
+and the discriminator. First, we establish some of the architectural
+parameters of our model.</p>
+<ul class="simple">
+<li>The generator takes a 100-dimensional random vector (for starters) as
+input (<span class="math">\(z\)</span>) and the outputs a 784 dimensional vector,
+corresponding to a flattened version of a 28 x 28 fake (synthetic)
+image (<span class="math">\(x^*\)</span>). In this tutorial we simply model the generator
+with two dense layers. We use a tanh activation on the last layer to
+make sure that the output of the generator function is confined to
+the interval [-1, 1]. This is necessary because we also scale the
+MNIST images to this interval, and the outputs of the generator must
+be able to emulate the actual images as closely as possible.</li>
+<li>The discriminator takes as input (<span class="math">\(x^*\)</span>) the 784 dimensional
+output of the generator or a real MNIST image and outputs the
+estimated probability that the input image is a real MNIST image. We
+also model this with two dense layers with a sigmoid activation in
+the last layer ensuring that the discriminator produces a valid
+probability.</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># architectural parameters</span>
+<span class="n">g_input_dim</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">g_hidden_dim</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">g_output_dim</span> <span class="o">=</span> <span class="n">d_input_dim</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="n">d_hidden_dim</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">d_output_dim</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">generator</span><span class="p">(</span><span class="n">z</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">xavier</span><span class="p">()):</span>
+        <span class="n">h1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">g_hidden_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">z</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">g_output_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">tanh</span><span class="p">)(</span><span class="n">h1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">discriminator</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">xavier</span><span class="p">()):</span>
+        <span class="n">h1</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">d_hidden_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">d_output_dim</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">)(</span><span class="n">h1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We use a minibatch size of 1024 and a fixed learning rate of 0.0005 for
+training. In the fast mode (<code class="docutils literal"><span class="pre">isFast</span> <span class="pre">=</span> <span class="pre">True</span></code>) we verify only functional
+correctness with 300 iterations.</p>
+<p><strong>Note</strong>: In the slow mode, the results look a lot better but it
+requires patient waiting (few hours) depending on your hardware. In
+general, the more number of minibatches one trains, the better is the
+fidelity of the generated images.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># training config</span>
+<span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">num_minibatches</span> <span class="o">=</span> <span class="mi">300</span> <span class="k">if</span> <span class="n">isFast</span> <span class="k">else</span> <span class="mi">40000</span>
+<span class="n">lr</span> <span class="o">=</span> <span class="mf">0.00005</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Build-the-graph">
+<h3>Build the graph<a class="headerlink" href="#Build-the-graph" title="Permalink to this headline">¶</a></h3>
+<p>The rest of the computational graph is mostly responsible for
+coordinating the training algorithms and parameter updates, which is
+particularly tricky with GANs for couple reasons.</p>
+<ul class="simple">
+<li>First, the discriminator must be used on both the real MNIST images
+and fake images generated by the generator function. One way to
+represent this in the computational graph is to create a clone of the
+output of the discriminator function, but with substituted inputs.
+Setting <code class="docutils literal"><span class="pre">method=share</span></code> in the <code class="docutils literal"><span class="pre">clone</span></code> function ensures that both
+paths through the discriminator model use the same set of parameters.</li>
+<li>Second, we need to update the parameters for the generator and
+discriminator model separately using the gradients from different
+loss functions. We can get the parameters for a <code class="docutils literal"><span class="pre">Function</span></code> in the
+graph with the <code class="docutils literal"><span class="pre">parameters</span></code> attribute. However, when updating the
+model parameters, update only the parameters of the respective models
+while keeping the other parameters unchanged. In other words, when
+updating the generator we will update only the parameters of the
+<span class="math">\(G\)</span> function while keeping the parameters of the <span class="math">\(D\)</span>
+function fixed and vice versa.</li>
+</ul>
+</div>
+<div class="section" id="Training-the-Model">
+<h3>Training the Model<a class="headerlink" href="#Training-the-Model" title="Permalink to this headline">¶</a></h3>
+<p>The code for training the GAN very closely follows the algorithm as
+presented in the <a class="reference external" href="https://arxiv.org/pdf/1406.2661v1.pdf">original NIPS 2014
+paper</a>. In this
+implementation, we train <span class="math">\(D\)</span> to maximize the probability of
+assigning the correct label (fake vs. real) to both training examples
+and the samples from <span class="math">\(G\)</span>. In other words, <span class="math">\(D\)</span> and <span class="math">\(G\)</span>
+play the following two-player minimax game with the value function
+<span class="math">\(V(G,D)\)</span>:</p>
+<div class="math">
+\[\min_G \max_D V(D,G)= \mathbb{E}_{x}[ log D(x) ] + \mathbb{E}_{z}[ log(1 - D(G(z))) ]\]</div>
+<p>At the optimal point of this game the generator will produce realistic
+looking data while the discriminator will predict that the generated
+image is indeed fake with a probability of 0.5. The <a class="reference external" href="https://arxiv.org/pdf/1406.2661v1.pdf">algorithm referred
+below</a> is implemented in this
+tutorial.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 2</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://www.cntk.ai/jup/GAN_goodfellow_NIPS2014.png&quot;</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/GAN_goodfellow_NIPS2014.png" width="500"/></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">build_graph</span><span class="p">(</span><span class="n">noise_shape</span><span class="p">,</span> <span class="n">image_shape</span><span class="p">,</span>
+                <span class="n">G_progress_printer</span><span class="p">,</span> <span class="n">D_progress_printer</span><span class="p">):</span>
+    <span class="n">input_dynamic_axes</span> <span class="o">=</span> <span class="p">[</span><span class="n">C</span><span class="o">.</span><span class="n">Axis</span><span class="o">.</span><span class="n">default_batch_axis</span><span class="p">()]</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">noise_shape</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">input_dynamic_axes</span><span class="p">)</span>
+    <span class="n">X_real</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">image_shape</span><span class="p">,</span> <span class="n">dynamic_axes</span><span class="o">=</span><span class="n">input_dynamic_axes</span><span class="p">)</span>
+    <span class="n">X_real_scaled</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">X_real</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">)</span> <span class="o">-</span> <span class="mf">1.0</span>
+
+    <span class="c1"># Create the model function for the generator and discriminator models</span>
+    <span class="n">X_fake</span> <span class="o">=</span> <span class="n">generator</span><span class="p">(</span><span class="n">Z</span><span class="p">)</span>
+    <span class="n">D_real</span> <span class="o">=</span> <span class="n">discriminator</span><span class="p">(</span><span class="n">X_real_scaled</span><span class="p">)</span>
+    <span class="n">D_fake</span> <span class="o">=</span> <span class="n">D_real</span><span class="o">.</span><span class="n">clone</span><span class="p">(</span>
+        <span class="n">method</span> <span class="o">=</span> <span class="s1">&#39;share&#39;</span><span class="p">,</span>
+        <span class="n">substitutions</span> <span class="o">=</span> <span class="p">{</span><span class="n">X_real_scaled</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">X_fake</span><span class="o">.</span><span class="n">output</span><span class="p">}</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Create loss functions and configure optimazation algorithms</span>
+    <span class="n">G_loss</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">D_fake</span><span class="p">)</span>
+    <span class="n">D_loss</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">D_real</span><span class="p">)</span> <span class="o">+</span> <span class="n">C</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">D_fake</span><span class="p">))</span>
+
+    <span class="n">G_learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">fsadagrad</span><span class="p">(</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">X_fake</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">),</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="mi">700</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">D_learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">fsadagrad</span><span class="p">(</span>
+        <span class="n">parameters</span> <span class="o">=</span> <span class="n">D_real</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+        <span class="n">lr</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">),</span>
+        <span class="n">momentum</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="mi">700</span><span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Instantiate the trainers</span>
+    <span class="n">G_trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span>
+        <span class="n">X_fake</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">G_loss</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="n">G_learner</span><span class="p">,</span>
+        <span class="n">G_progress_printer</span>
+    <span class="p">)</span>
+    <span class="n">D_trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span>
+        <span class="n">D_real</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">D_loss</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span>
+        <span class="n">D_learner</span><span class="p">,</span>
+        <span class="n">D_progress_printer</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">X_real</span><span class="p">,</span> <span class="n">X_fake</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">G_trainer</span><span class="p">,</span> <span class="n">D_trainer</span>
+</pre></div>
+</div>
+</div>
+<p>With the value functions defined we proceed to interatively train the
+GAN model. The training of the model can take significnantly long
+depending on the hardware especiallly if <code class="docutils literal"><span class="pre">isFast</span></code> flag is turned off.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">reader_train</span><span class="p">):</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">2</span>
+
+    <span class="c1"># print out loss for each model for upto 50 times</span>
+    <span class="n">print_frequency_mbsize</span> <span class="o">=</span> <span class="n">num_minibatches</span> <span class="o">//</span> <span class="mi">50</span>
+    <span class="n">pp_G</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">print_frequency_mbsize</span><span class="p">)</span>
+    <span class="n">pp_D</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">print_frequency_mbsize</span> <span class="o">*</span> <span class="n">k</span><span class="p">)</span>
+
+    <span class="n">X_real</span><span class="p">,</span> <span class="n">X_fake</span><span class="p">,</span> <span class="n">Z</span><span class="p">,</span> <span class="n">G_trainer</span><span class="p">,</span> <span class="n">D_trainer</span> <span class="o">=</span> \
+        <span class="n">build_graph</span><span class="p">(</span><span class="n">g_input_dim</span><span class="p">,</span> <span class="n">d_input_dim</span><span class="p">,</span> <span class="n">pp_G</span><span class="p">,</span> <span class="n">pp_D</span><span class="p">)</span>
+
+    <span class="n">input_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">X_real</span><span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">train_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_minibatches</span><span class="p">):</span>
+
+        <span class="c1"># train the discriminator model for k steps</span>
+        <span class="k">for</span> <span class="n">gen_train_step</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k</span><span class="p">):</span>
+            <span class="n">Z_data</span> <span class="o">=</span> <span class="n">noise_sample</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">)</span>
+            <span class="n">X_data</span> <span class="o">=</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">X_data</span><span class="p">[</span><span class="n">X_real</span><span class="p">]</span><span class="o">.</span><span class="n">num_samples</span> <span class="o">==</span> <span class="n">Z_data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">batch_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">X_real</span><span class="p">:</span> <span class="n">X_data</span><span class="p">[</span><span class="n">X_real</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+                                <span class="n">Z</span><span class="p">:</span> <span class="n">Z_data</span><span class="p">}</span>
+                <span class="n">D_trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
+
+        <span class="c1"># train the generator model for a single step</span>
+        <span class="n">Z_data</span> <span class="o">=</span> <span class="n">noise_sample</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">)</span>
+        <span class="n">batch_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="n">Z</span><span class="p">:</span> <span class="n">Z_data</span><span class="p">}</span>
+        <span class="n">G_trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">batch_inputs</span><span class="p">)</span>
+
+        <span class="n">G_trainer_loss</span> <span class="o">=</span> <span class="n">G_trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span>
+
+    <span class="k">return</span> <span class="n">Z</span><span class="p">,</span> <span class="n">X_fake</span><span class="p">,</span> <span class="n">G_trainer_loss</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">train_file</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">d_input_dim</span><span class="p">,</span> <span class="n">label_dim</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">G_input</span><span class="p">,</span> <span class="n">G_output</span><span class="p">,</span> <span class="n">G_trainer_loss</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">reader_train</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Learning rate per sample: 5e-05
+Learning rate per sample: 5e-05
+ Minibatch[   1-  12]: loss = 0.460688 * 12288, metric = 0.00% * 12288;
+ Minibatch[   1-   6]: loss = 2.744962 * 6144, metric = 0.00% * 6144;
+ Minibatch[  13-  24]: loss = 0.496159 * 12288, metric = 0.00% * 12288;
+ Minibatch[   7-  12]: loss = 2.408652 * 6144, metric = 0.00% * 6144;
+ Minibatch[  25-  36]: loss = 0.468794 * 12288, metric = 0.00% * 12288;
+ Minibatch[  13-  18]: loss = 2.497859 * 6144, metric = 0.00% * 6144;
+ Minibatch[  37-  48]: loss = 0.549526 * 12288, metric = 0.00% * 12288;
+ Minibatch[  19-  24]: loss = 2.715347 * 6144, metric = 0.00% * 6144;
+ Minibatch[  49-  60]: loss = 1.273582 * 12288, metric = 0.00% * 12288;
+ Minibatch[  25-  30]: loss = 1.957965 * 6144, metric = 0.00% * 6144;
+ Minibatch[  61-  72]: loss = 1.263255 * 12288, metric = 0.00% * 12288;
+ Minibatch[  31-  36]: loss = 2.055775 * 6144, metric = 0.00% * 6144;
+ Minibatch[  73-  84]: loss = 1.041039 * 12288, metric = 0.00% * 12288;
+ Minibatch[  37-  42]: loss = 1.913864 * 6144, metric = 0.00% * 6144;
+ Minibatch[  85-  96]: loss = 1.190252 * 12288, metric = 0.00% * 12288;
+ Minibatch[  43-  48]: loss = 1.834975 * 6144, metric = 0.00% * 6144;
+ Minibatch[  97- 108]: loss = 0.916644 * 12288, metric = 0.00% * 12288;
+ Minibatch[  49-  54]: loss = 1.856111 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 109- 120]: loss = 0.949138 * 12288, metric = 0.00% * 12288;
+ Minibatch[  55-  60]: loss = 1.612386 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 121- 132]: loss = 1.159921 * 12288, metric = 0.00% * 12288;
+ Minibatch[  61-  66]: loss = 1.720942 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 133- 144]: loss = 1.069388 * 12288, metric = 0.00% * 12288;
+ Minibatch[  67-  72]: loss = 1.742269 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 145- 156]: loss = 1.160007 * 12288, metric = 0.00% * 12288;
+ Minibatch[  73-  78]: loss = 1.752263 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 157- 168]: loss = 1.109970 * 12288, metric = 0.00% * 12288;
+ Minibatch[  79-  84]: loss = 2.054680 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 169- 180]: loss = 1.092135 * 12288, metric = 0.00% * 12288;
+ Minibatch[  85-  90]: loss = 1.904574 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 181- 192]: loss = 1.127416 * 12288, metric = 0.00% * 12288;
+ Minibatch[  91-  96]: loss = 1.740344 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 193- 204]: loss = 1.096188 * 12288, metric = 0.00% * 12288;
+ Minibatch[  97- 102]: loss = 1.672640 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 205- 216]: loss = 1.076912 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 103- 108]: loss = 1.567401 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 217- 228]: loss = 1.157102 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 109- 114]: loss = 1.651072 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 229- 240]: loss = 1.028144 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 115- 120]: loss = 1.683286 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 241- 252]: loss = 0.904863 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 121- 126]: loss = 1.785782 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 253- 264]: loss = 0.852108 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 127- 132]: loss = 1.827977 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 265- 276]: loss = 0.696002 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 133- 138]: loss = 2.021851 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 277- 288]: loss = 0.584447 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 139- 144]: loss = 2.205963 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 289- 300]: loss = 0.560834 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 145- 150]: loss = 2.256393 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 301- 312]: loss = 0.571917 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 151- 156]: loss = 2.246409 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 313- 324]: loss = 0.603770 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 157- 162]: loss = 2.246180 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 325- 336]: loss = 0.646258 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 163- 168]: loss = 2.244751 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 337- 348]: loss = 0.743782 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 169- 174]: loss = 2.081807 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 349- 360]: loss = 0.766006 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 175- 180]: loss = 2.005488 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 361- 372]: loss = 0.751595 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 181- 186]: loss = 2.073293 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 373- 384]: loss = 0.741732 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 187- 192]: loss = 2.031459 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 385- 396]: loss = 0.800578 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 193- 198]: loss = 2.146479 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 397- 408]: loss = 0.703397 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 199- 204]: loss = 2.148305 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 409- 420]: loss = 0.808739 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 205- 210]: loss = 1.946966 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 421- 432]: loss = 0.878929 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 211- 216]: loss = 1.935109 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 433- 444]: loss = 0.838549 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 217- 222]: loss = 1.906769 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 445- 456]: loss = 0.946877 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 223- 228]: loss = 1.882014 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 457- 468]: loss = 0.883135 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 229- 234]: loss = 1.900080 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 469- 480]: loss = 0.911140 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 235- 240]: loss = 1.947830 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 481- 492]: loss = 0.814674 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 241- 246]: loss = 2.027527 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 493- 504]: loss = 0.846405 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 247- 252]: loss = 1.890244 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 505- 516]: loss = 0.807406 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 253- 258]: loss = 2.031275 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 517- 528]: loss = 0.795118 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 259- 264]: loss = 2.050018 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 529- 540]: loss = 0.828629 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 265- 270]: loss = 1.943776 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 541- 552]: loss = 0.851117 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 271- 276]: loss = 1.986959 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 553- 564]: loss = 0.760867 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 277- 282]: loss = 2.125000 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 565- 576]: loss = 0.727046 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 283- 288]: loss = 2.122426 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 577- 588]: loss = 0.753314 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 289- 294]: loss = 2.060394 * 6144, metric = 0.00% * 6144;
+ Minibatch[ 589- 600]: loss = 0.794642 * 12288, metric = 0.00% * 12288;
+ Minibatch[ 295- 300]: loss = 1.989756 * 6144, metric = 0.00% * 6144;
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Print the generator loss</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Training loss of the generator is: {0:.2f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">G_trainer_loss</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training loss of the generator is: 2.07
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Generating-Fake-(Synthetic)-Images">
+<h2>Generating Fake (Synthetic) Images<a class="headerlink" href="#Generating-Fake-(Synthetic)-Images" title="Permalink to this headline">¶</a></h2>
+<p>Now that we have trained the model, we can create fake images simply by
+feeding random noise into the generator and displaying the outputs.
+Below are a few images generated from random samples. To get a new set
+of samples, you can re-run the last cell.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">plot_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">subplot_shape</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">style</span><span class="o">.</span><span class="n">use</span><span class="p">(</span><span class="s1">&#39;ggplot&#39;</span><span class="p">)</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="o">*</span><span class="n">subplot_shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">image</span><span class="p">,</span> <span class="n">ax</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">()):</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="n">vmin</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">vmax</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">cmap</span> <span class="o">=</span> <span class="s1">&#39;gray&#39;</span><span class="p">)</span>
+        <span class="n">ax</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">noise</span> <span class="o">=</span> <span class="n">noise_sample</span><span class="p">(</span><span class="mi">36</span><span class="p">)</span>
+<span class="n">images</span> <span class="o">=</span> <span class="n">G_output</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="n">G_input</span><span class="p">:</span> <span class="n">noise</span><span class="p">})</span>
+<span class="n">plot_images</span><span class="p">(</span><span class="n">images</span><span class="p">,</span> <span class="n">subplot_shape</span> <span class="o">=</span><span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_206A_Basic_GAN_28_0.png" src="_images/CNTK_206A_Basic_GAN_28_0.png" />
+</div>
+</div>
+<p>Larger number of iterations should generate more realistic looking MNIST
+images. A sampling of such generated images are shown below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 3</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;http://www.cntk.ai/jup/GAN_basic_slowmode.jpg&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[18]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://www.cntk.ai/jup/GAN_basic_slowmode.jpg"/></div>
+</div>
+<p><strong>Note</strong>: It takes a large number of iterations to capture a
+representation of the real world signal. Even simple dense networks can
+be quite effective in modelling data albeit MNIST is a relatively simple
+dataset as well.</p>
+<p><strong>Suggested Task</strong></p>
+<ul class="simple">
+<li>Explore the impact of changing the dimension of the input random
+noise (say from 100 to 10) in terms of computation time, loss and
+memory footprint for the same number of iterations.</li>
+<li>Scale the image from 0 to 1. What other changes in the network are
+needed?</li>
+<li>Performance is a key aspect to deep neural networks training. Study
+how the changing the minibatch sizes impact the performance both with
+regards to quality of the generated images and the time it takes to
+train a model.</li>
+<li>Try generating fake images using the CIFAR-10 data set as the
+training data. How does the network above perform?</li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

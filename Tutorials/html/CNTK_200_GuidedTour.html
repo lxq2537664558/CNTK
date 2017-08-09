@@ -1,0 +1,1630 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK: A Guided Tour &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK: A Guided Tour</a></li>
+<li><a class="reference internal" href="#Defining-Your-Model-Structure">Defining Your Model Structure</a><ul>
+<li><a class="reference internal" href="#The-CNTK-Programming-Model:-Networks-are-Function-Objects">The CNTK Programming Model: Networks are Function Objects</a></li>
+<li><a class="reference internal" href="#CNTK's-Data-model:-Sequences-of-Tensors">CNTK’s Data model: Sequences of Tensors</a></li>
+<li><a class="reference internal" href="#Your-First-CNTK-Network:-Simple-Logistic-Regression">Your First CNTK Network: Simple Logistic Regression</a></li>
+<li><a class="reference internal" href="#Your-Second-CNTK-Network:-MNIST-Digit-Recognition">Your Second CNTK Network: MNIST Digit Recognition</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Graph-API-Example:-MNIST-Digit-Recognition-Again">Graph API Example: MNIST Digit Recognition Again</a></li>
+<li><a class="reference internal" href="#Feeding-Your-Data">Feeding Your Data</a><ul>
+<li><a class="reference internal" href="#1.-Feeding-Data-Via-Numpy/Scipy-Arrays">1. Feeding Data Via Numpy/Scipy Arrays</a></li>
+<li><a class="reference internal" href="#2.-Feeding-Data-Using-the-MinibatchSource-class-for-Reading-Data">2. Feeding Data Using the <code class="docutils literal"><span class="pre">MinibatchSource</span></code> class for Reading Data</a></li>
+<li><a class="reference internal" href="#3.-Feeding-Data-Via-an-Explicit-Minibatch-Loop">3. Feeding Data Via an Explicit Minibatch Loop</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Training-and-Evaluating">Training and Evaluating</a><ul>
+<li><a class="reference internal" href="#1.-Distributed-Training">1. Distributed Training</a></li>
+<li><a class="reference internal" href="#2.-Callbacks">2. Callbacks</a></li>
+<li><a class="reference internal" href="#Putting-it-all-Together:-Advanced-Training-Example">Putting it all Together: Advanced Training Example</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Deploying-your-Model">Deploying your Model</a></li>
+<li><a class="reference internal" href="#Conclusion">Conclusion</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK: A Guided Tour</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_200_GuidedTour.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK:-A-Guided-Tour">
+<h1>CNTK: A Guided Tour<a class="headerlink" href="#CNTK:-A-Guided-Tour" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial exposes many advanced features of CNTK and is aimed
+towards people who have had some previous exposure to deep learning
+and/or other deep learning toolkits. If you are a complete beginner we
+suggest you start with the CNTK 101 Tutorial and come here after you
+have covered most of the 100 series.</p>
+<p>Welcome to CNTK! Deep neural networks are redefining how computer
+programs are created. In addition to imperative, functional, declarative
+programming, we now have differentiable programming which effectively
+‘learns’ programs from data.</p>
+<p>CNTK is the prime tool that Microsoft product groups use to create deep
+models for a whole range of products, from speech recognition and
+machine translation via various image-classification services to Bing
+search ranking.</p>
+<p>This tutorial is a guided tour of CNTK. It is primarily meant for users
+that are new to CNTK but have some experience with deep neural networks.
+The focus will be on how the basic steps of deep learning are done in
+CNTK, which we will show predominantly by example. This tour is not a
+complete API description. Instead, we refer the reader to the
+documentation and task-specific tutorials for more detailed information.</p>
+<p>To train a deep model, you will need to define your model structure,
+prepare your data so that it can be fed to CNTK, train the model and
+evaluate its accuracy, and deploy it.</p>
+<p>This guided tour is organized as follows:</p>
+<ul class="simple">
+<li>Defining your <strong>model structure</strong><ul>
+<li>The CNTK programming model: Networks as Function Objects</li>
+<li>CNTK’s Data Model: Tensors and Sequences of Tensors</li>
+<li>Your First CNTK Network: Logistic Regression</li>
+<li>Your second CNTK Network: MNIST Digit Recognition</li>
+<li>The Graph API: MNIST Digit Recognition Once More</li>
+</ul>
+</li>
+<li>Feeding your <strong>data</strong><ul>
+<li>Small data sets that fit into memory: numpy/scipy arrays/</li>
+<li>Large data sets: <code class="docutils literal"><span class="pre">MinibatchSource</span></code> class</li>
+<li>Spoon-feeding data: your own minibatch loop</li>
+</ul>
+</li>
+<li><strong>Training</strong><ul>
+<li>Distributed Training</li>
+<li>Logging</li>
+<li>Checkpointing</li>
+<li>Cross-validation based training control</li>
+<li>Final evaluation</li>
+</ul>
+</li>
+<li><strong>Deploying</strong> the model<ul>
+<li>From Python</li>
+<li>From C++ and C#</li>
+<li>From your own web service</li>
+<li>Via an Azure web service</li>
+</ul>
+</li>
+<li>Conclusion</li>
+</ul>
+<p>To run this tutorial, you will need CNTK v2 and ideally a CUDA-capable
+GPU (deep learning is no fun without GPUs).</p>
+<p>We start with some imports we will use in the rest of the tutorial.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">cntk</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">scipy.sparse</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix the random seed so that LR examples are repeatable</span>
+<span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">40</span><span class="p">,</span><span class="mi">40</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Defining-Your-Model-Structure">
+<h1>Defining Your Model Structure<a class="headerlink" href="#Defining-Your-Model-Structure" title="Permalink to this headline">¶</a></h1>
+<p>So let us dive right in. Below we will introduce CNTK’s data model and
+CNTK’s programming model–<em>networks are function objects</em> (i.e. a
+network can be called like a function, and it also holds some state, the
+weights, or parameters, that get adjusted during learning). We will put
+that into action for logistic regression and MNIST digit recognition,
+using CNTK’s Functional API. Lastly, CNTK also has a lower-level graph
+API. We will replicate one example with it.</p>
+<div class="section" id="The-CNTK-Programming-Model:-Networks-are-Function-Objects">
+<h2>The CNTK Programming Model: Networks are Function Objects<a class="headerlink" href="#The-CNTK-Programming-Model:-Networks-are-Function-Objects" title="Permalink to this headline">¶</a></h2>
+<p>In CNTK, a neural network is a function object. On one hand, a neural
+network in CNTK is just a function that you can call to apply it to
+data. On the other hand, a neural network contains learnable parameters
+that can be accessed like object members. Complicated networks can be
+composed as hierarchies of simpler ones, which, for example, represent
+layers. The function-object approach is similar to
+<a class="reference external" href="https://keras.io">Keras</a>, <a class="reference external" href="http://chainer.org">Chainer</a>,
+<a class="reference external" href="https://github.com/clab/dynet">Dynet</a>,
+<a class="reference external" href="http://pytorch.org/">Pytorch</a>, and
+<a class="reference external" href="https://github.com/deepmind/sonnet">Sonnet</a>.</p>
+<p>The following illustrates the function-object approach with
+<strong>pseudo-code</strong>, using the example of a fully-connected layer (called
+<code class="docutils literal"><span class="pre">Dense</span></code> in CNTK):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># *Conceptual* numpy implementation of CNTK&#39;s Dense layer (simplified, e.g. no back-prop)</span>
+<span class="k">def</span> <span class="nf">Dense</span><span class="p">(</span><span class="n">out_dim</span><span class="p">,</span> <span class="n">activation</span><span class="p">):</span>
+    <span class="c1"># create the learnable parameters</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">out_dim</span><span class="p">)</span>
+    <span class="n">W</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="n">out_dim</span><span class="p">))</span> <span class="c1"># input dimension is unknown</span>
+    <span class="c1"># define the function itself</span>
+    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">W</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># first call: reshape and initialize W</span>
+            <span class="n">W</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">refcheck</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+            <span class="n">W</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="o">*</span><span class="n">W</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.05</span>
+        <span class="k">return</span> <span class="n">activation</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="n">b</span><span class="p">)</span>
+    <span class="c1"># return as function object: can be called &amp; holds parameters as members</span>
+    <span class="n">dense</span><span class="o">.</span><span class="n">W</span> <span class="o">=</span> <span class="n">W</span>
+    <span class="n">dense</span><span class="o">.</span><span class="n">b</span> <span class="o">=</span> <span class="n">b</span>
+    <span class="k">return</span> <span class="n">dense</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">)</span>    <span class="c1"># create the function object</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>  <span class="c1"># apply it like a function</span>
+<span class="n">W</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">W</span>                  <span class="c1"># access member like an object</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;W =&#39;</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">W</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;y =&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+W = [[-0.11212911  0.0394963   0.07106527 -0.0361842   0.08778843]
+ [ 0.02787555  0.03669561  0.02474367 -0.06650516 -0.09253318]]
+y = [-0.05631835  0.11241042  0.11997199 -0.1675983  -0.09697224]
+</pre></div></div>
+</div>
+<p>Again, this is only <strong>pseudo-code</strong>. In reality, CNTK function objects
+are not backed by numpy arrays. Rather, they are represented internally
+as graph structures in C++ that encode the computation, similar to other
+deep learning toolkits. In fact the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">d</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">tanh</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>is just construsting a graph, while the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p>is feeding data to the graph execution engine.</p>
+<p>This graph structure is wrapped in the Python class <code class="docutils literal"><span class="pre">Function</span></code> that
+exposes the necessary interface so that other Python functions can call
+it and access its members (such as <code class="docutils literal"><span class="pre">W</span></code> and <code class="docutils literal"><span class="pre">b</span></code>).</p>
+<p>The function object is CNTK’s single abstraction used to represent
+different operations, which are only distinguished by convention:</p>
+<ul class="simple">
+<li><strong>basic operations</strong> without learnable parameters (e.g. <code class="docutils literal"><span class="pre">+</span></code>, <code class="docutils literal"><span class="pre">*</span></code>,
+<code class="docutils literal"><span class="pre">sigmoid()</span></code>…)</li>
+<li><strong>layers</strong> (<code class="docutils literal"><span class="pre">Dense()</span></code>, <code class="docutils literal"><span class="pre">Embedding()</span></code>, <code class="docutils literal"><span class="pre">Convolution()</span></code>…).
+Layers map one input to one output and may have learnable parameters
+attached to them.</li>
+<li><strong>recurrent step functions</strong> (<code class="docutils literal"><span class="pre">LSTM()</span></code>, <code class="docutils literal"><span class="pre">GRU()</span></code>, <code class="docutils literal"><span class="pre">RNNStep()</span></code>).
+Step functions map a previous state and a new input to a new state.</li>
+<li><strong>loss and metric</strong> functions (<code class="docutils literal"><span class="pre">cross_entropy_with_softmax()</span></code>,
+<code class="docutils literal"><span class="pre">binary_cross_entropy()</span></code>, <code class="docutils literal"><span class="pre">squared_error()</span></code>,
+<code class="docutils literal"><span class="pre">classification_error()</span></code>…). In CNTK, losses and metric are not
+particularly special, they are just functions. The only difference is
+that while a CNTK function can have one or multiple outputs, a loss
+and metric must have a single output. Note that a loss does not have
+to output a scalar value: If the output of a loss is not scalar, CNTK
+will automatically define the loss as the sum of the outputs. This
+behavior can be overriden by explicitly performing a reduction
+operation by yourself.</li>
+<li><strong>models</strong>. Models are defined by the user. A model maps features to
+predictions or scores, and is what gets deployed in the end.</li>
+<li><strong>criterion function</strong>. The criterion function maps (features,
+labels) to a loss and optionally a metric. The Trainer optimizes the
+loss by SGD, and logs the metric. The metric may be
+non-differentiable, but the loss must be differentiable.</li>
+</ul>
+<p>Higher-order layers compose objects into more complex ones, including:</p>
+<ul class="simple">
+<li>layer <strong>stacking</strong> (<code class="docutils literal"><span class="pre">Sequential()</span></code>, <code class="docutils literal"><span class="pre">For()</span></code>)</li>
+<li><strong>recurrence</strong> (<code class="docutils literal"><span class="pre">Recurrence()</span></code>, <code class="docutils literal"><span class="pre">Fold()</span></code>, <code class="docutils literal"><span class="pre">UnfoldFrom()</span></code>, …)</li>
+</ul>
+<p>Networks are commonly defined by using existing CNTK functions (such as
+specific types of neural-network layers) and composing them using
+<code class="docutils literal"><span class="pre">Sequential()</span></code>. In addition, users can write their own functions as
+arbitrary Python expressions, as long as those consist of CNTK
+operations over CNTK data types. Python expressions get converted into
+the internal representation by wrapping them in a call to
+<code class="docutils literal"><span class="pre">Function()</span></code>. Expressions can be written as multi-line functions
+through decorator syntax (<code class="docutils literal"><span class="pre">&#64;Function</span></code>).</p>
+<p>Even if an operation cannot be expressed by combining CNTK’s primitives,
+there are mechanisms for <a class="reference external" href="https://www.cntk.ai/pythondocs/extend.html">extending
+CNTK</a> by writing your own
+“layer” in Python (or in C++). This is advanced functionality, that you
+shouldn’t worry about now, but it’s good to know about it in case you
+ever need it.</p>
+<p>Finally, CNTK function objects enable easy parameter sharing. If you
+call the same function object at multiple places, all invocations will
+naturally share the same learnable parameters. To avoid sharing
+parameters, you simply create two different function objects.</p>
+<p>In summary, the function object is CNTK’s single abstraction for
+conveniently defining simple and complex models, parameter sharing, and
+training objectives.</p>
+<p>It is also possible to define CNTK networks directly in terms of its
+underlying graph operations, similar to many other toolkits. And you can
+freely <em>mix and match</em> between the two styles of defining your neural
+network. This is discussed further below.</p>
+</div>
+<div class="section" id="CNTK's-Data-model:-Sequences-of-Tensors">
+<h2>CNTK’s Data model: Sequences of Tensors<a class="headerlink" href="#CNTK's-Data-model:-Sequences-of-Tensors" title="Permalink to this headline">¶</a></h2>
+<p>CNTK can operate on two types of data:</p>
+<ul class="simple">
+<li><strong>tensors</strong> (that is, N-dimensional arrays), dense or sparse</li>
+<li><strong>sequences</strong> of tensors</li>
+</ul>
+<p>The distinction is that the shape of a tensor is static during
+operation, while the length of a sequence depends on data. In CNTK we
+use axes to mean the same thing as dimensions for numpy arrays, i.e. a
+tensor of shape (7,10,6) has three <em>axes</em>. Tensors have <em>static axes</em>,
+while a sequence has an additional <em>dynamic axis</em>. A dynamic axis, is
+therefore a variable length axis.</p>
+<p>Categorical data is represented as sparse one-hot tensors (i.e. having
+all elements 0 except a single 1 at the position of the category it
+encodes). This allows to write embeddings and loss functions in a
+unified fashion as matrix products.</p>
+<p>Printing a CNTK function will give you an output similar to the
+following format:</p>
+<p><em>Operation</em>(Sequence[Tensor[<em>shape</em>]], <em>other arguments</em>) -&gt;
+Tensor[<em>shape</em>]</p>
+<p>When the <em>Operation</em> is <code class="docutils literal"><span class="pre">Composite</span></code> the function is representing the
+whole graph underneath it and what’s shown is just the last operation.
+This graph has a certain number of inputs that expect particular types
+of inputs. When you print a function you will note <strong>the absence of a
+batch dimension</strong>. CNTK hides batching from the user. We want users to
+think in tensors and sequences, and leave mini-batching to CNTK. Unlike
+other toolkits, CNTK can also automatically batch sequences with
+different lengths into one minibatch, and handles all necessary padding
+and packing. Workarounds like ‘bucketing’ are not needed. The reason we
+are separatring the dynamic axes (batch and sequence) from the static
+axes is because there are only very few operations that affect these
+axes. By default you want to do something to every example in the batch
+and every element of a sequence. Only few special operations (such as
+recurrence, or batch normalization), need to deal with these axes.</p>
+</div>
+<div class="section" id="Your-First-CNTK-Network:-Simple-Logistic-Regression">
+<h2>Your First CNTK Network: Simple Logistic Regression<a class="headerlink" href="#Your-First-CNTK-Network:-Simple-Logistic-Regression" title="Permalink to this headline">¶</a></h2>
+<p>Let us put all of this in action for a very simple example of logistic
+regression. For this example, we create a synthetic data set of
+2-dimensional normal-distributed data points, which should be classified
+into belonging to one of two classes. Note that CNTK expects the labels
+as one-hot encoded.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_dim_lr</span> <span class="o">=</span> <span class="mi">2</span>    <span class="c1"># classify 2-dimensional data</span>
+<span class="n">num_classes_lr</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># into one of two classes</span>
+
+<span class="c1"># This example uses synthetic data from normal distributions,</span>
+<span class="c1"># which we generate in the following.</span>
+<span class="c1">#  X_lr[corpus_size,input_dim] - input data</span>
+<span class="c1">#  Y_lr[corpus_size]           - labels (0 or 1), one-hot-encoded</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">generate_synthetic_data</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="n">num_classes_lr</span><span class="p">)</span>  <span class="c1"># labels</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">input_dim_lr</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">Y</span><span class="p">[:,</span><span class="bp">None</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>   <span class="c1"># data</span>
+    <span class="c1"># Our model expects float32 features, and cross-entropy</span>
+    <span class="c1"># expects one-hot encoded labels.</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">),</span> <span class="n">Y</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">num_classes_lr</span><span class="p">))</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">,</span> <span class="n">Y</span>
+<span class="n">X_train_lr</span><span class="p">,</span> <span class="n">Y_train_lr</span> <span class="o">=</span> <span class="n">generate_synthetic_data</span><span class="p">(</span><span class="mi">20000</span><span class="p">)</span>
+<span class="n">X_test_lr</span><span class="p">,</span>  <span class="n">Y_test_lr</span>  <span class="o">=</span> <span class="n">generate_synthetic_data</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;data =</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">X_train_lr</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;labels =</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">Y_train_lr</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">todense</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+data =
+ [[ 2.2741797   3.56347561]
+ [ 5.12873602  5.79089499]
+ [ 1.3574543   5.5718112 ]
+ [ 3.54340553  2.46254587]]
+labels =
+ [[ 1.  0.]
+ [ 0.  1.]
+ [ 0.  1.]
+ [ 1.  0.]]
+</pre></div></div>
+</div>
+<p>We now define the model function. The model function maps input data to
+predictions. It is the final product of the training process. In this
+example, we use the simplest of all models: logistic regression.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">model_lr_factory</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes_lr</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim_lr</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_classes_lr</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">model_lr</span> <span class="o">=</span> <span class="n">model_lr_factory</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Next, we define the criterion function. The criterion function is the
+harness via which the trainer uses to optimize the model: It maps (input
+vectors, labels) to (loss, metric). The loss is used for the SGD
+updates. We choose cross entropy. Specifically,
+<code class="docutils literal"><span class="pre">cross_entropy_with_softmax()</span></code> first applies the <code class="docutils literal"><span class="pre">softmax()</span></code>
+function to the network’s output, as cross entropy expects
+probabilities. We do not include <code class="docutils literal"><span class="pre">softmax()</span></code> in the model function
+itself, because it is not necessary for using the model. As the metric,
+we count classification errors (this metric is not differentiable).</p>
+<p>We define criterion function as Python code and convert it to a
+<code class="docutils literal"><span class="pre">Function</span></code> object. A single expression can be written as
+<code class="docutils literal"><span class="pre">Function(lambda</span> <span class="pre">x,</span> <span class="pre">y:</span></code><em>expression of x and y</em><code class="docutils literal"><span class="pre">)</span></code>, similar to
+Keras’ <code class="docutils literal"><span class="pre">Lambda()</span></code>. To avoid evaluating the model twice, we use a
+Python function definition with decorator syntax. This is also a good
+time to tell CNTK about the data types of our inputs, which is done via
+the decorator <code class="docutils literal"><span class="pre">&#64;Function</span></code>:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="nd">@cntk.Function</span>
+<span class="k">def</span> <span class="nf">criterion_lr_factory</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">model_lr_factory</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># apply model. Computes a non-normalized log probability for every output class.</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span> <span class="c1"># applies softmax to z under the hood</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span>
+<span class="n">criterion_lr</span> <span class="o">=</span> <span class="n">criterion_lr_factory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;criterion_lr:&#39;</span><span class="p">,</span> <span class="n">criterion_lr</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+criterion_lr: Composite(Tensor[2], SparseTensor[2]) -&gt; Tuple[Tensor[1], Tensor[1]]
+</pre></div></div>
+</div>
+<p>The decorator will ‘compile’ the Python function into CNTK’s internal
+graph representation. Thus, the resulting <code class="docutils literal"><span class="pre">criterion</span></code> not a Python
+function but a CNTK <code class="docutils literal"><span class="pre">Function</span></code> object.</p>
+<p>We are now ready to train our model.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">learner</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">model_lr</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                   <span class="n">cntk</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">cntk</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">))</span>
+<span class="n">progress_writer</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">criterion_lr</span><span class="o">.</span><span class="n">train</span><span class="p">((</span><span class="n">X_train_lr</span><span class="p">,</span> <span class="n">Y_train_lr</span><span class="p">),</span> <span class="n">parameter_learners</span><span class="o">=</span><span class="p">[</span><span class="n">learner</span><span class="p">],</span>
+                   <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress_writer</span><span class="p">])</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">model_lr</span><span class="o">.</span><span class="n">W</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="c1"># peek at updated W</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+ average      since    average      since      examples
+    loss       last     metric       last
+ ------------------------------------------------------
+Learning rate per minibatch: 0.1
+     3.58       3.58      0.562      0.562            32
+     1.61      0.629      0.458      0.406            96
+      1.1      0.715      0.464      0.469           224
+     0.88      0.688      0.454      0.445           480
+    0.734      0.598      0.427      0.402           992
+    0.637      0.543      0.351      0.277          2016
+    0.541      0.447      0.257      0.165          4064
+     0.45      0.359      0.186      0.115          8160
+    0.366      0.284      0.137     0.0876         16352
+[[-1.25055134 -0.53687745]
+ [-0.99188197 -0.30085728]]
+</pre></div></div>
+</div>
+<p>The <code class="docutils literal"><span class="pre">learner</span></code> is the object that actually performs the model update.
+Alternative learners include <code class="docutils literal"><span class="pre">momentum_sgd()</span></code> and <code class="docutils literal"><span class="pre">adam()</span></code>. The
+<code class="docutils literal"><span class="pre">progress_writer</span></code> is a stock logging callback that prints the output
+you see above, and can be replaced by your own or the stock
+<code class="docutils literal"><span class="pre">TensorBoardProgressWriter</span></code> to visualize training progress using
+TensorBoard.</p>
+<p>The <code class="docutils literal"><span class="pre">train()</span></code> function is feeding our data
+<code class="docutils literal"><span class="pre">(X_train_lr,</span> <span class="pre">Y_train_lr)</span></code> minibatch by minibatch to the model and
+updates it, where the data is a tuple in the same order as the arguments
+of <code class="docutils literal"><span class="pre">criterion_lr()</span></code>.</p>
+<p>Let us test how we are doing on our test set (this will also run
+minibatch by minibatch).</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">test_metric_lr</span> <span class="o">=</span> <span class="n">criterion_lr</span><span class="o">.</span><span class="n">test</span><span class="p">((</span><span class="n">X_test_lr</span><span class="p">,</span> <span class="n">Y_test_lr</span><span class="p">),</span>
+                                   <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress_writer</span><span class="p">])</span><span class="o">.</span><span class="n">metric</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Finished Evaluation [1]: Minibatch[1-32]: metric = 8.11% * 1024;
+</pre></div></div>
+</div>
+<p>And lastly, let us run a few samples through our model and see how it is
+doing. Oops, <code class="docutils literal"><span class="pre">criterion</span></code> knew the input types, but <code class="docutils literal"><span class="pre">model_lr</span></code> does
+not, so we tell it.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">model_lr</span> <span class="o">=</span> <span class="n">model_lr_factory</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;model_lr:&#39;</span><span class="p">,</span> <span class="n">model_lr</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+model_lr: Composite(Dense): Input(&#39;Input19&#39;, [#], [2]) -&gt; Output(&#39;Block272_Output_0&#39;, [#], [2])
+</pre></div></div>
+</div>
+<p>Now we can call it like any Python function:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">z</span> <span class="o">=</span> <span class="n">model_lr</span><span class="p">(</span><span class="n">X_test_lr</span><span class="p">[:</span><span class="mi">20</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Label    :&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">label</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">Y_test_lr</span><span class="p">[:</span><span class="mi">20</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Predicted:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">z</span><span class="p">[</span><span class="n">i</span><span class="p">,:]</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">))])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Label    : [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 0, 0, 1]
+Predicted: [0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Your-Second-CNTK-Network:-MNIST-Digit-Recognition">
+<h2>Your Second CNTK Network: MNIST Digit Recognition<a class="headerlink" href="#Your-Second-CNTK-Network:-MNIST-Digit-Recognition" title="Permalink to this headline">¶</a></h2>
+<p>Let us do the same thing as above on an actual task–the MNIST
+benchmark, which is sort of the “hello world” of deep learning. The
+MNIST task is to recognize scans of hand-written digits. We first
+download and prepare the data. In Tutorial 103C you can find a more
+succinct way to write the entire MNIST digit recognition workflow using
+convenience functionality built into CNTK</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">input_shape_mn</span> <span class="o">=</span> <span class="p">(</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>  <span class="c1"># MNIST digits are 28 x 28</span>
+<span class="n">num_classes_mn</span> <span class="o">=</span> <span class="mi">10</span>        <span class="c1"># classify as one of 10 digits</span>
+
+<span class="c1"># Fetch the MNIST data. Best done with scikit-learn.</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span><span class="p">,</span> <span class="n">utils</span>
+    <span class="n">mnist</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">fetch_mldata</span><span class="p">(</span><span class="s2">&quot;MNIST original&quot;</span><span class="p">)</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">Y</span> <span class="o">=</span> <span class="n">mnist</span><span class="o">.</span><span class="n">data</span> <span class="o">/</span> <span class="mf">255.0</span><span class="p">,</span> <span class="n">mnist</span><span class="o">.</span><span class="n">target</span>
+    <span class="n">X_train_mn</span><span class="p">,</span> <span class="n">X_test_mn</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:</span><span class="mi">60000</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">)),</span> <span class="n">X</span><span class="p">[</span><span class="mi">60000</span><span class="p">:]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">))</span>
+    <span class="n">Y_train_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span> <span class="o">=</span> <span class="n">Y</span><span class="p">[:</span><span class="mi">60000</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> <span class="n">Y</span><span class="p">[</span><span class="mi">60000</span><span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="k">except</span><span class="p">:</span> <span class="c1"># workaround if scikit-learn is not present</span>
+    <span class="kn">import</span> <span class="nn">requests</span><span class="o">,</span> <span class="nn">io</span><span class="o">,</span> <span class="nn">gzip</span>
+    <span class="n">X_train_mn</span><span class="p">,</span> <span class="n">X_test_mn</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">gzip</span><span class="o">.</span><span class="n">GzipFile</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;http://yann.lecun.com/exdb/mnist/&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;-images-idx3-ubyte.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()[</span><span class="mi">16</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;t10k&#39;</span><span class="p">))</span>
+    <span class="n">Y_train_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">gzip</span><span class="o">.</span><span class="n">GzipFile</span><span class="p">(</span><span class="n">fileobj</span><span class="o">=</span><span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">(</span><span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;http://yann.lecun.com/exdb/mnist/&#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;-labels-idx1-ubyte.gz&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">content</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()[</span><span class="mi">8</span><span class="p">:],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;train&#39;</span><span class="p">,</span> <span class="s1">&#39;t10k&#39;</span><span class="p">))</span>
+
+<span class="c1"># Shuffle the training data.</span>
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="c1"># always use the same reordering, for reproducability</span>
+<span class="n">idx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X_train_mn</span><span class="p">))</span>
+<span class="n">X_train_mn</span><span class="p">,</span> <span class="n">Y_train_mn</span> <span class="o">=</span> <span class="n">X_train_mn</span><span class="p">[</span><span class="n">idx</span><span class="p">],</span> <span class="n">Y_train_mn</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+
+<span class="c1"># Further split off a cross-validation set</span>
+<span class="n">X_train_mn</span><span class="p">,</span> <span class="n">X_cv_mn</span> <span class="o">=</span> <span class="n">X_train_mn</span><span class="p">[:</span><span class="mi">54000</span><span class="p">],</span> <span class="n">X_train_mn</span><span class="p">[</span><span class="mi">54000</span><span class="p">:]</span>
+<span class="n">Y_train_mn</span><span class="p">,</span> <span class="n">Y_cv_mn</span> <span class="o">=</span> <span class="n">Y_train_mn</span><span class="p">[:</span><span class="mi">54000</span><span class="p">],</span> <span class="n">Y_train_mn</span><span class="p">[</span><span class="mi">54000</span><span class="p">:]</span>
+
+<span class="c1"># Our model expects float32 features, and cross-entropy expects one-hot encoded labels.</span>
+<span class="n">Y_train_mn</span><span class="p">,</span> <span class="n">Y_cv_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span> <span class="o">=</span> <span class="p">(</span><span class="n">scipy</span><span class="o">.</span><span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">)),</span> <span class="n">Y</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Y</span><span class="p">),</span> <span class="mi">10</span><span class="p">))</span> <span class="k">for</span> <span class="n">Y</span> <span class="ow">in</span> <span class="p">(</span><span class="n">Y_train_mn</span><span class="p">,</span> <span class="n">Y_cv_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span><span class="p">))</span>
+<span class="n">X_train_mn</span><span class="p">,</span> <span class="n">X_cv_mn</span><span class="p">,</span> <span class="n">X_test_mn</span> <span class="o">=</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="k">for</span> <span class="n">X</span> <span class="ow">in</span> <span class="p">(</span><span class="n">X_train_mn</span><span class="p">,</span> <span class="n">X_cv_mn</span><span class="p">,</span> <span class="n">X_test_mn</span><span class="p">))</span>
+
+<span class="c1"># Have a peek.</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">X_train_mn</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">10</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray_r&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_200_GuidedTour_20_0.png" src="_images/CNTK_200_GuidedTour_20_0.png" />
+</div>
+</div>
+<p>Let’s define the CNTK model function to map (28x28)-dimensional images
+to a 10-dimensional score vector. We wrap that in a function so that
+later in this tutorial we can easily recreate it. For those familiar
+with Tutorial 103D, you will learn how to use the layers library to
+compose larger networks, train and test them in a simple way.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_model_mn_factory</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">cntk</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">reduction_rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span> <span class="c1"># reduction_rank=0 for B&amp;W images</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">48</span><span class="p">),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">)),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">96</span><span class="p">),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes_mn</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="c1"># no activation in final layer (softmax is done in criterion)</span>
+        <span class="p">])</span>
+<span class="n">model_mn</span> <span class="o">=</span> <span class="n">create_model_mn_factory</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>This model is a tad bit more complicated! It consists of several
+convolution-pooling layeres and two fully-connected layers for
+classification which is typical for MNIST. This demonstrates several
+aspects of CNTK’s Functional API.</p>
+<p>First, we create each layer using a function from CNTK’s layers library
+(<code class="docutils literal"><span class="pre">cntk.layers</span></code>).</p>
+<p>Second, the higher-order layer <code class="docutils literal"><span class="pre">Sequential()</span></code> creates a new function
+that applies all those layers one after another. This is known <a class="reference external" href="https://en.wikipedia.org/wiki/Function_composition">forward
+function
+composition</a>.
+Note that unlike some other toolkits, you cannot <code class="docutils literal"><span class="pre">Add()</span></code> more layers
+afterwards to a sequential layer. CNTK’s <code class="docutils literal"><span class="pre">Function</span></code> objects are
+immutable, besides their learnable parameters (to edit a <code class="docutils literal"><span class="pre">Function</span></code>
+object, you can <code class="docutils literal"><span class="pre">clone()</span></code> it). If you prefer that style, create your
+layers as a Python list and pass that to <code class="docutils literal"><span class="pre">Sequential()</span></code>.</p>
+<p>Third, the context manager <code class="docutils literal"><span class="pre">default_options()</span></code> allows to specify
+defaults for various optional arguments to layers, such as that the
+activation function is always <code class="docutils literal"><span class="pre">relu</span></code>, unless overriden.</p>
+<p>Lastly, note that <code class="docutils literal"><span class="pre">relu</span></code> is passed as the actual function, not a
+string. Any function can be an activation function. It is also allowed
+to pass a Python lambda directly, for example relu could also be
+realized manually by saying
+<code class="docutils literal"><span class="pre">activation=lambda</span> <span class="pre">x:</span> <span class="pre">cntk.ops.element_max(x,</span> <span class="pre">0)</span></code>.</p>
+<p>The criterion function is defined like in the previous example, to map
+maps (28x28)-dimensional features and according labels to loss and
+metric.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="nd">@cntk.Function</span>
+<span class="k">def</span> <span class="nf">criterion_mn_factory</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">model_mn</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_shape_mn</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_classes_mn</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">criterion_mn</span> <span class="o">=</span> <span class="n">criterion_mn_factory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>For the training, let us throw momentum into the mix.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train_mn</span><span class="p">)</span>
+<span class="n">lrs</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">([</span><span class="mf">0.001</span><span class="p">]</span><span class="o">*</span><span class="mi">12</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0005</span><span class="p">]</span><span class="o">*</span><span class="mi">6</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.00025</span><span class="p">]</span><span class="o">*</span><span class="mi">6</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.000125</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.0000625</span><span class="p">]</span><span class="o">*</span><span class="mi">3</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.00003125</span><span class="p">],</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learners</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">,</span> <span class="n">epoch_size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+<span class="n">momentums</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learners</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">5</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1024</span><span class="p">],</span> <span class="n">epoch_size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+<span class="n">minibatch_sizes</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">minibatch_size_schedule</span><span class="p">([</span><span class="mi">256</span><span class="p">]</span><span class="o">*</span><span class="mi">6</span> <span class="o">+</span> <span class="p">[</span><span class="mi">512</span><span class="p">]</span><span class="o">*</span><span class="mi">9</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1024</span><span class="p">]</span><span class="o">*</span><span class="mi">7</span> <span class="o">+</span> <span class="p">[</span><span class="mi">2048</span><span class="p">]</span><span class="o">*</span><span class="mi">8</span> <span class="o">+</span> <span class="p">[</span><span class="mi">4096</span><span class="p">],</span> <span class="n">epoch_size</span><span class="o">=</span><span class="n">N</span><span class="p">)</span>
+
+<span class="n">learner</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learners</span><span class="o">.</span><span class="n">momentum_sgd</span><span class="p">(</span><span class="n">model_mn</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lrs</span><span class="p">,</span> <span class="n">momentums</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>This looks a bit unusual. First, the learning rate is specified as a
+list (<code class="docutils literal"><span class="pre">[0.001]*12</span> <span class="pre">+</span> <span class="pre">[0.0005]*6</span> <span class="pre">+</span></code>…). Together with the
+<code class="docutils literal"><span class="pre">epoch_size</span></code> parameter, this tells CNTK to use 0.001 for 12 epochs,
+and then continue with 0.005 for another 6, etc.</p>
+<p>Second, the learning rate is specified per-sample, and momentum as a
+time constant. These values specify directly the weight with which each
+sample’s gradient contributes to the model, and how its contribution
+decays as training progresses; independent of the minibatch size. This
+unique CNTK feature allows to adjust the minibatch size without retuning
+those parameters. Here, we grow it from 256 to 4096, leading to 3 times
+faster operation towards the end (on a Titan-X).</p>
+<p>Alright, let us now train the model. On a Titan-X, this will run for
+about a minute.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">progress_writer</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">()</span>
+<span class="n">criterion_mn</span><span class="o">.</span><span class="n">train</span><span class="p">((</span><span class="n">X_train_mn</span><span class="p">,</span> <span class="n">Y_train_mn</span><span class="p">),</span> <span class="n">minibatch_size</span><span class="o">=</span><span class="n">minibatch_sizes</span><span class="p">,</span>
+                   <span class="n">max_epochs</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">parameter_learners</span><span class="o">=</span><span class="p">[</span><span class="n">learner</span><span class="p">],</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress_writer</span><span class="p">])</span>
+<span class="n">test_metric_mn</span> <span class="o">=</span> <span class="n">criterion_mn</span><span class="o">.</span><span class="n">test</span><span class="p">((</span><span class="n">X_test_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span><span class="p">),</span> <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">progress_writer</span><span class="p">])</span><span class="o">.</span><span class="n">metric</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Learning rate per sample: 0.001
+Momentum per sample: 0.0
+Finished Epoch[1]: loss = 0.661140 * 54000, metric = 21.98% * 54000 3.474s (15544.0 samples/s);
+Finished Epoch[2]: loss = 0.147541 * 54000, metric = 4.29% * 54000 2.151s (25104.6 samples/s);
+Finished Epoch[3]: loss = 0.089307 * 54000, metric = 2.64% * 54000 2.015s (26799.0 samples/s);
+Finished Epoch[4]: loss = 0.071929 * 54000, metric = 2.02% * 54000 2.018s (26759.2 samples/s);
+Finished Epoch[5]: loss = 0.063221 * 54000, metric = 1.84% * 54000 2.011s (26852.3 samples/s);
+Momentum per sample: 0.9990239141819757
+Finished Epoch[6]: loss = 0.058328 * 54000, metric = 1.72% * 54000 2.009s (26879.0 samples/s);
+Finished Epoch[7]: loss = 0.047344 * 54000, metric = 1.37% * 54000 2.926s (18455.2 samples/s);
+Finished Epoch[8]: loss = 0.044954 * 54000, metric = 1.31% * 54000 1.514s (35667.1 samples/s);
+Finished Epoch[9]: loss = 0.040773 * 54000, metric = 1.23% * 54000 1.462s (36935.7 samples/s);
+Finished Epoch[10]: loss = 0.038456 * 54000, metric = 1.13% * 54000 1.466s (36834.9 samples/s);
+Finished Epoch[11]: loss = 0.034570 * 54000, metric = 1.06% * 54000 1.468s (36784.7 samples/s);
+Finished Epoch[12]: loss = 0.033063 * 54000, metric = 0.99% * 54000 1.488s (36290.3 samples/s);
+Learning rate per sample: 0.0005
+Finished Epoch[13]: loss = 0.025973 * 54000, metric = 0.76% * 54000 1.462s (36935.7 samples/s);
+Finished Epoch[14]: loss = 0.024653 * 54000, metric = 0.73% * 54000 1.464s (36885.2 samples/s);
+Finished Epoch[15]: loss = 0.022527 * 54000, metric = 0.67% * 54000 1.465s (36860.1 samples/s);
+Finished Epoch[16]: loss = 0.020947 * 54000, metric = 0.65% * 54000 6.354s (8498.6 samples/s);
+Finished Epoch[17]: loss = 0.021009 * 54000, metric = 0.65% * 54000 1.204s (44850.5 samples/s);
+Finished Epoch[18]: loss = 0.019420 * 54000, metric = 0.61% * 54000 1.264s (42721.5 samples/s);
+Learning rate per sample: 0.00025
+Finished Epoch[19]: loss = 0.016908 * 54000, metric = 0.53% * 54000 1.204s (44850.5 samples/s);
+Finished Epoch[20]: loss = 0.016923 * 54000, metric = 0.53% * 54000 1.203s (44887.8 samples/s);
+Finished Epoch[21]: loss = 0.015760 * 54000, metric = 0.50% * 54000 1.201s (44962.5 samples/s);
+Finished Epoch[22]: loss = 0.015579 * 54000, metric = 0.48% * 54000 1.202s (44925.1 samples/s);
+Finished Epoch[23]: loss = 0.016023 * 54000, metric = 0.49% * 54000 9.600s (5625.0 samples/s);
+Finished Epoch[24]: loss = 0.015294 * 54000, metric = 0.49% * 54000 1.086s (49723.8 samples/s);
+Learning rate per sample: 0.000125
+Finished Epoch[25]: loss = 0.014428 * 54000, metric = 0.45% * 54000 1.142s (47285.5 samples/s);
+Finished Epoch[26]: loss = 0.013276 * 54000, metric = 0.43% * 54000 1.090s (49541.3 samples/s);
+Finished Epoch[27]: loss = 0.013200 * 54000, metric = 0.40% * 54000 1.086s (49723.8 samples/s);
+Learning rate per sample: 6.25e-05
+Finished Epoch[28]: loss = 0.013097 * 54000, metric = 0.41% * 54000 1.085s (49769.6 samples/s);
+Finished Epoch[29]: loss = 0.012316 * 54000, metric = 0.36% * 54000 1.084s (49815.5 samples/s);
+Finished Epoch[30]: loss = 0.012825 * 54000, metric = 0.38% * 54000 1.086s (49723.8 samples/s);
+Learning rate per sample: 3.125e-05
+Finished Epoch[31]: loss = 0.012379 * 54000, metric = 0.37% * 54000 11.604s (4653.6 samples/s);
+Finished Epoch[32]: loss = 0.012327 * 54000, metric = 0.41% * 54000 1.029s (52478.1 samples/s);
+Finished Epoch[33]: loss = 0.011594 * 54000, metric = 0.35% * 54000 1.067s (50609.2 samples/s);
+Finished Epoch[34]: loss = 0.011818 * 54000, metric = 0.39% * 54000 1.028s (52529.2 samples/s);
+Finished Epoch[35]: loss = 0.011965 * 54000, metric = 0.35% * 54000 1.028s (52529.2 samples/s);
+Finished Epoch[36]: loss = 0.012307 * 54000, metric = 0.38% * 54000 1.029s (52478.1 samples/s);
+Finished Epoch[37]: loss = 0.012339 * 54000, metric = 0.37% * 54000 1.028s (52529.2 samples/s);
+Finished Epoch[38]: loss = 0.013004 * 54000, metric = 0.40% * 54000 1.030s (52427.2 samples/s);
+Finished Epoch[39]: loss = 0.011394 * 54000, metric = 0.33% * 54000 1.027s (52580.3 samples/s);
+Finished Epoch[40]: loss = 0.011928 * 54000, metric = 0.37% * 54000 1.029s (52478.1 samples/s);
+Finished Evaluation [1]: Minibatch[1-313]: metric = 0.53% * 10000;
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Graph-API-Example:-MNIST-Digit-Recognition-Again">
+<h1>Graph API Example: MNIST Digit Recognition Again<a class="headerlink" href="#Graph-API-Example:-MNIST-Digit-Recognition-Again" title="Permalink to this headline">¶</a></h1>
+<p>CNTK also allows networks to be written by using a graph-level API. This
+API is more verbose but sometimes more flexible. The following defines
+the same model and criterion function as above, and will get the same
+result.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">images</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_shape_mn</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;images&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">cntk</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">reduction_rank</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="n">images</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">48</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="o">=</span><span class="mi">64</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">96</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="n">dropout_rate</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">model_mn</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes_mn</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+
+<span class="n">label_one_hot</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_classes_mn</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;labels&#39;</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">model_mn</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+<span class="n">metric</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">model_mn</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+<span class="n">criterion_mn</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">loss</span><span class="p">,</span> <span class="n">metric</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;criterion_mn:&#39;</span><span class="p">,</span> <span class="n">criterion_mn</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+criterion_mn: Composite(Combine): Input(&#39;images&#39;, [#], [28 x 28]), Input(&#39;labels&#39;, [#], [10]) -&gt; Output(&#39;Block1915_Output_0&#39;, [#], [1]), Output(&#39;Block1936_Output_0&#39;, [#], [1])
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Feeding-Your-Data">
+<h1>Feeding Your Data<a class="headerlink" href="#Feeding-Your-Data" title="Permalink to this headline">¶</a></h1>
+<p>Once you have decided your model structure and defined it, you are
+facing the question on feeding your training data to the CNTK training
+process.</p>
+<p>The above examples simply feed the data as numpy/scipy arrays. That is
+only one of three ways CNTK provides for feeding data to the trainer:</p>
+<ol class="arabic simple">
+<li>As <strong>numpy arrays</strong> or <strong>scipy sparse (CSR) matrices</strong>, for small
+data sets that can just be loaded into RAM.</li>
+<li>Through instances of <strong>CNTK’s MinibatchSource class</strong>, for large data
+sets that do not fit into RAM.</li>
+<li>Through an <strong>explicit minibatch-loop</strong> when the above do not apply.</li>
+</ol>
+<div class="section" id="1.-Feeding-Data-Via-Numpy/Scipy-Arrays">
+<h2>1. Feeding Data Via Numpy/Scipy Arrays<a class="headerlink" href="#1.-Feeding-Data-Via-Numpy/Scipy-Arrays" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">train()</span></code> and <code class="docutils literal"><span class="pre">test()</span></code> functions accept a tuple of numpy arrays
+or scipy sparse matrices (in CSR format) for their <code class="docutils literal"><span class="pre">minibatch_source</span></code>
+arguments. The tuple members must be in the same order as the arguments
+of the <code class="docutils literal"><span class="pre">criterion</span></code> function that <code class="docutils literal"><span class="pre">train()</span></code> or <code class="docutils literal"><span class="pre">test()</span></code> are called
+on. For dense tensors, use numpy arrays, while sparse data should have
+the type <code class="docutils literal"><span class="pre">scipy.sparse.csr_matrix</span></code>.</p>
+<p>Each of the arguments should be a Python list of numpy/scipy arrays,
+where each list entry represents a data item. For arguments declared as
+a sequence, the first axis (dimension) of the numpy/scipy array is the
+sequence length, while the remaining axes are the shape of each element
+of the sequence. Arguments that are not sequences consist of a single
+tensor. The shapes, data types (<code class="docutils literal"><span class="pre">np.float32/float64</span></code>) and sparseness
+must match the argument types.</p>
+<p>As an optimization, arguments that are not sequences can also be passed
+as a single large numpy/scipy array (instead of a list). This is what is
+done in the examples above.</p>
+<p>Note that it is the responsibility of the user to randomize the data.</p>
+</div>
+<div class="section" id="2.-Feeding-Data-Using-the-MinibatchSource-class-for-Reading-Data">
+<h2>2. Feeding Data Using the <code class="docutils literal"><span class="pre">MinibatchSource</span></code> class for Reading Data<a class="headerlink" href="#2.-Feeding-Data-Using-the-MinibatchSource-class-for-Reading-Data" title="Permalink to this headline">¶</a></h2>
+<p>Production-scale training data sometimes does not fit into RAM. For this
+case, CNTK provides the <code class="docutils literal"><span class="pre">MinibatchSource</span></code> class, which provides:</p>
+<ul class="simple">
+<li>A <strong>chunked randomization algorithm</strong> that holds only part of the
+data in RAM at any given time.</li>
+<li><strong>Distributed reading</strong> where each worker reads a different subset.</li>
+<li>A <strong>transformation pipeline</strong> for images and image augmentation.</li>
+<li><strong>Composability</strong> across multiple data types (e.g. image captioning).</li>
+<li>Transparent <strong>asynchronous loading</strong> so that the GPU is not stalling
+while a minibatch is read/prepared</li>
+</ul>
+<p>At present, the <code class="docutils literal"><span class="pre">MinibatchSource</span></code> class implements a limited set of
+data types in the form of “deserializers”:</p>
+<ul class="simple">
+<li><strong>Images</strong> (<code class="docutils literal"><span class="pre">ImageDeserializer</span></code>).</li>
+<li><strong>Speech files</strong> (<code class="docutils literal"><span class="pre">HTKFeatureDeserializer</span></code>,
+<code class="docutils literal"><span class="pre">HTKMLFDeserializer</span></code>).</li>
+<li>Data in CNTK’s <strong>canonical text format (CTF)</strong>, which consists of a
+set of named feature channels each containing a one dimensional
+sparse or dense sequence per example. The CTFDeserializer can then
+associates each feature channel with an input of your model or
+criterion.</li>
+</ul>
+<p>The following example of using the <code class="docutils literal"><span class="pre">ImageDeserializer</span></code> class shows the
+general pattern. For the specific input-file formats, please consult the
+documentation or data-type specific tutorials such as Tutorial 202.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">image_width</span><span class="p">,</span> <span class="n">image_height</span><span class="p">,</span> <span class="n">num_channels</span> <span class="o">=</span> <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="k">def</span> <span class="nf">create_image_reader</span><span class="p">(</span><span class="n">map_file</span><span class="p">,</span> <span class="n">is_training</span><span class="p">):</span>
+    <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">is_training</span><span class="p">:</span>  <span class="c1"># train uses data augmentation (translation only)</span>
+        <span class="n">transforms</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">crop_type</span><span class="o">=</span><span class="s1">&#39;randomside&#39;</span><span class="p">,</span> <span class="n">side_ratio</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>  <span class="c1"># random translation+crop</span>
+        <span class="p">]</span>
+    <span class="n">transforms</span> <span class="o">+=</span> <span class="p">[</span>  <span class="c1"># to fixed size</span>
+        <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">image_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">image_height</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span> <span class="n">interpolations</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+    <span class="c1"># deserializer</span>
+    <span class="k">return</span> <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ImageDeserializer</span><span class="p">(</span><span class="n">map_file</span><span class="p">,</span> <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">),</span>
+        <span class="n">labels</span>   <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>
+    <span class="p">)),</span> <span class="n">randomize</span><span class="o">=</span><span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="3.-Feeding-Data-Via-an-Explicit-Minibatch-Loop">
+<h2>3. Feeding Data Via an Explicit Minibatch Loop<a class="headerlink" href="#3.-Feeding-Data-Via-an-Explicit-Minibatch-Loop" title="Permalink to this headline">¶</a></h2>
+<p>Instead of feeding your data as a whole to CNTK’s <code class="docutils literal"><span class="pre">train()</span></code> and
+<code class="docutils literal"><span class="pre">test()</span></code> functions which implement a minibatch loop internally, you
+can realize your own minibatch loop and call the lower-level APIs
+<code class="docutils literal"><span class="pre">train_minibatch()</span></code> and <code class="docutils literal"><span class="pre">test_minibatch()</span></code>. This is useful when your
+data is not in a form suitable for the above, such as being generated on
+the fly as, for example, in variants of reinforcement learning. The
+<code class="docutils literal"><span class="pre">train_minibatch()</span></code> and <code class="docutils literal"><span class="pre">test_minibatch()</span></code> methods require you to
+instantiate an object of class <code class="docutils literal"><span class="pre">Trainer</span></code> that takes a subset of the
+arguments of <code class="docutils literal"><span class="pre">train()</span></code>. The following implements the
+logistic-regression example from above through explicit minibatch loops:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Recreate the model, so that we can start afresh. This is a direct copy from above.</span>
+<span class="n">model_lr</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_classes_lr</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="nd">@cntk.Function</span>
+<span class="k">def</span> <span class="nf">criterion_lr_factory</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">model_lr</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># apply model. Computes a non-normalized log probability for every output class.</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span> <span class="c1"># this applies softmax to z under the hood</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim_lr</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_classes_lr</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">criterion_lr</span> <span class="o">=</span> <span class="n">criterion_lr_factory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Create the learner; same as above.</span>
+<span class="n">learner</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">model_lr</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">cntk</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">))</span>
+
+<span class="c1"># This time we must create a Trainer instance ourselves.</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="bp">None</span><span class="p">,</span> <span class="n">criterion_lr</span><span class="p">,</span> <span class="p">[</span><span class="n">learner</span><span class="p">],</span> <span class="p">[</span><span class="n">cntk</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="mi">50</span><span class="p">)])</span>
+
+<span class="c1"># Train the model by spoon-feeding minibatch by minibatch.</span>
+<span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train_lr</span><span class="p">),</span> <span class="n">minibatch_size</span><span class="p">):</span> <span class="c1"># loop over minibatches</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">X_train_lr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">minibatch_size</span><span class="p">]</span> <span class="c1"># get one minibatch worth of data</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">Y_train_lr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">minibatch_size</span><span class="p">]</span>
+    <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">({</span><span class="n">criterion_lr</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">x</span><span class="p">,</span> <span class="n">criterion_lr</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">y</span><span class="p">})</span>  <span class="c1"># update model from one minibatch</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">summarize_training_progress</span><span class="p">()</span>
+
+<span class="c1"># Test error rate minibatch by minibatch</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">Evaluator</span><span class="p">(</span><span class="n">criterion_lr</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">progress_writer</span><span class="p">])</span> <span class="c1"># metric is the second output of criterion_lr()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_test_lr</span><span class="p">),</span> <span class="n">minibatch_size</span><span class="p">):</span> <span class="c1"># loop over minibatches</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">X_test_lr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">minibatch_size</span><span class="p">]</span> <span class="c1"># get one minibatch worth of data</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">Y_test_lr</span><span class="p">[</span><span class="n">i</span><span class="p">:</span><span class="n">i</span><span class="o">+</span><span class="n">minibatch_size</span><span class="p">]</span>
+    <span class="n">evaluator</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">({</span><span class="n">criterion_lr</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">x</span><span class="p">,</span> <span class="n">criterion_lr</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="n">y</span><span class="p">})</span>  <span class="c1"># test one minibatch</span>
+<span class="n">evaluator</span><span class="o">.</span><span class="n">summarize_test_progress</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Learning rate per minibatch: 0.1
+ Minibatch[   1-  50]: loss = 0.663274 * 1600, metric = 37.31% * 1600;
+ Minibatch[  51- 100]: loss = 0.481867 * 1600, metric = 20.56% * 1600;
+ Minibatch[ 101- 150]: loss = 0.402196 * 1600, metric = 12.94% * 1600;
+ Minibatch[ 151- 200]: loss = 0.386619 * 1600, metric = 13.75% * 1600;
+ Minibatch[ 201- 250]: loss = 0.328646 * 1600, metric = 9.19% * 1600;
+ Minibatch[ 251- 300]: loss = 0.301831 * 1600, metric = 9.50% * 1600;
+ Minibatch[ 301- 350]: loss = 0.299345 * 1600, metric = 9.44% * 1600;
+ Minibatch[ 351- 400]: loss = 0.279577 * 1600, metric = 8.94% * 1600;
+ Minibatch[ 401- 450]: loss = 0.281061 * 1600, metric = 8.25% * 1600;
+ Minibatch[ 451- 500]: loss = 0.261366 * 1600, metric = 7.81% * 1600;
+ Minibatch[ 501- 550]: loss = 0.244967 * 1600, metric = 7.12% * 1600;
+ Minibatch[ 551- 600]: loss = 0.243953 * 1600, metric = 8.31% * 1600;
+Finished Epoch[1]: loss = 0.344399 * 20000, metric = 12.58% * 20000 2.711s (7377.4 samples/s);
+Finished Evaluation [2]: Minibatch[1-32]: metric = 8.11% * 1024;
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training-and-Evaluating">
+<h1>Training and Evaluating<a class="headerlink" href="#Training-and-Evaluating" title="Permalink to this headline">¶</a></h1>
+<p>In our examples above, we use the <code class="docutils literal"><span class="pre">train()</span></code> function to train, and
+<code class="docutils literal"><span class="pre">test()</span></code> for evaluating. In this section, we want to walk you through
+the advanced options of <code class="docutils literal"><span class="pre">train()</span></code>:</p>
+<ol class="arabic simple">
+<li><strong>Distributed Training</strong> on multiple GPUs using MPI.</li>
+<li>Callbacks for <strong>Progress Tracking</strong>, <strong>TensorBoard visualization</strong>,
+<strong>Checkpointing</strong>,<strong>Cross-validation</strong>-based training control, and
+<strong>Testing</strong> for the final model.</li>
+</ol>
+<div class="section" id="1.-Distributed-Training">
+<h2>1. Distributed Training<a class="headerlink" href="#1.-Distributed-Training" title="Permalink to this headline">¶</a></h2>
+<p>CNTK makes distributed training easy. Out of the box, it supports three
+methods of distributed training:</p>
+<ul class="simple">
+<li>Simple <strong>data-parallel</strong> training.</li>
+<li><strong>1-bit SGD</strong>.</li>
+<li><strong>BlockMomentum</strong>.</li>
+</ul>
+<p>Simple <strong>data-parallel</strong> training distributes each minibatch over N
+worker processes, where each process utilizes one GPU. After each
+minibatch, the gradients from all workers are aggregated before updating
+each model copy. This is often sufficient for convolutional networks,
+which have a high computation/communication ratio.</p>
+<p><strong>1-bit SGD</strong> uses the techniques from <a class="reference external" href="https://www.microsoft.com/en-us/research/publication/1-bit-stochastic-gradient-descent-and-application-to-data-parallel-distributed-training-of-speech-dnns/">this
+paper</a>
+to speed up the communication step in data-parallel training. This
+method has been found effective for networks where communication cost
+becomes the dominating factor, such as full-connected networks and some
+recurrent ones. This method has been found to only minimally degrade
+accuracy at good speed-ups.</p>
+<p><strong>BlockMomentum</strong> uses the techniques from <a class="reference external" href="https://www.microsoft.com/en-us/research/publication/scalable-training-deep-learning-machines-incremental-block-training-intra-block-parallel-optimization-blockwise-model-update-filtering/">this
+paper</a>
+to improvs communication bandwidth by exchanging gradients only every N
+minibatches.</p>
+<p>Processes are started with and communicate through MPI. Hence, CNTK’s
+distributed training works both within a single server and across
+multiple servers. All you need to do is</p>
+<ul class="simple">
+<li>wrap your learner inside a <code class="docutils literal"><span class="pre">distributed_learner</span></code> object</li>
+<li>execute the Python script using <code class="docutils literal"><span class="pre">mpiexec</span></code></li>
+</ul>
+<p>Unfortunately, MPI cannot be used from a Jupyter notebook. You can find
+the example below as a standalone Python script under
+<code class="docutils literal"><span class="pre">Examples/1stSteps/MNIST_Complex_Training.py</span></code> to run under MPI, for
+example under MSMPI as</p>
+<p><code class="docutils literal"><span class="pre">mpiexec</span> <span class="pre">-n</span> <span class="pre">4</span> <span class="pre">-lines</span> <span class="pre">python</span> <span class="pre">-u</span> <span class="pre">Examples/1stSteps/MNIST_Complex_Training.py</span></code></p>
+</div>
+<div class="section" id="2.-Callbacks">
+<h2>2. Callbacks<a class="headerlink" href="#2.-Callbacks" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal"><span class="pre">callbacks</span></code> parameter of <code class="docutils literal"><span class="pre">train()</span></code> specifies actions that the
+<code class="docutils literal"><span class="pre">train()</span></code> function executes periodically, typically every epoch. The
+<code class="docutils literal"><span class="pre">callbacks</span></code> parameter is a list of objects, where the object type
+decides the specific callback action.</p>
+<p>Progress trackers allow to log progress (average loss and metric)
+periodically after N minibatches and after completing each epoch.
+Optionally, all of the first few minibatches can be logged. The
+<code class="docutils literal"><span class="pre">ProgressPrinter</span></code> callback logs to stderr and file, while
+<code class="docutils literal"><span class="pre">TensorBoardProgressWriter</span></code> logs events for visualization in
+TensorBoard. You can also write your own progress tracker class.</p>
+<p>Next, the <code class="docutils literal"><span class="pre">CheckpointConfig</span></code> class denotes a callback that writes a
+checkpoint file every epoch, and automatically restarts training at the
+latest available checkpoint.</p>
+<p>The <code class="docutils literal"><span class="pre">CrossValidationConfig</span></code> class tells CNTK to periodically evaluate
+the model on a validation data set, and then call a user-specified
+callback function, which can then update the learning rate of return
+<code class="docutils literal"><span class="pre">False</span></code> to indicate early stopping.</p>
+<p>Lastly, <code class="docutils literal"><span class="pre">TestConfig</span></code> instructs CNTK to evaluate the model at the end
+on a given test set. This is the same as the explicit <code class="docutils literal"><span class="pre">test()</span></code> call in
+our examples above.</p>
+</div>
+<div class="section" id="Putting-it-all-Together:-Advanced-Training-Example">
+<h2>Putting it all Together: Advanced Training Example<a class="headerlink" href="#Putting-it-all-Together:-Advanced-Training-Example" title="Permalink to this headline">¶</a></h2>
+<p>Let us now put all of the above examples together into a single
+training. The following example runs our MNIST example from above with
+logging, TensorBoard events, checkpointing, CV-based training control,
+and a final test.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Create model and criterion function.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_shape_mn</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_classes_mn</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">model_mn</span> <span class="o">=</span> <span class="n">create_model_mn_factory</span><span class="p">()</span>
+<span class="nd">@cntk.Function</span>
+<span class="k">def</span> <span class="nf">criterion_mn_factory</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">):</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">model_mn</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="n">metric</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_one_hot</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">metric</span>
+
+<span class="n">criterion_mn</span> <span class="o">=</span> <span class="n">criterion_mn_factory</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+<span class="c1"># Create the learner.</span>
+<span class="n">learner</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learners</span><span class="o">.</span><span class="n">momentum_sgd</span><span class="p">(</span><span class="n">model_mn</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lrs</span><span class="p">,</span> <span class="n">momentums</span><span class="p">)</span>
+
+<span class="c1"># Create progress callbacks for logging to file and TensorBoard event log.</span>
+<span class="c1"># Prints statistics for the first 10 minibatches, then for every 50th, to a log file.</span>
+<span class="n">progress_writer</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">first</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">log_to_file</span><span class="o">=</span><span class="s1">&#39;my.log&#39;</span><span class="p">)</span>
+<span class="n">tensorboard_writer</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">TensorBoardProgressWriter</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="s1">&#39;my_tensorboard_logdir&#39;</span><span class="p">,</span>
+                                                            <span class="n">model</span><span class="o">=</span><span class="n">criterion_mn</span><span class="p">)</span>
+
+<span class="c1"># Create a checkpoint callback.</span>
+<span class="c1"># Set restore=True to restart from available checkpoints.</span>
+<span class="n">epoch_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">X_train_mn</span><span class="p">)</span>
+<span class="n">checkpoint_callback_config</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">CheckpointConfig</span><span class="p">(</span><span class="s1">&#39;model_mn.cmf&#39;</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">,</span> <span class="n">preserve_all</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">restore</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c1"># Create a cross-validation based training control.</span>
+<span class="c1"># This callback function halves the learning rate each time the cross-validation metric</span>
+<span class="c1"># improved less than 5% relative, and stops after 6 adjustments.</span>
+<span class="n">prev_metric</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># metric from previous call to the callback. Error=100% at start.</span>
+<span class="k">def</span> <span class="nf">adjust_lr_callback</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">average_error</span><span class="p">,</span> <span class="n">cv_num_samples</span><span class="p">,</span> <span class="n">cv_num_minibatches</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">prev_metric</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">prev_metric</span> <span class="o">-</span> <span class="n">average_error</span><span class="p">)</span> <span class="o">/</span> <span class="n">prev_metric</span> <span class="o">&lt;</span> <span class="mf">0.05</span><span class="p">:</span> <span class="c1"># did metric improve by at least 5% rel?</span>
+        <span class="n">learner</span><span class="o">.</span><span class="n">reset_learning_rate</span><span class="p">(</span><span class="n">cntk</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">learner</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="n">cntk</span><span class="o">.</span><span class="n">learners</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">sample</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">learner</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">lrs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="mi">7</span><span class="o">-</span><span class="mf">0.1</span><span class="p">):</span> <span class="c1"># we are done after the 6-th LR cut</span>
+            <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Learning rate {} too small. Training complete.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">learner</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">()))</span>
+            <span class="k">return</span> <span class="bp">False</span> <span class="c1"># means we are done</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Improvement of metric from {:.3f} to {:.3f} insufficient. Halving learning rate to {}.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prev_metric</span><span class="p">,</span> <span class="n">average_error</span><span class="p">,</span> <span class="n">learner</span><span class="o">.</span><span class="n">learning_rate</span><span class="p">()))</span>
+    <span class="n">prev_metric</span> <span class="o">=</span> <span class="n">average_error</span>
+    <span class="k">return</span> <span class="bp">True</span> <span class="c1"># means continue</span>
+
+<span class="n">cv_callback_config</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">CrossValidationConfig</span><span class="p">((</span><span class="n">X_cv_mn</span><span class="p">,</span> <span class="n">Y_cv_mn</span><span class="p">),</span> <span class="mi">3</span><span class="o">*</span><span class="n">epoch_size</span><span class="p">,</span> <span class="n">minibatch_size</span><span class="o">=</span><span class="mi">256</span><span class="p">,</span>
+                                                <span class="n">callback</span><span class="o">=</span><span class="n">adjust_lr_callback</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="n">criterion_mn</span><span class="p">)</span>
+
+<span class="c1"># Callback for testing the final model.</span>
+<span class="n">test_callback_config</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">TestConfig</span><span class="p">((</span><span class="n">X_test_mn</span><span class="p">,</span> <span class="n">Y_test_mn</span><span class="p">),</span> <span class="n">criterion</span><span class="o">=</span><span class="n">criterion_mn</span><span class="p">)</span>
+
+<span class="c1"># Train!</span>
+<span class="n">callbacks</span> <span class="o">=</span> <span class="p">[</span><span class="n">progress_writer</span><span class="p">,</span> <span class="n">tensorboard_writer</span><span class="p">,</span> <span class="n">checkpoint_callback_config</span><span class="p">,</span> <span class="n">cv_callback_config</span><span class="p">,</span> <span class="n">test_callback_config</span><span class="p">]</span>
+<span class="n">progress</span> <span class="o">=</span> <span class="n">criterion_mn</span><span class="o">.</span><span class="n">train</span><span class="p">((</span><span class="n">X_train_mn</span><span class="p">,</span> <span class="n">Y_train_mn</span><span class="p">),</span> <span class="n">minibatch_size</span><span class="o">=</span><span class="n">minibatch_sizes</span><span class="p">,</span>
+                              <span class="n">max_epochs</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">parameter_learners</span><span class="o">=</span><span class="p">[</span><span class="n">learner</span><span class="p">],</span> <span class="n">callbacks</span><span class="o">=</span><span class="n">callbacks</span><span class="p">)</span>
+
+<span class="c1"># Progress is available from return value</span>
+<span class="n">losses</span> <span class="o">=</span> <span class="p">[</span><span class="n">summ</span><span class="o">.</span><span class="n">loss</span> <span class="k">for</span> <span class="n">summ</span> <span class="ow">in</span> <span class="n">progress</span><span class="o">.</span><span class="n">epoch_summaries</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;loss progression =&#39;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;{:.3f}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span> <span class="k">for</span> <span class="n">loss</span> <span class="ow">in</span> <span class="n">losses</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Redirecting log to file my.log
+Improvement of metric from 0.011 to 0.011 insufficient. Halving learning rate to 0.0005.
+Improvement of metric from 0.008 to 0.008 insufficient. Halving learning rate to 0.00025.
+Improvement of metric from 0.007 to 0.006 insufficient. Halving learning rate to 0.000125.
+Improvement of metric from 0.006 to 0.006 insufficient. Halving learning rate to 6.25e-05.
+Improvement of metric from 0.006 to 0.007 insufficient. Halving learning rate to 3.125e-05.
+Improvement of metric from 0.006 to 0.006 insufficient. Halving learning rate to 1.5625e-05.
+Learning rate 7.8125e-06 too small. Training complete.
+loss progression = 0.659, 0.132, 0.091, 0.075, 0.062, 0.057, 0.052, 0.048, 0.043, 0.033, 0.030, 0.028, 0.028, 0.027, 0.025, 0.021, 0.020, 0.020, 0.020, 0.019, 0.018, 0.018, 0.017, 0.017, 0.016, 0.016, 0.016, 0.015, 0.015, 0.015, 0.015, 0.014, 0.015, 0.014, 0.014, 0.014, 0.014, 0.014, 0.013, 0.013, 0.014, 0.014, 0.013, 0.013, 0.013
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Deploying-your-Model">
+<h1>Deploying your Model<a class="headerlink" href="#Deploying-your-Model" title="Permalink to this headline">¶</a></h1>
+<p>Your ultimate purpose of training a deep neural network is to deploy it
+as part of your own program or product. Since this involves programming
+languages other than Python, we will only give a high-level overview
+here, and refer you to specific examples.</p>
+<p>Once you completed training your model, it can be deployed in a number
+of ways.</p>
+<ul class="simple">
+<li>Directly in your <strong>Python</strong> program.</li>
+<li>From any other language that CNTK supports, including <strong>C++</strong>,
+<strong>C#</strong>, and <strong>Java</strong>.</li>
+<li>From <strong>your own web service</strong>.</li>
+<li>Through a web service deployed to <strong>Microsoft Azure</strong>.</li>
+</ul>
+<p>The first step in all cases is to make sure your model’s input types are
+known (you can just print the model and inspect the inputs), and then to
+save your model to disk after training:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="n">model_mn</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_shape_mn</span><span class="p">)</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">model_mn</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Composite(Dense): Placeholder(&#39;keep&#39;, [???], [???]) -&gt; Output(&#39;Block2640_Output_0&#39;, [???], [???])
+Composite(Dense): Input(&#39;Input3279&#39;, [#], [28 x 28]) -&gt; Output(&#39;Block3396_Output_0&#39;, [#], [10])
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;mnist.cmf&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Deploying your model in a Python-based program is easy: Since networks
+are function objects that are callable, like a function, simply load the
+model, and call it with inputs, as we have already shown above:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># At program start, load the model.</span>
+<span class="n">classify_digit</span> <span class="o">=</span> <span class="n">cntk</span><span class="o">.</span><span class="n">Function</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;mnist.cmf&#39;</span><span class="p">)</span>
+
+<span class="c1"># To apply model, just call it.</span>
+<span class="n">image_input</span> <span class="o">=</span> <span class="n">X_test_mn</span><span class="p">[</span><span class="mi">8345</span><span class="p">]</span>        <span class="c1"># (pick a random test digit for illustration)</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">classify_digit</span><span class="p">(</span><span class="n">image_input</span><span class="p">)</span> <span class="c1"># call the model function with the input data</span>
+<span class="n">image_class</span> <span class="o">=</span> <span class="n">scores</span><span class="o">.</span><span class="n">argmax</span><span class="p">()</span>        <span class="c1"># find the highest-scoring class</span>
+
+<span class="c1"># And that&#39;s it. Let&#39;s have a peek at the result</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Recognized as:&#39;</span><span class="p">,</span> <span class="n">image_class</span><span class="p">)</span>
+<span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">matplotlib</span><span class="o">.</span><span class="n">pyplot</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image_input</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray_r&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Recognized as: 2
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_200_GuidedTour_43_1.png" src="_images/CNTK_200_GuidedTour_43_1.png" />
+</div>
+</div>
+<p>Models can be deployed directly from programs written in other
+programming languages for which bindings exist. Please see the following
+example programs for an example similar to the Python one above:</p>
+<ul class="simple">
+<li>C++:
+<code class="docutils literal"><span class="pre">Examples/Evaluation/CNTKLibraryCPPEvalCPUOnlyExamples/CNTKLibraryCPPEvalCPUOnlyExamples.cpp</span></code></li>
+<li>C#:
+<code class="docutils literal"><span class="pre">Examples/Evaluation/CNTKLibraryCSEvalCPUOnlyExamples/CNTKLibraryCSEvalExamples.cs</span></code></li>
+</ul>
+<p>To deploy a model from your own web service, load and invoke the model
+in the same way.</p>
+<p>To deploy a model via an Azure web service, follow this tutorial:
+<code class="docutils literal"><span class="pre">Examples/Evaluation/CNTKAzureTutorial01</span></code></p>
+</div>
+<div class="section" id="Conclusion">
+<h1>Conclusion<a class="headerlink" href="#Conclusion" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial provided an overview of the five main tasks of creating
+and using a deep neural network with CNTK.</p>
+<p>We first examined CNTK’s Functional programming and its
+tensor/sequence-based data model. Then we considered the possible ways
+of feeding data to CNTK, including directly from RAM, through CNTK’s
+data-reading infrastructure (<code class="docutils literal"><span class="pre">MinibatchSource</span></code>), and spoon-feeding
+through a custom minibatch loop. We then took a look at CNTK’s advanced
+training options, including distributed training, logging to
+TensorBoard, checkpointing, CV-based training control, and final model
+evaluation. Lastly, we briefly looked into model deployment.</p>
+<p>We hope this guided your have you a good starting point for your own
+ventures with CNTK. Please enjoy!</p>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

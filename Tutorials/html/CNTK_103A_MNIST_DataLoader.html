@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 103 Part A: MNIST Data Loader &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 103 Part A: MNIST Data Loader</a><ul>
+<li><a class="reference internal" href="#Data-download">Data download</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Download-the-data">Download the data</a></li>
+<li><a class="reference internal" href="#Visualize-the-data">Visualize the data</a></li>
+<li><a class="reference internal" href="#Save-the-images">Save the images</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 103 Part A: MNIST Data Loader</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_103A_MNIST_DataLoader.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-103-Part-A:-MNIST-Data-Loader">
+<h1>CNTK 103 Part A: MNIST Data Loader<a class="headerlink" href="#CNTK-103-Part-A:-MNIST-Data-Loader" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial is targeted to individuals who are new to CNTK and to
+machine learning. We assume you have completed or are familiar with CNTK
+101 and 102. In this tutorial, we will download and pre-process the
+MNIST digit images to be used for building different models to recognize
+handwritten digits. We will extend CNTK 101 and 102 to be applied to
+this data set. Additionally, we will introduce a convolutional network
+to achieve superior performance. This is the first example, where we
+will train and evaluate a neural network based model on real world data.</p>
+<p>CNTK 103 tutorial is divided into multiple parts: - Part A: Familiarize
+with the <a class="reference external" href="http://yann.lecun.com/exdb/mnist/">MNIST</a> database that
+will be used later in the tutorial - Subsequent parts in this 103 series
+would be using the MNIST data with different types of networks.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Import the relevant modules to be used later</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="kn">as</span> <span class="nn">mpimg</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+
+<span class="c1"># Config matplotlib for inline plotting</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="section" id="Data-download">
+<h2>Data download<a class="headerlink" href="#Data-download" title="Permalink to this headline">¶</a></h2>
+<p>We will download the data into local machine. The MNIST database is a
+standard handwritten digits that has been widely used for training and
+testing of machine learning algorithms. It has a training set of 60,000
+images and a test set of 10,000 images with each image being 28 x 28
+pixels. This set is easy to use visualize and train on any computer.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Functions to load MNIST images and unpack into train and test set.</span>
+<span class="c1"># - loadData reads image data and formats into a 28x28 long array</span>
+<span class="c1"># - loadLabels reads the corresponding labels data, 1 for each image</span>
+<span class="c1"># - load packs the downloaded image and labels data into a combined format to be read later by</span>
+<span class="c1">#   CNTK text reader</span>
+
+<span class="k">def</span> <span class="nf">loadData</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cimg</span><span class="p">):</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Downloading &#39;</span> <span class="o">+</span> <span class="n">src</span><span class="p">)</span>
+    <span class="n">gzfname</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;./delete.me&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">gzfname</span><span class="p">)</span> <span class="k">as</span> <span class="n">gz</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+            <span class="c1"># Read magic number.</span>
+            <span class="k">if</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mh">0x3080000</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid file: unexpected magic number.&#39;</span><span class="p">)</span>
+            <span class="c1"># Read number of entries.</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">n</span> <span class="o">!=</span> <span class="n">cimg</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid file: expected {0} entries.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cimg</span><span class="p">))</span>
+            <span class="n">crow</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ccol</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">crow</span> <span class="o">!=</span> <span class="mi">28</span> <span class="ow">or</span> <span class="n">ccol</span> <span class="o">!=</span> <span class="mi">28</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid file: expected 28 rows/cols per image.&#39;</span><span class="p">)</span>
+            <span class="c1"># Read data.</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cimg</span> <span class="o">*</span> <span class="n">crow</span> <span class="o">*</span> <span class="n">ccol</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">gzfname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">cimg</span><span class="p">,</span> <span class="n">crow</span> <span class="o">*</span> <span class="n">ccol</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">loadLabels</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">cimg</span><span class="p">):</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Downloading &#39;</span> <span class="o">+</span> <span class="n">src</span><span class="p">)</span>
+    <span class="n">gzfname</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;./delete.me&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">gzfname</span><span class="p">)</span> <span class="k">as</span> <span class="n">gz</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+            <span class="c1"># Read magic number.</span>
+            <span class="k">if</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mh">0x1080000</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid file: unexpected magic number.&#39;</span><span class="p">)</span>
+            <span class="c1"># Read number of entries.</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;I&#39;</span><span class="p">,</span> <span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="n">cimg</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Invalid file: expected {0} rows.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">cimg</span><span class="p">))</span>
+            <span class="c1"># Read labels.</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">gz</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">cimg</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">gzfname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">cimg</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">try_download</span><span class="p">(</span><span class="n">dataSrc</span><span class="p">,</span> <span class="n">labelsSrc</span><span class="p">,</span> <span class="n">cimg</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">loadData</span><span class="p">(</span><span class="n">dataSrc</span><span class="p">,</span> <span class="n">cimg</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">loadLabels</span><span class="p">(</span><span class="n">labelsSrc</span><span class="p">,</span> <span class="n">cimg</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Download-the-data">
+<h1>Download the data<a class="headerlink" href="#Download-the-data" title="Permalink to this headline">¶</a></h1>
+<p>The MNIST data is provided as train and test set. Training set has 60000
+images while the test set has 10000 images. Let us download the data.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># URLs for the train image and labels data</span>
+<span class="n">url_train_image</span> <span class="o">=</span> <span class="s1">&#39;http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz&#39;</span>
+<span class="n">url_train_labels</span> <span class="o">=</span> <span class="s1">&#39;http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz&#39;</span>
+<span class="n">num_train_samples</span> <span class="o">=</span> <span class="mi">60000</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Downloading train data&quot;</span><span class="p">)</span>
+<span class="n">train</span> <span class="o">=</span> <span class="n">try_download</span><span class="p">(</span><span class="n">url_train_image</span><span class="p">,</span> <span class="n">url_train_labels</span><span class="p">,</span> <span class="n">num_train_samples</span><span class="p">)</span>
+
+
+<span class="n">url_test_image</span> <span class="o">=</span> <span class="s1">&#39;http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz&#39;</span>
+<span class="n">url_test_labels</span> <span class="o">=</span> <span class="s1">&#39;http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz&#39;</span>
+<span class="n">num_test_samples</span> <span class="o">=</span> <span class="mi">10000</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Downloading test data&quot;</span><span class="p">)</span>
+<span class="n">test</span> <span class="o">=</span> <span class="n">try_download</span><span class="p">(</span><span class="n">url_test_image</span><span class="p">,</span> <span class="n">url_test_labels</span><span class="p">,</span> <span class="n">num_test_samples</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading train data
+Downloading http://yann.lecun.com/exdb/mnist/train-images-idx3-ubyte.gz
+Done.
+Downloading http://yann.lecun.com/exdb/mnist/train-labels-idx1-ubyte.gz
+Done.
+Downloading test data
+Downloading http://yann.lecun.com/exdb/mnist/t10k-images-idx3-ubyte.gz
+Done.
+Downloading http://yann.lecun.com/exdb/mnist/t10k-labels-idx1-ubyte.gz
+Done.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Visualize-the-data">
+<h1>Visualize the data<a class="headerlink" href="#Visualize-the-data" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot a random image</span>
+<span class="n">sample_number</span> <span class="o">=</span> <span class="mi">5001</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">train</span><span class="p">[</span><span class="n">sample_number</span><span class="p">,:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray_r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Image Label: &quot;</span><span class="p">,</span> <span class="n">train</span><span class="p">[</span><span class="n">sample_number</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Image Label:  3
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_103A_MNIST_DataLoader_7_1.png" src="_images/CNTK_103A_MNIST_DataLoader_7_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Save-the-images">
+<h1>Save the images<a class="headerlink" href="#Save-the-images" title="Permalink to this headline">¶</a></h1>
+<p>Save the images in a local directory. While saving the data we flatten
+the images to a vector (28x28 image pixels becomes an array of length
+784 data points).</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103a_MNIST_input.png" />
+</div>
+<p>The labels are encoded as
+<a class="reference external" href="https://en.wikipedia.org/wiki/One-hot">1-hot</a> encoding (label of 3
+with 10 digits becomes <code class="docutils literal"><span class="pre">0001000000</span></code>, where the first index corresponds
+to digit <code class="docutils literal"><span class="pre">0</span></code> and the last one corresponds to digit <code class="docutils literal"><span class="pre">9</span></code>.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103a_onehot.png" />
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Save the data files into a format compatible with CNTK text reader</span>
+<span class="k">def</span> <span class="nf">savetxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">):</span>
+    <span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="nb">dir</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="nb">dir</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Saving&quot;</span><span class="p">,</span> <span class="n">filename</span> <span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)))</span>
+            <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">ndarray</span><span class="p">:</span>
+                <span class="n">row_str</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+                <span class="n">label_str</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+                <span class="n">feature_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;|labels {} |features {}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label_str</span><span class="p">,</span> <span class="n">feature_str</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;File already exists&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Save the train and test files (prefer our default path for the data)</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;Image&quot;</span><span class="p">,</span> <span class="s2">&quot;DataSets&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+    <span class="n">data_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Writing train text file...&#39;</span><span class="p">)</span>
+<span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Train-28x28_cntk_text.txt&quot;</span><span class="p">),</span> <span class="n">train</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Writing test text file...&#39;</span><span class="p">)</span>
+<span class="n">savetxt</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Test-28x28_cntk_text.txt&quot;</span><span class="p">),</span> <span class="n">test</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Done&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Writing train text file...
+Saving ..\Examples\Image\DataSets\MNIST\Train-28x28_cntk_text.txt
+Writing test text file...
+Saving ..\Examples\Image\DataSets\MNIST\Test-28x28_cntk_text.txt
+Done
+</pre></div></div>
+</div>
+<p><strong>Suggested Explorations</strong></p>
+<p>One can do data manipulations to improve the performance of a machine
+learning system. We suggest you first use the data generated so far and
+run the classifier in subsequent parts of the CNTK 103 tutorial series.
+Once you have a baseline with classifying the data in its original form,
+now use the different data manipulation techniques to further improve
+the model.</p>
+<p>There are several ways data alterations can be performed. CNTK readers
+automate a lot of these actions for you. However, to get a feel for how
+these transforms can impact training and test accuracies, we strongly
+encourage individuals to try one or more of data perturbation.</p>
+<ul class="simple">
+<li>Shuffle the training data (rows to create a different). Hint: Use
+<code class="docutils literal"><span class="pre">permute_indices</span> <span class="pre">=</span> <span class="pre">np.random.permutation(train.shape[0])</span></code>. Then,
+run Part B of the tutorial with this newly permuted data.</li>
+<li>Adding noise to the data can often improves <a class="reference external" href="https://en.wikipedia.org/wiki/Generalization_error">generalization
+error</a>. You
+can augment the training set by adding noise (generated with numpy,
+hint: use <code class="docutils literal"><span class="pre">numpy.random</span></code>) to the training images.</li>
+<li>Distort the images with <a class="reference external" href="https://en.wikipedia.org/wiki/Affine_transformation">affine
+transformation</a>
+(translations or rotations)</li>
+</ul>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

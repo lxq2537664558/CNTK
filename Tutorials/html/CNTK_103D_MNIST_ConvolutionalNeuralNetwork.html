@@ -1,0 +1,1529 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 103: Part D - Convolutional Neural Network with MNIST &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 103: Part D - Convolutional Neural Network with MNIST</a><ul>
+<li><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li><a class="reference internal" href="#Data-reading">Data reading</a></li>
+<li><a class="reference internal" href="#CNN-Model-Creation">CNN Model Creation</a><ul>
+<li><a class="reference internal" href="#Convolution-Layer">Convolution Layer</a></li>
+<li><a class="reference internal" href="#Strides-and-Pad-parameters">Strides and Pad parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Building-our-CNN-models">Building our CNN models</a><ul>
+<li><a class="reference internal" href="#Learning-model-parameters">Learning model parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Training">Training</a><ul>
+<li><a class="reference internal" href="#Configure-training">Configure training</a></li>
+<li><a class="reference internal" href="#Run-the-trainer-and-test-model">Run the trainer and test model</a></li>
+<li><a class="reference internal" href="#Run-evaluation-/-prediction">Run evaluation / prediction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Pooling-Layer">Pooling Layer</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Typical-convolution-network">Typical convolution network</a><ul>
+<li><a class="reference internal" href="#Task:-Create-a-network-with-MaxPooling">Task: Create a network with MaxPooling</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Solution">Solution</a></li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 103: Part D - Convolutional Neural Network with MNIST</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_103D_MNIST_ConvolutionalNeuralNetwork.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-103:-Part-D---Convolutional-Neural-Network-with-MNIST">
+<h1>CNTK 103: Part D - Convolutional Neural Network with MNIST<a class="headerlink" href="#CNTK-103:-Part-D---Convolutional-Neural-Network-with-MNIST" title="Permalink to this headline">¶</a></h1>
+<p>We assume that you have successfully completed CNTK 103 Part A (MNIST
+Data Loader).</p>
+<p>In this tutorial we will train a Convolutional Neural Network (CNN) on
+MNIST data. This notebook provides the recipe using the Python API. If
+you are looking for this example in BrainScript, please look
+<a class="reference external" href="https://github.com/Microsoft/CNTK/tree/release/2.1/Examples/Image/GettingStarted">here</a></p>
+<div class="section" id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p>A <a class="reference external" href="https://en.wikipedia.org/wiki/Convolutional_neural_network">convolutional neural
+network</a>
+(CNN, or ConvNet) is a type of
+<a class="reference external" href="https://en.wikipedia.org/wiki/Feedforward_neural_network">feed-forward</a>
+artificial neural network made up of neurons that have learnable weights
+and biases, very similar to ordinary multi-layer perceptron (MLP)
+networks introduced in 103C. The CNNs take advantage of the spatial
+nature of the data. In nature, we perceive different objects by their
+shapes, size and colors. For example, objects in a natural scene are
+typically edges, corners/vertices (defined by two of more edges), color
+patches etc. These primitives are often identified using different
+detectors (e.g., edge detection, color detector) or combination of
+detectors interacting to facilitate image interpretation (object
+classification, region of interest detection, scene description etc.) in
+real world vision related tasks. These detectors are also known as
+filters. Convolution is a mathematical operator that takes an image and
+a filter as input and produces a filtered output (representing say
+egdges, corners, colors etc in the input image). Historically, these
+filters are a set of weights that were often hand crafted or modeled
+with mathematical functions (e.g.,
+<a class="reference external" href="https://en.wikipedia.org/wiki/Gaussian_filter">Gaussian</a> /
+<a class="reference external" href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/log.htm">Laplacian</a> /
+<a class="reference external" href="https://en.wikipedia.org/wiki/Canny_edge_detector">Canny</a> filter).
+The filter outputs are mapped through non-linear activation functions
+mimicking human brain cells called
+<a class="reference external" href="https://en.wikipedia.org/wiki/Neuron">neurons</a>.</p>
+<p>Convolutional networks provide a machinery to learn these filters from
+the data directly instead of explicit mathematical models and have been
+found to be superior (in real world tasks) compared to historically
+crafted filters. With convolutional networks, the focus is on learning
+the filter weights instead of learning individually fully connected
+pair-wise (between inputs and outputs) weights. In this way, the number
+of weights to learn is reduced when compared with the traditional MLP
+networks from the previous tutorials. In a convolutional network, one
+learns several filters ranging from few single digits to few thousands
+depending on the network complexity.</p>
+<p>Many of the CNN primitives have been shown to have a conceptually
+parallel components in brain’s <a class="reference external" href="https://en.wikipedia.org/wiki/Visual_cortex">visual
+cortex</a>. The group of
+neurons cells in visual cortex emit responses when stimulated. This
+region is known as the receptive field (RF). Equivalently, in
+convolution the input region corresponding to the filter dimensions can
+be considered as the receptive field. Popular deep CNNs or ConvNets
+(such as <a class="reference external" href="https://en.wikipedia.org/wiki/AlexNet">AlexNet</a>,
+<a class="reference external" href="https://arxiv.org/abs/1409.1556">VGG</a>,
+<a class="reference external" href="http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Szegedy_Going_Deeper_With_2015_CVPR_paper.pdf">Inception</a>,
+<a class="reference external" href="https://arxiv.org/pdf/1512.03385v1.pdf">ResNet</a>) that are used for
+various <a class="reference external" href="https://en.wikipedia.org/wiki/Computer_vision">computer
+vision</a> tasks have
+many of these architectural primitives (inspired from biology).</p>
+<p>In this tutorial, we will introduce the convolution operation and gain
+familiarity with the different parameters in CNNs.</p>
+<p><strong>Problem</strong>: As in CNTK 103C, we will continue to work on the same
+problem of recognizing digits in MNIST data. The MNIST data comprises of
+hand-written digits with little background noise.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span> <span class="s2">&quot;http://3.bp.blogspot.com/_UpN7DfJA0j4/TJtUBWPk0SI/AAAAAAAAABY/oWPMtmqJn3k/s1600/mnist_originals.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://3.bp.blogspot.com/_UpN7DfJA0j4/TJtUBWPk0SI/AAAAAAAAABY/oWPMtmqJn3k/s1600/mnist_originals.png" width="200" height="200"/></div>
+</div>
+<p><strong>Goal</strong>: Our goal is to train a classifier that will identify the
+digits in the MNIST dataset.</p>
+<p><strong>Approach</strong>:</p>
+<p>The same 5 stages we have used in the previous tutorial are applicable:
+Data reading, Data preprocessing, Creating a model, Learning the model
+parameters and Evaluating (a.k.a. testing/prediction) the model. - Data
+reading: We will use the CNTK Text reader - Data preprocessing: Covered
+in part A (suggested extension section).</p>
+<p>In this tutorial, we will experiment with two models with different
+architectural components.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="kn">as</span> <span class="nn">mpimg</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-reading">
+<h2>Data reading<a class="headerlink" href="#Data-reading" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we will read the data generated in CNTK 103 Part A
+(MNIST Data Loader).</p>
+<p>We are using the MNIST data that you have downloaded using the
+CNTK_103A_MNIST_DataLoader notebook. The dataset has 60,000 training
+images and 10,000 test images with each image being 28 x 28 pixels. Thus
+the number of features is equal to 784 (= 28 x 28 pixels), 1 per pixel.
+The variable <code class="docutils literal"><span class="pre">num_output_classes</span></code> is set to 10 corresponding to the
+number of digits (0-9) in the dataset.</p>
+<p>In previous tutorials, as shown below, we have always flattened the
+input image into a vector. With convoultional networks, we do not
+flatten the image in this way.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103a_MNIST_input.png" />
+</div>
+<p><strong>Input Dimensions</strong>:</p>
+<p>In convolutional networks for images, the input data is often shaped as
+a 3D matrix (number of channels, image width, height), which preserves
+the spatial relationship between the pixels. In the figure above, the
+MNIST image is a single channel (grayscale) data, so the input dimension
+is specified as a (1, image width, image height) tuple.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103d_rgb.png" />
+</div>
+<p>Natural scene color images are often presented as Red-Green-Blue (RGB)
+color channels. The input dimension of such images are specified as a
+(3, image width, image height) tuple. If one has RGB input data as a
+volumetric scan with volume width, volume height and volume depth
+representing the 3 axes, the input data format would be specified by a
+tuple of 4 values (3, volume width, volume height, volume depth). In
+this way CNTK enables specification of input images in arbitrary
+higher-dimensional space.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Define the data dimensions</span>
+<span class="n">input_dim_model</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span>    <span class="c1"># images are 28 x 28 with 1 channel of color (gray)</span>
+<span class="n">input_dim</span> <span class="o">=</span> <span class="mi">28</span><span class="o">*</span><span class="mi">28</span>                <span class="c1"># used by readers to treat input data as a vector</span>
+<span class="n">num_output_classes</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Data Format</strong> The data is stored on our local machine in the CNTK CTF
+format. The CTF format is a simple text format that contains a set of
+samples with each sample containing a set of named fields and their
+data. For our MNIST data, each sample contains 2 fields: labels and
+feature, formatted as:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span><span class="n">labels</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">|</span><span class="n">features</span> <span class="mi">0</span> <span class="mi">255</span> <span class="mi">0</span> <span class="mi">123</span> <span class="o">...</span>
+                                              <span class="p">(</span><span class="mi">784</span> <span class="n">integers</span> <span class="n">each</span> <span class="n">representing</span> <span class="n">a</span> <span class="n">pixel</span> <span class="n">gray</span> <span class="n">level</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this tutorial we are going to use the image pixels corresponding to
+the integer stream named “features”. We define a <code class="docutils literal"><span class="pre">create_reader</span></code>
+function to read the training and test data using the <a class="reference external" href="https://cntk.ai/pythondocs/cntk.io.html#cntk.io.CTFDeserializer">CTF
+deserializer</a>.
+.</p>
+<p>The labels are <a class="reference external" href="https://en.wikipedia.org/wiki/One-hot">1-hot</a> encoded
+(the label representing the output class of 3 becomes <code class="docutils literal"><span class="pre">0001000000</span></code>
+since we have 10 classes for the 10 possible digits), where the first
+index corresponds to digit <code class="docutils literal"><span class="pre">0</span></code> and the last one corresponds to digit
+<code class="docutils literal"><span class="pre">9</span></code>.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103a_onehot.png" />
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read a CTF formatted text (as mentioned above) using the CTF deserializer from a file</span>
+<span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">):</span>
+
+    <span class="n">ctf</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+          <span class="n">labels</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_label_classes</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+          <span class="n">features</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">ctf</span><span class="p">,</span>
+        <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Ensure the training and test data is available for this tutorial.</span>
+<span class="c1"># We search in two locations in the toolkit for the cached MNIST data set.</span>
+
+<span class="n">data_found</span><span class="o">=</span><span class="bp">False</span> <span class="c1"># A flag to indicate if train/test data found in local cache</span>
+<span class="k">for</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;Image&quot;</span><span class="p">,</span> <span class="s2">&quot;DataSets&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">),</span>
+                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)]:</span>
+
+    <span class="n">train_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Train-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="n">test_file</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Test-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">train_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_file</span><span class="p">):</span>
+        <span class="n">data_found</span><span class="o">=</span><span class="bp">True</span>
+        <span class="k">break</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_found</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please generate the data by completing CNTK 103 Part A&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Data directory is {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data directory is ..\Examples\Image\DataSets\MNIST
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="CNN-Model-Creation">
+<h2>CNN Model Creation<a class="headerlink" href="#CNN-Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>CNN is a feedforward network made up of bunch of layers in such a way
+that the output of one layer becomes the input to the next layer
+(similar to MLP). In MLP, all possible pairs of input pixels are
+connected to the output nodes with each pair having a weight, thus
+leading to a combinatorial explosion of parameters to be learnt and also
+increasing the possibility of overfitting
+(<a class="reference external" href="http://cs231n.github.io/neural-networks-1/">details</a>). Convolution
+layers take advantage of the spatial arrangement of the pixels and learn
+multiple filters that significantly reduce the amount of parameters in
+the network
+(<a class="reference external" href="http://cs231n.github.io/convolutional-networks/">details</a>). The
+size of the filter is a parameter of the convolution layer.</p>
+<p>In this section, we introduce the basics of convolution operations. We
+show the illustrations in the context of RGB images (3 channels),
+eventhough the MNIST data we are using in this tutorial is a grayscale
+image (single channel).</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103d_rgb.png" />
+</div>
+<div class="section" id="Convolution-Layer">
+<h3>Convolution Layer<a class="headerlink" href="#Convolution-Layer" title="Permalink to this headline">¶</a></h3>
+<p>A convolution layer is a set of filters. Each filter is defined by a
+weight (<strong>W</strong>) matrix, and bias (<span class="math">\(b\)</span>).</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103d_filterset_v2.png" />
+</div>
+<p>These filters are scanned across the image performing the dot product
+between the weights and corresponding input value (<span class="math">\(x\)</span>). The bias
+value is added to the output of the dot product and the resulting sum is
+optionally mapped through an activation function. This process is
+illustrated in the following animation.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://www.cntk.ai/jup/cntk103d_conv2d_final.gif&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span> <span class="mi">300</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/cntk103d_conv2d_final.gif" width="300"/></div>
+</div>
+<p>Convolution layers incorporate following key features:</p>
+<ul class="simple">
+<li>Instead of being fully-connected to all pairs of input and output
+nodes , each convolution node is <strong>locally-connected</strong> to a subset of
+input nodes localized to a smaller input region, also referred to as
+receptive field (RF). The figure above illustrates a small 3 x 3
+regions in the image as the RF region. In the case of an RGB, image
+there would be three such 3 x 3 regions, one each of the 3 color
+channels.</li>
+<li>Instead of having a single set of weights (as in a Dense layer),
+convolutional layers have multiple sets (shown in figure with
+multiple colors), called <strong>filters</strong>. Each filter detects features
+within each possible RF in the input image. The output of the
+convolution is a set of <code class="docutils literal"><span class="pre">n</span></code> sub-layers (shown in the animation
+below) where <code class="docutils literal"><span class="pre">n</span></code> is the number of filters (refer to the above
+figure).</li>
+<li>Within a sublayer, instead of each node having its own set of
+weights, a single set of <strong>shared weights</strong> are used by all nodes in
+that sublayer. This reduces the number of parameters to be learnt and
+thus overfitting. This also opens the door for several aspects of
+deep learning which has enabled very practical solutions to be built:
+– Handling larger images (say 512 x 512)<ul>
+<li>Trying larger filter sizes (corresponding to a larger RF) say 11 x
+11</li>
+<li>Learning more filters (say 128)</li>
+<li>Explore deeper architectures (100+ layers)</li>
+<li>Achieve translation invariance (the ability to recognize a feature
+independent of where they appear in the image).</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="Strides-and-Pad-parameters">
+<h3>Strides and Pad parameters<a class="headerlink" href="#Strides-and-Pad-parameters" title="Permalink to this headline">¶</a></h3>
+<p><strong>How are filters positioned?</strong> In general, the filters are arranged in
+overlapping tiles, from left to right, and top to bottom. Each
+convolution layer has a parameter to specify the <code class="docutils literal"><span class="pre">filter_shape</span></code>,
+specifying the width and height of the filter in case most natural scene
+images. There is a parameter (<code class="docutils literal"><span class="pre">strides</span></code>) that controls the how far to
+step to right when moving the filters through multiple RF’s in a row,
+and how far to step down when moving to the next row. The boolean
+parameter <code class="docutils literal"><span class="pre">pad</span></code> controls if the input should be padded around the
+edges to allow a complete tiling of the RF’s near the borders.</p>
+<p>The animation above shows the results with a <code class="docutils literal"><span class="pre">filter_shape</span></code> = (3, 3),
+<code class="docutils literal"><span class="pre">strides</span></code> = (2, 2) and <code class="docutils literal"><span class="pre">pad</span></code> = False. The two animations below show
+the results when <code class="docutils literal"><span class="pre">pad</span></code> is set to True. First, with a stride of 2 and
+second having a stride of 1. Note: the shape of the output (the teal
+layer) is different between the two stride settings. Many a times your
+decision to pad and the stride values to choose are based on the shape
+of the output layer needed.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot images with strides of 2 and 1 with padding turned on</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;https://www.cntk.ai/jup/cntk103d_padding_strides.gif&quot;</span> <span class="p">,</span> <span class="s1">&#39;With stride = 2&#39;</span><span class="p">),</span>
+          <span class="p">(</span><span class="s2">&quot;https://www.cntk.ai/jup/cntk103d_same_padding_no_strides.gif&quot;</span><span class="p">,</span> <span class="s1">&#39;With stride = 1&#39;</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">im</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">im</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+With stride = 2
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/cntk103d_padding_strides.gif" width="200" height="200"/></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+With stride = 1
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/cntk103d_same_padding_no_strides.gif" width="200" height="200"/></div>
+</div>
+</div>
+</div>
+<div class="section" id="Building-our-CNN-models">
+<h2>Building our CNN models<a class="headerlink" href="#Building-our-CNN-models" title="Permalink to this headline">¶</a></h2>
+<p>In this CNN tutorial, we first define two containers. One for the input
+MNIST image and the second one being the labels corresponding to the 10
+digits. When reading the data, the reader automatically maps the 784
+pixels per image to a shape defined by <code class="docutils literal"><span class="pre">input_dim_model</span></code> tuple (in
+this example it is set to (1, 28, 28)).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim_model</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>The first model we build is a simple convolution only network. Here we
+have two convolutional layers. Since, our task is to detect the 10
+digits in the MNIST database, the output of the network should be a
+vector of length 10, 1 element corresponding to each digit. This is
+achieved by projecting the output of the last convolutional layer using
+a dense layer with the output being <code class="docutils literal"><span class="pre">num_output_classes</span></code>. We have seen
+this before with Logistic Regression and MLP where features were mapped
+to the number of classes in the final layer. Also, note that since we
+will be using the <code class="docutils literal"><span class="pre">softmax</span></code> operation that is combined with the
+<code class="docutils literal"><span class="pre">cross</span> <span class="pre">entropy</span></code> loss function during training (see a few cells below),
+the final dense layer has no activation function associated with it.</p>
+<p>The following figure illustrates the model we are going to build. Note
+the parameters in the model below are to be experimented with. These are
+often called network hyperparameters. Increasing the filter shape leads
+to an increase in the number of model parameters, increases the compute
+time and helps the model better fit to the data. However, one runs the
+risk of <a class="reference external" href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a>.
+Typically, the number of filters in the deeper layers are more than the
+number of filters in the layers before them. We have chosen 8, 16 for
+the first and second layers, respectively. These hyperparameters should
+be experimented with during model building.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103d_convonly2.png" />
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># function to build model</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">features</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;first_conv&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;second_conv&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;classify&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+</pre></div>
+</div>
+</div>
+<p>Let us create an instance of the model and inspect the different
+components of the model. <code class="docutils literal"><span class="pre">z</span></code> will be used to represent the output of a
+network. In this model, we use the <code class="docutils literal"><span class="pre">relu</span></code> activation function. Note:
+using the <code class="docutils literal"><span class="pre">C.layers.default_options</span></code> is an elegant way to write
+concise models. This is key to minimizing modeling errors, saving
+precious debugging time.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Create the model</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c1"># Print the output shapes / parameters of different components</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Output Shape of the first convolution layer:&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">first_conv</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Bias value of the last dense layer:&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Output Shape of the first convolution layer: (8, 14, 14)
+Bias value of the last dense layer: [ 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.]
+</pre></div></div>
+</div>
+<p>Understanding number of model parameters to be estimated is key to deep
+learning since there is a direct dependency on the amount of data one
+needs to have. You need more data for a model that has larger number of
+parameters to prevent overfitting. In other words, with a fixed amount
+of data, one has to constrain the number of parameters. There is no
+golden rule between the amount of data one needs for a model. However,
+there are ways one can boost performance of model training with <a class="reference external" href="https://deeplearningmania.quora.com/The-Power-of-Data-Augmentation-2">data
+augmentation</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Number of parameters in the network</span>
+<span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">log_number_of_parameters</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 11274 parameters in 6 parameter tensors.
+</pre></div></div>
+</div>
+<p><strong>Understanding Parameters</strong>:</p>
+<p>Our model has 2 convolution layers each having a weight and bias. This
+adds up to 4 parameter tensors. Additionally the dense layer has weight
+and bias tensors. Thus, the 6 parameter tensors.</p>
+<p>Let us now count the number of parameters: - <em>First convolution layer</em>:
+There are 8 filters each of size (1 x 5 x 5) where 1 is the number of
+channels in the input image. This adds up to 200 values in the weight
+matrix and 8 bias values.</p>
+<ul class="simple">
+<li><em>Second convolution layer</em>: There are 16 filters each of size (8 x 5
+x 5) where 8 is the number of channels in the input to the second
+layer (= output of the first layer). This adds up to 3200 values in
+the weight matrix and 16 bias values.</li>
+<li><em>Last dense layer</em>: There are 16 x 7 x 7 input values and it produces
+10 output values corresponding to the 10 digits in the MNIST dataset.
+This corresponds to (16 x 7 x 7) x 10 weight values and 10 bias
+values.</li>
+</ul>
+<p>Adding these up gives the 11274 parameters in the model.</p>
+<p><strong>Knowledge check</strong>: Does the dense layer shape align with the task
+(MNIST digit classification)?</p>
+<p>** Suggested Activity ** - Try printing shapes and parameters of
+different network layers, - Record the training error you get with
+<code class="docutils literal"><span class="pre">relu</span></code> as the activation function, - Now change to <code class="docutils literal"><span class="pre">sigmoid</span></code> as the
+activation function and see if you can improve your training error.</p>
+<p><em>Quiz</em>: Different supported activation functions can be <a class="reference external" href="https://cntk.ai/pythondocs/cntk.layers.layers.html#cntk.layers.layers.Activation">found
+here</a>.
+Which activation function gives the least training error?</p>
+<div class="section" id="Learning-model-parameters">
+<h3>Learning model parameters<a class="headerlink" href="#Learning-model-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Same as the previous tutorial, we use the <code class="docutils literal"><span class="pre">softmax</span></code> function to map
+the accumulated evidences or activations to a probability distribution
+over the classes (Details of the <a class="reference external" href="http://cntk.ai/pythondocs/cntk.ops.html#cntk.ops.softmax">softmax
+function</a>
+and other
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.layers.layers.html#cntk.layers.layers.Activation">activation</a>
+functions).</p>
+</div>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p>Similar to CNTK 102, we minimize the cross-entropy between the label and
+predicted probability by the network. If this terminology sounds strange
+to you, please refer to the CNTK 102 for a refresher. Since we are going
+to build more than one model, we will create a few helper functions.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_criterion_function</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="n">errs</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">errs</span> <span class="c1"># (model, labels) -&gt; (loss, error metric)</span>
+</pre></div>
+</div>
+</div>
+<p>Next we will need a helper function to perform the model training. First
+let us create additional helper functions that will be needed to
+visualize different functions associated with training.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Define a utility function to compute the moving average sum.</span>
+<span class="c1"># A more efficient implementation is possible with np.cumsum() function</span>
+<span class="k">def</span> <span class="nf">moving_average</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">[:]</span>    <span class="c1"># Need to send a copy of the array</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">val</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">w</span> <span class="k">else</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[(</span><span class="n">idx</span><span class="o">-</span><span class="n">w</span><span class="p">):</span><span class="n">idx</span><span class="p">])</span><span class="o">/</span><span class="n">w</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
+
+
+<span class="c1"># Defines a utility that prints the training progress</span>
+<span class="k">def</span> <span class="nf">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">training_loss</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+    <span class="n">eval_error</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+
+    <span class="k">if</span> <span class="n">mb</span><span class="o">%</span><span class="k">frequency</span> == 0:
+        <span class="n">training_loss</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_evaluation_average</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Configure-training">
+<h3>Configure training<a class="headerlink" href="#Configure-training" title="Permalink to this headline">¶</a></h3>
+<p>In the previous tutorials we have described the concepts of <code class="docutils literal"><span class="pre">loss</span></code>
+function, the optimizers or
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.learners.html">learners</a> and the
+associated machinery needed to train a model. Please refer to earlier
+tutorials for gaining familiarility with these concepts. In this
+tutorial, we combine model training and testing in a helper function
+below.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">train_test</span><span class="p">(</span><span class="n">train_reader</span><span class="p">,</span> <span class="n">test_reader</span><span class="p">,</span> <span class="n">model_func</span><span class="p">,</span> <span class="n">num_sweeps_to_train_with</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+    <span class="c1"># Instantiate the model function; x is the input (feature) variable</span>
+    <span class="c1"># We will scale the input image pixels within 0-1 range by dividing all input value by 255.</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="o">/</span><span class="mi">255</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the loss and error function</span>
+    <span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span> <span class="o">=</span> <span class="n">create_criterion_function</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the trainer object to drive the model training</span>
+    <span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.2</span>
+    <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">)</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr_schedule</span><span class="p">)</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span><span class="p">),</span> <span class="p">[</span><span class="n">learner</span><span class="p">])</span>
+
+    <span class="c1"># Initialize the parameters for the trainer</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">64</span>
+    <span class="n">num_samples_per_sweep</span> <span class="o">=</span> <span class="mi">60000</span>
+    <span class="n">num_minibatches_to_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_samples_per_sweep</span> <span class="o">*</span> <span class="n">num_sweeps_to_train_with</span><span class="p">)</span> <span class="o">/</span> <span class="n">minibatch_size</span>
+
+    <span class="c1"># Map the data streams to the input and labels.</span>
+    <span class="n">input_map</span><span class="o">=</span><span class="p">{</span>
+        <span class="n">y</span>  <span class="p">:</span> <span class="n">train_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+        <span class="n">x</span>  <span class="p">:</span> <span class="n">train_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Uncomment below for more detailed logging</span>
+    <span class="n">training_progress_output_freq</span> <span class="o">=</span> <span class="mi">500</span>
+
+    <span class="c1"># Start a timer</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_minibatches_to_train</span><span class="p">)):</span>
+        <span class="c1"># Read a mini batch from the training data file</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">train_reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="n">input_map</span><span class="p">)</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">training_progress_output_freq</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Print training time</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Training took {:.1f} sec&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">))</span>
+
+    <span class="c1"># Test the model</span>
+    <span class="n">test_input_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">y</span>  <span class="p">:</span> <span class="n">test_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+        <span class="n">x</span>  <span class="p">:</span> <span class="n">test_reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Test data for trained model</span>
+    <span class="n">test_minibatch_size</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">num_samples</span> <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">num_minibatches_to_test</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">//</span> <span class="n">test_minibatch_size</span>
+
+    <span class="n">test_result</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_minibatches_to_test</span><span class="p">):</span>
+
+        <span class="c1"># We are loading test data in batches specified by test_minibatch_size</span>
+        <span class="c1"># Each data point in the minibatch is a MNIST digit image of 784 dimensions</span>
+        <span class="c1"># with one pixel per dimension that we will encode / decode with the</span>
+        <span class="c1"># trained model.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">test_reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">test_minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="n">test_input_map</span><span class="p">)</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">test_result</span> <span class="o">=</span> <span class="n">test_result</span> <span class="o">+</span> <span class="n">eval_error</span>
+
+    <span class="c1"># Average of evaluation errors of all test minibatches</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Average test error: {0:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_result</span><span class="o">*</span><span class="mi">100</span> <span class="o">/</span> <span class="n">num_minibatches_to_test</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Run-the-trainer-and-test-model">
+<h3>Run the trainer and test model<a class="headerlink" href="#Run-the-trainer-and-test-model" title="Permalink to this headline">¶</a></h3>
+<p>We are now ready to train our convolutional neural net.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">do_train_test</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">z</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">train_file</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+    <span class="n">reader_test</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+    <span class="n">train_test</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span> <span class="n">reader_test</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+
+<span class="n">do_train_test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Minibatch: 0, Loss: 2.3132, Error: 87.50%
+Minibatch: 500, Loss: 0.2041, Error: 10.94%
+Minibatch: 1000, Loss: 0.1134, Error: 1.56%
+Minibatch: 1500, Loss: 0.1540, Error: 3.12%
+Minibatch: 2000, Loss: 0.0078, Error: 0.00%
+Minibatch: 2500, Loss: 0.0240, Error: 1.56%
+Minibatch: 3000, Loss: 0.0083, Error: 0.00%
+Minibatch: 3500, Loss: 0.0581, Error: 3.12%
+Minibatch: 4000, Loss: 0.0247, Error: 0.00%
+Minibatch: 4500, Loss: 0.0389, Error: 1.56%
+Minibatch: 5000, Loss: 0.0368, Error: 1.56%
+Minibatch: 5500, Loss: 0.0015, Error: 0.00%
+Minibatch: 6000, Loss: 0.0043, Error: 0.00%
+Minibatch: 6500, Loss: 0.0120, Error: 0.00%
+Minibatch: 7000, Loss: 0.0165, Error: 0.00%
+Minibatch: 7500, Loss: 0.0097, Error: 0.00%
+Minibatch: 8000, Loss: 0.0044, Error: 0.00%
+Minibatch: 8500, Loss: 0.0037, Error: 0.00%
+Minibatch: 9000, Loss: 0.0506, Error: 3.12%
+Training took 30.4 sec
+Average test error: 1.57%
+</pre></div></div>
+</div>
+<p>Note, the average test error is very comparable to our training error
+indicating that our model has good “out of sample” error a.k.a.
+<a class="reference external" href="https://en.wikipedia.org/wiki/Generalization_error">generalization
+error</a>. This
+implies that our model can very effectively deal with previously unseen
+observations (during the training process). This is key to avoid
+<a class="reference external" href="https://en.wikipedia.org/wiki/Overfitting">overfitting</a>.</p>
+<p>Let us check what is the value of some of the network parameters. We
+will check the bias value of the output dense layer. Previously, it was
+all 0. Now you see there are non-zero values, indicating that a model
+parameters were updated during training.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Bias value of the last dense layer:&quot;</span><span class="p">,</span> <span class="n">z</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Bias value of the last dense layer: [-0.03064867 -0.01484577  0.01883961 -0.27907506  0.10493447 -0.08710711
+  0.00442157 -0.09873096  0.33425555  0.04781624]
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Run-evaluation-/-prediction">
+<h3>Run evaluation / prediction<a class="headerlink" href="#Run-evaluation-/-prediction" title="Permalink to this headline">¶</a></h3>
+<p>We have so far been dealing with aggregate measures of error. Let us now
+get the probabilities associated with individual data points. For each
+observation, the <code class="docutils literal"><span class="pre">eval</span></code> function returns the probability distribution
+across all the classes. The classifier is trained to recognize digits,
+hence has 10 classes. First let us route the network output through a
+<code class="docutils literal"><span class="pre">softmax</span></code> function. This maps the aggregated activations across the
+network to probabilities across the 10 classes.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let us a small minibatch sample from the test data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read the data for evaluation</span>
+<span class="n">reader_eval</span><span class="o">=</span><span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+
+<span class="n">eval_minibatch_size</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">eval_input_map</span> <span class="o">=</span> <span class="p">{</span><span class="n">x</span><span class="p">:</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span><span class="n">reader_eval</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">}</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">eval_minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="n">eval_input_map</span><span class="p">)</span>
+
+<span class="n">img_label</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+<span class="n">img_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">x</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+
+<span class="c1"># reshape img_data to: M x 1 x 28 x 28 to be compatible with model</span>
+<span class="n">img_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img_data</span><span class="p">,</span> <span class="p">(</span><span class="n">eval_minibatch_size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">))</span>
+
+<span class="n">predicted_label_prob</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">img_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_data</span><span class="p">))]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Find the index with the maximum value for both predicted as well as the ground truth</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">))]</span>
+<span class="n">gtlabel</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">img_label</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_label</span><span class="p">))]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Label    :&quot;</span><span class="p">,</span> <span class="n">gtlabel</span><span class="p">[:</span><span class="mi">25</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Predicted:&quot;</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Label    : [7, 2, 1, 0, 4, 1, 4, 9, 5, 9, 0, 6, 9, 0, 1, 5, 9, 7, 3, 4, 9, 6, 6, 5, 4]
+Predicted: [7, 2, 1, 0, 4, 1, 4, 9, 5, 9, 0, 6, 9, 0, 1, 5, 9, 7, 3, 4, 9, 6, 6, 5, 4]
+</pre></div></div>
+</div>
+<p>Let us visualize some of the results</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot a random image</span>
+<span class="n">sample_number</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img_data</span><span class="p">[</span><span class="n">sample_number</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray_r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">img_gt</span><span class="p">,</span> <span class="n">img_pred</span> <span class="o">=</span> <span class="n">gtlabel</span><span class="p">[</span><span class="n">sample_number</span><span class="p">],</span> <span class="n">pred</span><span class="p">[</span><span class="n">sample_number</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Image Label: &quot;</span><span class="p">,</span> <span class="n">img_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Image Label:  1
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_103D_MNIST_ConvolutionalNeuralNetwork_43_1.png" src="_images/CNTK_103D_MNIST_ConvolutionalNeuralNetwork_43_1.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Pooling-Layer">
+<h2>Pooling Layer<a class="headerlink" href="#Pooling-Layer" title="Permalink to this headline">¶</a></h2>
+<p>Often a times, one needs to control the number of parameters especially
+when having deep networks. For every layer of the convolution layer
+output (each layer, corresponds to the output of a filter), one can have
+a pooling layer. Pooling layers are typically introduced to: - Reduce
+the dimensionality of the previous layer (speeding up the network), -
+Makes the model more tolerant to changes in object location in the
+image. For example, even when a digit is shifted to one side of the
+image instead of being in the middle, the classifer would perform the
+classification task well.</p>
+<p>The calculation on a pooling node is much simpler than a normal
+feedforward node. It has no weight, bias, or activation function. It
+uses a simple aggregation function (like max or average) to compute its
+output. The most commonly used function is “max” - a max pooling node
+simply outputs the maximum of the input values corresponding to the
+filter position of the input. The figure below shows the input values in
+a 4 x 4 region. The max pooling window size is 2 x 2 and starts from the
+top left corner. The maximum value within the window becomes the output
+of the region. Every time the model is shifted by the amount specified
+by the stride parameter (as shown in the figure below) and the maximum
+pooling operation is repeated. <img alt="maxppool" src="https://cntk.ai/jup/201/MaxPooling.png" /></p>
+<p>Another alternative is average pooling, which emits that average value
+instead of the maximum value. The two different pooling opearations are
+summarized in the animation below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot images with strides of 2 and 1 with padding turned on</span>
+<span class="n">images</span> <span class="o">=</span> <span class="p">[(</span><span class="s2">&quot;https://www.cntk.ai/jup/c103d_max_pooling.gif&quot;</span> <span class="p">,</span> <span class="s1">&#39;Max pooling&#39;</span><span class="p">),</span>
+          <span class="p">(</span><span class="s2">&quot;https://www.cntk.ai/jup/c103d_average_pooling.gif&quot;</span><span class="p">,</span> <span class="s1">&#39;Average pooling&#39;</span><span class="p">)]</span>
+
+<span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="n">images</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">im</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">display</span><span class="p">(</span><span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">im</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">width</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">300</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Max pooling
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/c103d_max_pooling.gif" width="200" height="200"/></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Average pooling
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img src="https://www.cntk.ai/jup/c103d_average_pooling.gif" width="200" height="200"/></div>
+</div>
+</div>
+</div>
+<div class="section" id="Typical-convolution-network">
+<h1>Typical convolution network<a class="headerlink" href="#Typical-convolution-network" title="Permalink to this headline">¶</a></h1>
+<div class="figure">
+<img alt="" src="http://www.cntk.ai/jup/conv103d_mnist-conv-mp.png" />
+</div>
+<p>A typical CNN contains a set of alternating convolution and pooling
+layers followed by a dense output layer for classification. You will
+find variants of this structure in many classical deep networks (VGG,
+AlexNet etc). This is in contrast to the MLP network we used in
+CNTK_103C, which consisted of 2 dense layers followed by a dense output
+layer.</p>
+<p>The illustrations are presented in the context of 2-dimensional (2D)
+images, but the concept and the CNTK components can operate on any
+dimensional data. The above schematic shows 2 convolution layer and 2
+max-pooling layers. A typical strategy is to increase the number of
+filters in the deeper layers while reducing the spatial size of each
+intermediate layers. intermediate layers.</p>
+<div class="section" id="Task:-Create-a-network-with-MaxPooling">
+<h2>Task: Create a network with MaxPooling<a class="headerlink" href="#Task:-Create-a-network-with-MaxPooling" title="Permalink to this headline">¶</a></h2>
+<p>Typical convolutional networks have interlacing convolution and max pool
+layers. The previous model had only convolution layer. In this section,
+you will create a model with the following architecture.</p>
+<div class="figure">
+<img alt="" src="https://www.cntk.ai/jup/cntk103d_conv_max2.png" />
+</div>
+<p>You will use the CNTK
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.layers.layers.html#cntk.layers.layers.MaxPooling">MaxPooling</a>
+function to achieve this task. You will edit the <code class="docutils literal"><span class="pre">create_model</span></code>
+function below and add the MaxPooling operation.</p>
+<p>Hint: We provide the solution a few cells below. Refrain from looking
+ahead and try to add the layer yourself first.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Modify this model</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">features</span>
+
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;first_conv&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;second_conv&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;classify&#39;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+<span class="c1"># do_train_test()</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Quiz</strong>: How many parameters do we have in the model with MaxPooling
+and Convolution? Which of the two models produces lower error rate?</p>
+<p><strong>Exploration Suggestion</strong> - Does the use of LeakyRelu help improve the
+error rate? - What percentage of the parameter does the last dense layer
+contribute w.r.t. the overall number of parameters for (a) purely two
+convolutional layer and (b) alternating 2 convolutional and maxpooling
+layers</p>
+</div>
+</div>
+<div class="section" id="Solution">
+<h1>Solution<a class="headerlink" href="#Solution" title="Permalink to this headline">¶</a></h1>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># function to build model</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">features</span>
+
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;first_conv&quot;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span>
+                                    <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;first_max&quot;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution2D</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+                                       <span class="n">num_filters</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+                                       <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+                                       <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;second_conv&quot;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span>
+                                    <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;second_max&quot;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;classify&quot;</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+<span class="n">do_train_test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Minibatch: 0, Loss: 2.3257, Error: 96.88%
+Minibatch: 500, Loss: 0.0592, Error: 0.00%
+Minibatch: 1000, Loss: 0.1007, Error: 3.12%
+Minibatch: 1500, Loss: 0.1299, Error: 3.12%
+Minibatch: 2000, Loss: 0.0077, Error: 0.00%
+Minibatch: 2500, Loss: 0.0337, Error: 1.56%
+Minibatch: 3000, Loss: 0.0038, Error: 0.00%
+Minibatch: 3500, Loss: 0.0856, Error: 3.12%
+Minibatch: 4000, Loss: 0.0052, Error: 0.00%
+Minibatch: 4500, Loss: 0.0171, Error: 1.56%
+Minibatch: 5000, Loss: 0.0266, Error: 1.56%
+Minibatch: 5500, Loss: 0.0028, Error: 0.00%
+Minibatch: 6000, Loss: 0.0070, Error: 0.00%
+Minibatch: 6500, Loss: 0.0144, Error: 0.00%
+Minibatch: 7000, Loss: 0.0083, Error: 0.00%
+Minibatch: 7500, Loss: 0.0033, Error: 0.00%
+Minibatch: 8000, Loss: 0.0114, Error: 0.00%
+Minibatch: 8500, Loss: 0.0589, Error: 1.56%
+Minibatch: 9000, Loss: 0.0186, Error: 1.56%
+Training took 31.9 sec
+Average test error: 1.05%
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

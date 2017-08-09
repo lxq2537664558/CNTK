@@ -1,0 +1,1134 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 103: Part C - Multi Layer Perceptron with MNIST &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 103: Part C - Multi Layer Perceptron with MNIST</a><ul>
+<li><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li><a class="reference internal" href="#Data-reading">Data reading</a></li>
+<li><a class="reference internal" href="#Model-Creation">Model Creation</a></li>
+<li><a class="reference internal" href="#Multi-layer-Perceptron-setup">Multi-layer Perceptron setup</a><ul>
+<li><a class="reference internal" href="#Learning-model-parameters">Learning model parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Training">Training</a><ul>
+<li><a class="reference internal" href="#Evaluation">Evaluation</a></li>
+<li><a class="reference internal" href="#Configure-training">Configure training</a></li>
+<li><a class="reference internal" href="#Run-the-trainer">Run the trainer</a></li>
+<li><a class="reference internal" href="#Run-evaluation-/-testing">Run evaluation / testing</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 103: Part C - Multi Layer Perceptron with MNIST</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_103C_MNIST_MultiLayerPerceptron.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-103:-Part-C---Multi-Layer-Perceptron-with-MNIST">
+<h1>CNTK 103: Part C - Multi Layer Perceptron with MNIST<a class="headerlink" href="#CNTK-103:-Part-C---Multi-Layer-Perceptron-with-MNIST" title="Permalink to this headline">¶</a></h1>
+<p>We assume that you have successfully completed CNTK 103 Part A.</p>
+<p>In this tutorial, we train a multi-layer perceptron on MNIST data. This
+notebook provides the recipe using Python APIs. If you are looking for
+this example in BrainScript, please look
+<a class="reference external" href="https://github.com/Microsoft/CNTK/tree/release/2.1/Examples/Image/GettingStarted">here</a></p>
+<div class="section" id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p><strong>Problem</strong> As in CNTK 103B, we will continue to work on the same
+problem of recognizing digits in MNIST data. The MNIST data comprises
+hand-written digits with little background noise.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span> <span class="s2">&quot;http://3.bp.blogspot.com/_UpN7DfJA0j4/TJtUBWPk0SI/AAAAAAAAABY/oWPMtmqJn3k/s1600/mnist_originals.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="http://3.bp.blogspot.com/_UpN7DfJA0j4/TJtUBWPk0SI/AAAAAAAAABY/oWPMtmqJn3k/s1600/mnist_originals.png" width="200" height="200"/></div>
+</div>
+<p><strong>Goal</strong>: Our goal is to train a classifier that will identify the
+digits in the MNIST dataset. Additionally, we aspire to achieve lower
+error rate with Multi-layer perceptron compared to Multi-class logistic
+regression.</p>
+<p><strong>Approach</strong>: The same 5 stages we have used in the previous tutorial
+are applicable: Data reading, Data preprocessing, Creating a model,
+Learning the model parameters and Evaluating (a.k.a. testing/prediction)
+the model. - Data reading: We will use the CNTK Text reader - Data
+preprocessing: Covered in part A (suggested extension section).</p>
+<p>There is a high overlap with CNTK 102. Though this tutorial we adapt the
+same model to work on MNIST data with 10 classes instead of the 2
+classes we used in CNTK 102.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+<span class="kn">import</span> <span class="nn">matplotlib.image</span> <span class="kn">as</span> <span class="nn">mpimg</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-reading">
+<h2>Data reading<a class="headerlink" href="#Data-reading" title="Permalink to this headline">¶</a></h2>
+<p>In this section, we will read the data generated in CNTK 103 Part A.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Define the data dimensions</span>
+<span class="n">input_dim</span> <span class="o">=</span> <span class="mi">784</span>
+<span class="n">num_output_classes</span> <span class="o">=</span> <span class="mi">10</span>
+</pre></div>
+</div>
+</div>
+<p>In this tutorial we are using the MNIST data you have downloaded using
+CNTK_103A_MNIST_DataLoader notebook. The dataset has 60,000 training
+images and 10,000 test images with each image being 28 x 28 pixels. Thus
+the number of features is equal to 784 (= 28 x 28 pixels), 1 per pixel.
+The variable <code class="docutils literal"><span class="pre">num_output_classes</span></code> is set to 10 corresponding to the
+number of digits (0-9) in the dataset.</p>
+<p>The data is in the following format:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="o">|</span><span class="n">labels</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">1</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">|</span><span class="n">features</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">...</span>
+                                              <span class="p">(</span><span class="mi">784</span> <span class="n">integers</span> <span class="n">each</span> <span class="n">representing</span> <span class="n">a</span> <span class="n">pixel</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this tutorial we are going to use the image pixels corresponding the
+integer stream named “features”. We define a <code class="docutils literal"><span class="pre">create_reader</span></code> function
+to read the training and test data using the <a class="reference external" href="https://cntk.ai/pythondocs/cntk.io.html?highlight=ctfdeserializer#cntk.io.CTFDeserializer">CTF
+deserializer</a>.
+The labels are <a class="reference external" href="https://en.wikipedia.org/wiki/One-hot">1-hot
+encoded</a>. Refer to CNTK 103A
+tutorial for data format visualizations.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read a CTF formatted text (as mentioned above) using the CTF deserializer from a file</span>
+<span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_label_classes</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;labels&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_label_classes</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="n">features</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;features&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">input_dim</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">)),</span> <span class="n">randomize</span> <span class="o">=</span> <span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Ensure the training and test data is generated and available for this tutorial.</span>
+<span class="c1"># We search in two locations in the toolkit for the cached MNIST data set.</span>
+<span class="n">data_found</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="k">for</span> <span class="n">data_dir</span> <span class="ow">in</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">,</span> <span class="s2">&quot;Examples&quot;</span><span class="p">,</span> <span class="s2">&quot;Image&quot;</span><span class="p">,</span> <span class="s2">&quot;DataSets&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">),</span>
+                 <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="s2">&quot;MNIST&quot;</span><span class="p">)]:</span>
+    <span class="n">train_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Train-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="n">test_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_dir</span><span class="p">,</span> <span class="s2">&quot;Test-28x28_cntk_text.txt&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">train_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">test_file</span><span class="p">):</span>
+        <span class="n">data_found</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="k">break</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">data_found</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Please generate the data by completing CNTK 103 Part A&quot;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Data directory is {0}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data_dir</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Data directory is ..\Examples\Image\DataSets\MNIST
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Model-Creation">
+<h2>Model Creation<a class="headerlink" href="#Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>Our multi-layer perceptron will be relatively simple with 2 hidden
+layers (<code class="docutils literal"><span class="pre">num_hidden_layers</span></code>). The number of nodes in the hidden layer
+being a parameter specified by <code class="docutils literal"><span class="pre">hidden_layers_dim</span></code>. The figure below
+illustrates the entire model we will use in this tutorial in the context
+of MNIST data.</p>
+<div class="figure">
+<img alt="" src="http://cntk.ai/jup/cntk103c_MNIST_MLP.png" />
+</div>
+<p>If you are not familiar with the terms <em>hidden layer</em> and <em>number of
+hidden layers</em>, please refer back to CNTK 102 tutorial.</p>
+<p>Each Dense layer (as illustrated below) shows the input dimensions,
+output dimensions and activation function that layer uses. Specifically,
+the layer below shows: input dimension = 784 (1 dimension for each input
+pixel), output dimension = 400 (number of hidden nodes, a parameter
+specified by the user) and activation function being
+<a class="reference external" href="https://cntk.ai/pythondocs/cntk.ops.html?highlight=relu#cntk.ops.relu">relu</a>.</p>
+<div class="figure">
+<img alt="" src="http://www.cntk.ai/jup/cntk103c_MNIST_dense.png" />
+</div>
+<p>In this model we have 2 dense layer called the hidden layers each with
+an activation function of <code class="docutils literal"><span class="pre">relu</span></code> and one output layer with no
+activation.</p>
+<p>The output dimension (a.k.a. number of hidden nodes) in the 2 hidden
+layer is set to 400 and 200 in the illustration above. In the code below
+we keep both layers to have the same number of hidden nodes (set to
+400). The number of hidden layers is 2. Fill in the following values: -
+num_hidden_layers - hidden_layers_dim</p>
+<p>The final output layer emits a vector of 10 values. Since we will be
+using softmax to normalize the output of the model we do not use an
+activation function in this layer. The softmax operation comes bundled
+with the <a class="reference external" href="https://cntk.ai/pythondocs/cntk.losses.html">loss function</a>
+we will be using later in this tutorial.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">num_hidden_layers</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">hidden_layers_dim</span> <span class="o">=</span> <span class="mi">400</span>
+</pre></div>
+</div>
+</div>
+<p>Network input and output: - <strong>input</strong> variable (a key CNTK concept): &gt;An
+<strong>input</strong> variable is a container in which we fill different
+observations in this case image pixels during model learning
+(a.k.a.training) and model evaluation (a.k.a. testing). Thus, the shape
+of the <code class="docutils literal"><span class="pre">input</span></code> must match the shape of the data that will be provided.
+For example, when data are images each of height 10 pixels and width 5
+pixels, the input feature dimension will be 50 (representing the total
+number of image pixels). More on data and their dimensions to appear in
+separate tutorials.</p>
+<p><strong>Question</strong> What is the input dimension of your chosen model? This is
+fundamental to our understanding of variables in a network or model
+representation in CNTK.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="nb">input</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">input_dim</span><span class="p">)</span>
+<span class="n">label</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Multi-layer-Perceptron-setup">
+<h2>Multi-layer Perceptron setup<a class="headerlink" href="#Multi-layer-Perceptron-setup" title="Permalink to this headline">¶</a></h2>
+<p>The cell below is a direct translation of the illustration of the model
+shown above.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_model</span><span class="p">(</span><span class="n">features</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">ops</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">features</span>
+            <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_hidden_layers</span><span class="p">):</span>
+                <span class="n">h</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">hidden_layers_dim</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_output_classes</span><span class="p">,</span> <span class="n">activation</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)(</span><span class="n">h</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">r</span>
+
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal"><span class="pre">z</span></code> will be used to represent the output of a network.</p>
+<p>We introduced sigmoid function in CNTK 102, in this tutorial you should
+try different activation functions in the hidden layer. You may choose
+to do this right away and take a peek into the performance later in the
+tutorial or run the preset tutorial and then choose to perform the
+suggested activity.</p>
+<p>** Suggested Activity ** - Record the training error you get with
+<code class="docutils literal"><span class="pre">sigmoid</span></code> as the activation function - Now change to <code class="docutils literal"><span class="pre">relu</span></code> as the
+activation function and see if you can improve your training error</p>
+<p><em>Quiz</em>: Name some of the different supported activation functions. Which
+activation function gives the least training error?</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Scale the input to 0-1 range by dividing each pixel by 255.</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">(</span><span class="nb">input</span><span class="o">/</span><span class="mf">255.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Learning-model-parameters">
+<h3>Learning model parameters<a class="headerlink" href="#Learning-model-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Same as the previous tutorial, we use the <code class="docutils literal"><span class="pre">softmax</span></code> function to map
+the accumulated evidences or activations to a probability distribution
+over the classes (Details of the <a class="reference external" href="http://cntk.ai/pythondocs/cntk.ops.html#cntk.ops.softmax">softmax
+function</a>).</p>
+</div>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p>Similar to CNTK 102, we minimize the cross-entropy between the label and
+predicted probability by the network. If this terminology sounds strange
+to you, please refer to the tutorial CNTK 102 for a refresher.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">loss</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Evaluation">
+<h3>Evaluation<a class="headerlink" href="#Evaluation" title="Permalink to this headline">¶</a></h3>
+<p>In order to evaluate the classification, one can compare the output of
+the network which for each observation emits a vector of evidences (can
+be converted into probabilities using <code class="docutils literal"><span class="pre">softmax</span></code> functions) with
+dimension equal to number of classes.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">label_error</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Configure-training">
+<h3>Configure training<a class="headerlink" href="#Configure-training" title="Permalink to this headline">¶</a></h3>
+<p>The trainer strives to reduce the <code class="docutils literal"><span class="pre">loss</span></code> function by different
+optimization approaches, <a class="reference external" href="https://en.wikipedia.org/wiki/Stochastic_gradient_descent">Stochastic Gradient
+Descent</a>
+(<code class="docutils literal"><span class="pre">sgd</span></code>) being a basic one. Typically, one would start with random
+initialization of the model parameters. The <code class="docutils literal"><span class="pre">sgd</span></code> optimizer would
+calculate the <code class="docutils literal"><span class="pre">loss</span></code> or error between the predicted label against the
+corresponding ground-truth label and using
+<a class="reference external" href="http://www.statisticsviews.com/details/feature/5722691/Getting-to-the-Bottom-of-Regression-with-Gradient-Descent.html">gradient-decent</a>
+generate a new set model parameters in a single iteration.</p>
+<p>The aforementioned model parameter update using a single observation at
+a time is attractive since it does not require the entire data set (all
+observation) to be loaded in memory and also requires gradient
+computation over fewer datapoints, thus allowing for training on large
+data sets. However, the updates generated using a single observation
+sample at a time can vary wildly between iterations. An intermediate
+ground is to load a small set of observations and use an average of the
+<code class="docutils literal"><span class="pre">loss</span></code> or error from that set to update the model parameters. This
+subset is called a <em>minibatch</em>.</p>
+<p>With minibatches we often sample observation from the larger training
+dataset. We repeat the process of model parameters update using
+different combination of training samples and over a period of time
+minimize the <code class="docutils literal"><span class="pre">loss</span></code> (and the error). When the incremental error rates
+are no longer changing significantly or after a preset number of maximum
+minibatches to train, we claim that our model is trained.</p>
+<p>One of the key parameter for
+<a class="reference external" href="https://en.wikipedia.org/wiki/Category:Convex_optimization">optimization</a>
+is called the <code class="docutils literal"><span class="pre">learning_rate</span></code>. For now, we can think of it as a
+scaling factor that modulates how much we change the parameters in any
+iteration. We will be covering more details in later tutorial. With this
+information, we are ready to create our trainer.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Instantiate the trainer object to drive the model training</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.2</span>
+<span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">)</span>
+<span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sgd</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">lr_schedule</span><span class="p">)</span>
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span><span class="p">),</span> <span class="p">[</span><span class="n">learner</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>First let us create some helper functions that will be needed to
+visualize different functions associated with training.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Define a utility function to compute the moving average sum.</span>
+<span class="c1"># A more efficient implementation is possible with np.cumsum() function</span>
+<span class="k">def</span> <span class="nf">moving_average</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">w</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">a</span><span class="p">[:]</span>    <span class="c1"># Need to send a copy of the array</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">val</span> <span class="k">if</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="n">w</span> <span class="k">else</span> <span class="nb">sum</span><span class="p">(</span><span class="n">a</span><span class="p">[(</span><span class="n">idx</span><span class="o">-</span><span class="n">w</span><span class="p">):</span><span class="n">idx</span><span class="p">])</span><span class="o">/</span><span class="n">w</span> <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">a</span><span class="p">)]</span>
+
+
+<span class="c1"># Defines a utility that prints the training progress</span>
+<span class="k">def</span> <span class="nf">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">mb</span><span class="p">,</span> <span class="n">frequency</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">training_loss</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+    <span class="n">eval_error</span> <span class="o">=</span> <span class="s2">&quot;NA&quot;</span>
+
+    <span class="k">if</span> <span class="n">mb</span><span class="o">%</span><span class="k">frequency</span> == 0:
+        <span class="n">training_loss</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span>
+        <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_evaluation_average</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">print</span> <span class="p">(</span><span class="s2">&quot;Minibatch: {0}, Loss: {1:.4f}, Error: {2:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span><span class="o">*</span><span class="mi">100</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">mb</span><span class="p">,</span> <span class="n">training_loss</span><span class="p">,</span> <span class="n">eval_error</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Run-the-trainer">
+<h3>Run the trainer<a class="headerlink" href="#Run-the-trainer" title="Permalink to this headline">¶</a></h3>
+<p>We are now ready to train our fully connected neural net. We want to
+decide what data we need to feed into the training engine.</p>
+<p>In this example, each iteration of the optimizer will work on
+<code class="docutils literal"><span class="pre">minibatch_size</span></code> sized samples. We would like to train on all 60000
+observations. Additionally we will make multiple passes through the data
+specified by the variable <code class="docutils literal"><span class="pre">num_sweeps_to_train_with</span></code>. With these
+parameters we can proceed with training our simple multi-layer
+perceptron network.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Initialize the parameters for the trainer</span>
+<span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">num_samples_per_sweep</span> <span class="o">=</span> <span class="mi">60000</span>
+<span class="n">num_sweeps_to_train_with</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="n">num_minibatches_to_train</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_samples_per_sweep</span> <span class="o">*</span> <span class="n">num_sweeps_to_train_with</span><span class="p">)</span> <span class="o">/</span> <span class="n">minibatch_size</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Create the reader to training data set</span>
+<span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">train_file</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+
+<span class="c1"># Map the data streams to the input and labels.</span>
+<span class="n">input_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">label</span>  <span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+    <span class="nb">input</span>  <span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span>
+<span class="p">}</span>
+
+<span class="c1"># Run the trainer on and perform model training</span>
+<span class="n">training_progress_output_freq</span> <span class="o">=</span> <span class="mi">500</span>
+
+<span class="n">plotdata</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;batchsize&quot;</span><span class="p">:[],</span> <span class="s2">&quot;loss&quot;</span><span class="p">:[],</span> <span class="s2">&quot;error&quot;</span><span class="p">:[]}</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">num_minibatches_to_train</span><span class="p">)):</span>
+
+    <span class="c1"># Read a mini batch from the training data file</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span> <span class="o">=</span> <span class="n">input_map</span><span class="p">)</span>
+
+    <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">batchsize</span><span class="p">,</span> <span class="n">loss</span><span class="p">,</span> <span class="n">error</span> <span class="o">=</span> <span class="n">print_training_progress</span><span class="p">(</span><span class="n">trainer</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">training_progress_output_freq</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">loss</span> <span class="o">==</span> <span class="s2">&quot;NA&quot;</span> <span class="ow">or</span> <span class="n">error</span> <span class="o">==</span><span class="s2">&quot;NA&quot;</span><span class="p">):</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batchsize</span><span class="p">)</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+        <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Minibatch: 0, Loss: 2.3106, Error: 81.25%
+Minibatch: 500, Loss: 0.2747, Error: 7.81%
+Minibatch: 1000, Loss: 0.0964, Error: 1.56%
+Minibatch: 1500, Loss: 0.1252, Error: 4.69%
+Minibatch: 2000, Loss: 0.0086, Error: 0.00%
+Minibatch: 2500, Loss: 0.0387, Error: 1.56%
+Minibatch: 3000, Loss: 0.0206, Error: 0.00%
+Minibatch: 3500, Loss: 0.0486, Error: 3.12%
+Minibatch: 4000, Loss: 0.0178, Error: 0.00%
+Minibatch: 4500, Loss: 0.0107, Error: 0.00%
+Minibatch: 5000, Loss: 0.0077, Error: 0.00%
+Minibatch: 5500, Loss: 0.0042, Error: 0.00%
+Minibatch: 6000, Loss: 0.0045, Error: 0.00%
+Minibatch: 6500, Loss: 0.0292, Error: 0.00%
+Minibatch: 7000, Loss: 0.0190, Error: 1.56%
+Minibatch: 7500, Loss: 0.0060, Error: 0.00%
+Minibatch: 8000, Loss: 0.0031, Error: 0.00%
+Minibatch: 8500, Loss: 0.0019, Error: 0.00%
+Minibatch: 9000, Loss: 0.0006, Error: 0.00%
+</pre></div></div>
+</div>
+<p>Let us plot the errors over the different training minibatches. Note
+that as we iterate the training loss decreases though we do see some
+intermediate bumps.</p>
+<p>Hence, we use smaller minibatches and using <code class="docutils literal"><span class="pre">sgd</span></code> enables us to have a
+great scalability while being performant for large data sets. There are
+advanced variants of the optimizer unique to CNTK that enable harnessing
+computational efficiency for real world data sets and will be introduced
+in advanced tutorials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Compute the moving average loss to smooth out the noise in SGD</span>
+<span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;avgloss&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">moving_average</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;loss&quot;</span><span class="p">])</span>
+<span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;avgerror&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">moving_average</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;error&quot;</span><span class="p">])</span>
+
+<span class="c1"># Plot the training loss and the training error</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">],</span> <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;avgloss&quot;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Training loss&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;batchsize&quot;</span><span class="p">],</span> <span class="n">plotdata</span><span class="p">[</span><span class="s2">&quot;avgerror&quot;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Label Prediction Error&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Label Prediction Error&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_103C_MNIST_MultiLayerPerceptron_32_0.png" src="_images/CNTK_103C_MNIST_MultiLayerPerceptron_32_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_103C_MNIST_MultiLayerPerceptron_32_1.png" src="_images/CNTK_103C_MNIST_MultiLayerPerceptron_32_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Run-evaluation-/-testing">
+<h3>Run evaluation / testing<a class="headerlink" href="#Run-evaluation-/-testing" title="Permalink to this headline">¶</a></h3>
+<p>Now that we have trained the network, let us evaluate the trained
+network on the test data. This is done using <code class="docutils literal"><span class="pre">trainer.test_minibatch</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read the training data</span>
+<span class="n">reader_test</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+
+<span class="n">test_input_map</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">label</span>  <span class="p">:</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span><span class="p">,</span>
+    <span class="nb">input</span>  <span class="p">:</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="c1"># Test data for trained model</span>
+<span class="n">test_minibatch_size</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">num_samples</span> <span class="o">=</span> <span class="mi">10000</span>
+<span class="n">num_minibatches_to_test</span> <span class="o">=</span> <span class="n">num_samples</span> <span class="o">//</span> <span class="n">test_minibatch_size</span>
+<span class="n">test_result</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_minibatches_to_test</span><span class="p">):</span>
+
+    <span class="c1"># We are loading test data in batches specified by test_minibatch_size</span>
+    <span class="c1"># Each data point in the minibatch is a MNIST digit image of 784 dimensions</span>
+    <span class="c1"># with one pixel per dimension that we will encode / decode with the</span>
+    <span class="c1"># trained model.</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">test_minibatch_size</span><span class="p">,</span>
+                                      <span class="n">input_map</span> <span class="o">=</span> <span class="n">test_input_map</span><span class="p">)</span>
+
+    <span class="n">eval_error</span> <span class="o">=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">test_result</span> <span class="o">=</span> <span class="n">test_result</span> <span class="o">+</span> <span class="n">eval_error</span>
+
+<span class="c1"># Average of evaluation errors of all test minibatches</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Average test error: {0:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">test_result</span><span class="o">*</span><span class="mi">100</span> <span class="o">/</span> <span class="n">num_minibatches_to_test</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Average test error: 1.74%
+</pre></div></div>
+</div>
+<p>Note, this error is very comparable to our training error indicating
+that our model has good “out of sample” error a.k.a. generalization
+error. This implies that our model can very effectively deal with
+previously unseen observations (during the training process). This is
+key to avoid the phenomenon of overfitting.</p>
+<p><strong>Huge</strong> reduction in error compared to multi-class LR (from CNTK 103B).</p>
+<p>We have so far been dealing with aggregate measures of error. Let us now
+get the probabilities associated with individual data points. For each
+observation, the <code class="docutils literal"><span class="pre">eval</span></code> function returns the probability distribution
+across all the classes. The classifier is trained to recognize digits,
+hence has 10 classes. First let us route the network output through a
+<code class="docutils literal"><span class="pre">softmax</span></code> function. This maps the aggregated activations across the
+network to probabilities across the 10 classes.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">out</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Let us a small minibatch sample from the test data.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Read the data for evaluation</span>
+<span class="n">reader_eval</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">test_file</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">input_dim</span><span class="p">,</span> <span class="n">num_output_classes</span><span class="p">)</span>
+
+<span class="n">eval_minibatch_size</span> <span class="o">=</span> <span class="mi">25</span>
+<span class="n">eval_input_map</span> <span class="o">=</span> <span class="p">{</span><span class="nb">input</span><span class="p">:</span> <span class="n">reader_eval</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">}</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">eval_minibatch_size</span><span class="p">,</span> <span class="n">input_map</span> <span class="o">=</span> <span class="n">test_input_map</span><span class="p">)</span>
+
+<span class="n">img_label</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">label</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+<span class="n">img_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="nb">input</span><span class="p">]</span><span class="o">.</span><span class="n">asarray</span><span class="p">()</span>
+<span class="n">predicted_label_prob</span> <span class="o">=</span> <span class="p">[</span><span class="n">out</span><span class="o">.</span><span class="n">eval</span><span class="p">(</span><span class="n">img_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_data</span><span class="p">))]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Find the index with the maximum value for both predicted as well as the ground truth</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">predicted_label_prob</span><span class="p">))]</span>
+<span class="n">gtlabel</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">img_label</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">img_label</span><span class="p">))]</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">print</span><span class="p">(</span><span class="s2">&quot;Label    :&quot;</span><span class="p">,</span> <span class="n">gtlabel</span><span class="p">[:</span><span class="mi">25</span><span class="p">])</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Predicted:&quot;</span><span class="p">,</span> <span class="n">pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Label    : [4, 5, 6, 7, 8, 9, 7, 4, 6, 1, 4, 0, 9, 9, 3, 7, 8, 4, 7, 5, 8, 5, 3, 2, 2]
+Predicted: [4, 6, 6, 7, 8, 9, 7, 4, 6, 1, 4, 0, 9, 9, 3, 7, 8, 0, 7, 5, 8, 5, 3, 2, 2]
+</pre></div></div>
+</div>
+<p>Let us visualize some of the results</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Plot a random image</span>
+<span class="n">sample_number</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img_data</span><span class="p">[</span><span class="n">sample_number</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">28</span><span class="p">,</span><span class="mi">28</span><span class="p">),</span> <span class="n">cmap</span><span class="o">=</span><span class="s2">&quot;gray_r&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+
+<span class="n">img_gt</span><span class="p">,</span> <span class="n">img_pred</span> <span class="o">=</span> <span class="n">gtlabel</span><span class="p">[</span><span class="n">sample_number</span><span class="p">],</span> <span class="n">pred</span><span class="p">[</span><span class="n">sample_number</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="s2">&quot;Image Label: &quot;</span><span class="p">,</span> <span class="n">img_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Image Label:  9
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_103C_MNIST_MultiLayerPerceptron_43_1.png" src="_images/CNTK_103C_MNIST_MultiLayerPerceptron_43_1.png" />
+</div>
+</div>
+<p><strong>Exploration Suggestion</strong> - Try exploring how the classifier behaves
+with different parameters, e.g. changing the <code class="docutils literal"><span class="pre">minibatch_size</span></code>
+parameter from 25 to say 64 or 128. What happens to the error rate? How
+does the error compare to the logistic regression classifier? - Try
+increasing the number of sweeps - Can you change the network to reduce
+the training error rate? When do you see <em>overfitting</em> happening?</p>
+<p><strong>Code link</strong></p>
+<p>If you want to try running the tutorial from Python command prompt
+please run the
+<a class="reference external" href="https://github.com/Microsoft/CNTK/tree/release/2.1/Examples/Image/Classification/MLP/Python">SimpleMNIST.py</a>
+example.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

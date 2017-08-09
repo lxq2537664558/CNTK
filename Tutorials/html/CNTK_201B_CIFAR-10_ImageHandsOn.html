@@ -1,0 +1,1654 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 201B: Hands On Image Recognition &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 201B: Hands On Image Recognition</a><ul>
+<li><a class="reference internal" href="#Introduction">Introduction</a></li>
+<li><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#Dataset">Dataset</a></li>
+<li><a class="reference internal" href="#Convolution-Neural-Network-(CNN)">Convolution Neural Network (CNN)</a><ul>
+<li><a class="reference internal" href="#Convolution-layer">Convolution layer</a></li>
+<li><a class="reference internal" href="#Pooling-layer">Pooling layer</a></li>
+<li><a class="reference internal" href="#Dropout-layer">Dropout layer</a></li>
+<li><a class="reference internal" href="#Batch-normalization-(BN)">Batch normalization (BN)</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Data-reading">Data reading</a></li>
+<li><a class="reference internal" href="#Model-creation-(Basic-CNN)">Model creation (Basic CNN)</a></li>
+<li><a class="reference internal" href="#Training-and-evaluation">Training and evaluation</a></li>
+<li><a class="reference internal" href="#Model:-CNN-with-dropout">Model: CNN with dropout</a></li>
+<li><a class="reference internal" href="#Model:-CNN-with-BN">Model: CNN with BN</a></li>
+<li><a class="reference internal" href="#Popular-Model">Popular Model</a><ul>
+<li><a class="reference internal" href="#VGG-style-network">VGG style network</a></li>
+<li><a class="reference internal" href="#Residual-Network-(ResNet)">Residual Network (ResNet)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 201B: Hands On Image Recognition</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_201B_CIFAR-10_ImageHandsOn.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="CNTK-201B:-Hands-On-Image-Recognition">
+<h1>CNTK 201B: Hands On Image Recognition<a class="headerlink" href="#CNTK-201B:-Hands-On-Image-Recognition" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how to implement image recognition task using
+<a class="reference external" href="https://en.wikipedia.org/wiki/Convolutional_neural_network">convolution
+network</a>
+with CNTK v2 Python API. You will start with a basic feedforward CNN
+architecture to classify <a class="reference external" href="https://www.cs.toronto.edu/~kriz/cifar.html">CIFAR
+dataset</a>, then you will
+keep adding advanced features to your network. Finally, you will
+implement a VGG net and residual net like the one that won ImageNet
+competition but smaller in size.</p>
+<div class="section" id="Introduction">
+<h2>Introduction<a class="headerlink" href="#Introduction" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, you will practice the following:</p>
+<ul class="simple">
+<li>Understanding subset of CNTK python API needed for image
+classification task.</li>
+<li>Write a custom convolution network to classify CIFAR dataset.</li>
+<li>Modifying the network structure by adding:</li>
+<li><a class="reference external" href="https://en.wikipedia.org/wiki/Dropout_(neural_networks)">Dropout</a>
+layer.</li>
+<li>Batchnormalization layer.</li>
+<li>Implement a
+<a class="reference external" href="http://www.robots.ox.ac.uk/~vgg/research/very_deep/">VGG</a> style
+network.</li>
+<li>Introduction to Residual Nets (RESNET).</li>
+<li>Implement and train <a class="reference external" href="https://docs.microsoft.com/en-us/cognitive-toolkit/Hands-On-Labs-Image-Recognition">RESNET
+network</a>.</li>
+</ul>
+</div>
+<div class="section" id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>Please run CNTK 201A image data downloader notebook to download and
+prepare CIFAR dataset.</p>
+<p>CNTK 102 lab is recommended but not a prerequisite for this tutorial.
+However, a basic understanding of Deep Learning is needed. Familiarity
+with basic convolution operations is highly desirable (Refer to CNTK
+tutorial 103D).</p>
+</div>
+<div class="section" id="Dataset">
+<h2>Dataset<a class="headerlink" href="#Dataset" title="Permalink to this headline">¶</a></h2>
+<p>You will use CIFAR 10 dataset, from
+<a class="reference external" href="https://www.cs.toronto.edu/~kriz/cifar.html">https://www.cs.toronto.edu/~kriz/cifar.html</a>, during this tutorial. The
+dataset contains 50000 training images and 10000 test images, all images
+are 32 x 32 x 3. Each image is classified as one of 10 classes as shown
+below:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 1</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/cifar-10.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/cifar-10.png" width="500" height="500"/></div>
+</div>
+<p>The above image is from: <a class="reference external" href="https://www.cs.toronto.edu/~kriz/cifar.html">https://www.cs.toronto.edu/~kriz/cifar.html</a></p>
+</div>
+<div class="section" id="Convolution-Neural-Network-(CNN)">
+<h2>Convolution Neural Network (CNN)<a class="headerlink" href="#Convolution-Neural-Network-(CNN)" title="Permalink to this headline">¶</a></h2>
+<p>We recommend completing CNTK 103D tutorial before proceeding. Here is a
+brief recap of Convolution Neural Network (CNN). CNN is a feedforward
+network comprise of a bunch of layers in such a way that the output of
+one layer is fed to the next layer (There are more complex architecture
+that skip layers, we will discuss one of those at the end of this lab).
+Usually, CNN start with alternating between convolution layer and
+pooling layer (downsample), then end up with fully connected layer for
+the classification part.</p>
+<div class="section" id="Convolution-layer">
+<h3>Convolution layer<a class="headerlink" href="#Convolution-layer" title="Permalink to this headline">¶</a></h3>
+<p>Convolution layer consist of multiple 2D convolution kernels applied on
+the input image or the previous layer, each convolution kernel outputs a
+feature map.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 2</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/Conv2D.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/Conv2D.png"/></div>
+</div>
+<p>The stack of feature maps output are the input to the next layer.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 3</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/Conv2DFeatures.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/Conv2DFeatures.png"/></div>
+</div>
+<p><strong>In CNTK</strong>:</p>
+<p>Here the
+<a class="reference external" href="https://www.cntk.ai/pythondocs/layerref.html#convolution">convolution</a>
+layer in Python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">Convolution</span><span class="p">(</span><span class="n">filter_shape</span><span class="p">,</span>        <span class="c1"># e.g. (3,3)</span>
+                <span class="n">num_filters</span><span class="p">,</span>         <span class="c1"># e.g. 64</span>
+                <span class="n">activation</span><span class="p">,</span>          <span class="c1"># relu or None...etc.</span>
+                <span class="n">init</span><span class="p">,</span>                <span class="c1"># Random initialization</span>
+                <span class="n">pad</span><span class="p">,</span>                 <span class="c1"># True or False</span>
+                <span class="n">strides</span><span class="p">)</span>             <span class="c1"># strides e.g. (1,1)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Pooling-layer">
+<h3>Pooling layer<a class="headerlink" href="#Pooling-layer" title="Permalink to this headline">¶</a></h3>
+<p>In most CNN vision architecture, each convolution layer is succeeded by
+a pooling layer, so they keep alternating until the fully connected
+layer.</p>
+<p>The purpose of the pooling layer is as follow:</p>
+<ul class="simple">
+<li>Reduce the dimensionality of the previous layer, which speed up the
+network.</li>
+<li>Provide a limited translation invariant.</li>
+</ul>
+<p>Here an example of max pooling with a stride of 2:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 4</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/MaxPooling.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">400</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/MaxPooling.png" width="400" height="400"/></div>
+</div>
+<p><strong>In CNTK</strong>:</p>
+<p>Here the
+<a class="reference external" href="https://www.cntk.ai/pythondocs/layerref.html#maxpooling-averagepooling">pooling</a>
+layer in Python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Max pooling</span>
+<span class="k">def</span> <span class="nf">MaxPooling</span><span class="p">(</span><span class="n">filter_shape</span><span class="p">,</span>  <span class="c1"># e.g. (3,3)</span>
+               <span class="n">strides</span><span class="p">,</span>       <span class="c1"># (2,2)</span>
+               <span class="n">pad</span><span class="p">)</span>           <span class="c1"># True or False</span>
+
+<span class="c1"># Average pooling</span>
+<span class="k">def</span> <span class="nf">AveragePooling</span><span class="p">(</span><span class="n">filter_shape</span><span class="p">,</span>  <span class="c1"># e.g. (3,3)</span>
+                   <span class="n">strides</span><span class="p">,</span>       <span class="c1"># (2,2)</span>
+                   <span class="n">pad</span><span class="p">)</span>           <span class="c1"># True or False</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Dropout-layer">
+<h3>Dropout layer<a class="headerlink" href="#Dropout-layer" title="Permalink to this headline">¶</a></h3>
+<p>Dropout layer takes a probability value as an input, the value is called
+the dropout rate. Let us say the dropout rate is 0.5, what this layer
+does it pick at random 50% of the nodes from the previous layer and drop
+them out of the network. This behavior help regularize the network.</p>
+<blockquote>
+<div>Dropout: A Simple Way to Prevent Neural Networks from Overfitting
+Nitish Srivastava, Geoffrey Hinton, Alex Krizhevsky, Ilya Sutskever,
+Ruslan Salakhutdinov</div></blockquote>
+<p><strong>In CNTK</strong>:</p>
+<p>Dropout layer in Python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Dropout</span>
+<span class="k">def</span> <span class="nf">Dropout</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>    <span class="c1"># dropout rate e.g. 0.5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Batch-normalization-(BN)">
+<h3>Batch normalization (BN)<a class="headerlink" href="#Batch-normalization-(BN)" title="Permalink to this headline">¶</a></h3>
+<p>Batch normalization is a way to make the input to each layer has zero
+mean and unit variance. BN help the network converge faster and keep the
+input of each layer around zero. BN has two learnable parameters called
+gamma and beta, the purpose of those parameters is for the network to
+decide for itself if the normalized input is what is best or the raw
+input.</p>
+<blockquote>
+<div>Batch Normalization: Accelerating Deep Network Training by Reducing
+Internal Covariate Shift Sergey Ioffe, Christian Szegedy</div></blockquote>
+<p><strong>In CNTK</strong>:</p>
+<p><a class="reference external" href="https://www.cntk.ai/pythondocs/layerref.html#batchnormalization-layernormalization-stabilizer">Batch
+normalization</a>
+layer in Python:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="c1"># Batch normalization</span>
+<span class="k">def</span> <span class="nf">BatchNormalization</span><span class="p">(</span><span class="n">map_rank</span><span class="p">)</span>  <span class="c1"># For image map_rank=1</span>
+</pre></div>
+</div>
+<p>Let us begin by first importing the modules.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">PIL</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlopen</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlopen</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+</pre></div>
+</div>
+</div>
+<p>In the block below, we check if we are running this notebook in the CNTK
+internal test machines by looking for environment variables defined
+there. We then select the right target device (GPU vs CPU) to test this
+notebook. In other cases, we use CNTK’s default policy to use the best
+available device (GPU, if available, else CPU).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">if</span> <span class="s1">&#39;TEST_DEVICE&#39;</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;TEST_DEVICE&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;cpu&#39;</span><span class="p">:</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">try_set_default_device</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">try_set_default_device</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Data-reading">
+<h2>Data reading<a class="headerlink" href="#Data-reading" title="Permalink to this headline">¶</a></h2>
+<p>To train the above model we need two things: * Read the training images
+and their corresponding labels. * Define a cost function, compute the
+cost for each mini-batch and update the model weights according to the
+cost value.</p>
+<p>To read the data in CNTK, we will use CNTK readers which handle data
+augmentation and can fetch data in parallel.</p>
+<p>Example of a map text file:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">S</span><span class="p">:</span>\<span class="n">data</span>\<span class="n">CIFAR</span><span class="o">-</span><span class="mi">10</span>\<span class="n">train</span>\<span class="mf">00001.</span><span class="n">png</span>    <span class="mi">9</span>
+<span class="n">S</span><span class="p">:</span>\<span class="n">data</span>\<span class="n">CIFAR</span><span class="o">-</span><span class="mi">10</span>\<span class="n">train</span>\<span class="mf">00002.</span><span class="n">png</span>    <span class="mi">9</span>
+<span class="n">S</span><span class="p">:</span>\<span class="n">data</span>\<span class="n">CIFAR</span><span class="o">-</span><span class="mi">10</span>\<span class="n">train</span>\<span class="mf">00003.</span><span class="n">png</span>    <span class="mi">4</span>
+<span class="n">S</span><span class="p">:</span>\<span class="n">data</span>\<span class="n">CIFAR</span><span class="o">-</span><span class="mi">10</span>\<span class="n">train</span>\<span class="mf">00004.</span><span class="n">png</span>    <span class="mi">1</span>
+<span class="n">S</span><span class="p">:</span>\<span class="n">data</span>\<span class="n">CIFAR</span><span class="o">-</span><span class="mi">10</span>\<span class="n">train</span>\<span class="mf">00005.</span><span class="n">png</span>    <span class="mi">1</span>
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Determine the data path for testing</span>
+<span class="c1"># Check for an environment variable defined in CNTK&#39;s test infrastructure</span>
+<span class="n">envvar</span> <span class="o">=</span> <span class="s1">&#39;CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY&#39;</span>
+<span class="k">def</span> <span class="nf">is_test</span><span class="p">():</span> <span class="k">return</span> <span class="n">envvar</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+<span class="k">if</span> <span class="n">is_test</span><span class="p">():</span>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">envvar</span><span class="p">],</span><span class="s1">&#39;Image&#39;</span><span class="p">,</span><span class="s1">&#39;CIFAR&#39;</span><span class="p">,</span><span class="s1">&#39;v0&#39;</span><span class="p">,</span><span class="s1">&#39;tutorial201&#39;</span><span class="p">)</span>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">data_path</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">data_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;CIFAR-10&#39;</span><span class="p">)</span>
+
+<span class="c1"># model dimensions</span>
+<span class="n">image_height</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">image_width</span>  <span class="o">=</span> <span class="mi">32</span>
+<span class="n">num_channels</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">num_classes</span>  <span class="o">=</span> <span class="mi">10</span>
+
+<span class="kn">import</span> <span class="nn">cntk.io.transforms</span> <span class="kn">as</span> <span class="nn">xforms</span>
+<span class="c1">#</span>
+<span class="c1"># Define the reader for both training and evaluation action.</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">map_file</span><span class="p">,</span> <span class="n">mean_file</span><span class="p">,</span> <span class="n">train</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reading map file:&quot;</span><span class="p">,</span> <span class="n">map_file</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reading mean file:&quot;</span><span class="p">,</span> <span class="n">mean_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">map_file</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">mean_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;This tutorials depends 201A tutorials, please run 201A first.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># transformation pipeline for the features has jitter/crop only when training</span>
+    <span class="n">transforms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># train uses data augmentation (translation only)</span>
+    <span class="k">if</span> <span class="n">train</span><span class="p">:</span>
+        <span class="n">transforms</span> <span class="o">+=</span> <span class="p">[</span>
+            <span class="n">xforms</span><span class="o">.</span><span class="n">crop</span><span class="p">(</span><span class="n">crop_type</span><span class="o">=</span><span class="s1">&#39;randomside&#39;</span><span class="p">,</span> <span class="n">side_ratio</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+        <span class="p">]</span>
+    <span class="n">transforms</span> <span class="o">+=</span> <span class="p">[</span>
+        <span class="n">xforms</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="n">image_width</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="n">image_height</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="n">num_channels</span><span class="p">,</span> <span class="n">interpolations</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">),</span>
+        <span class="n">xforms</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">mean_file</span><span class="p">)</span>
+    <span class="p">]</span>
+    <span class="c1"># deserializer</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ImageDeserializer</span><span class="p">(</span><span class="n">map_file</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+        <span class="n">features</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;image&#39;</span><span class="p">,</span> <span class="n">transforms</span><span class="o">=</span><span class="n">transforms</span><span class="p">),</span> <span class="c1"># first column in map file is referred to as &#39;image&#39;</span>
+        <span class="n">labels</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_classes</span><span class="p">)</span>      <span class="c1"># and second as &#39;label&#39;</span>
+    <span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Create the train and test readers</span>
+<span class="n">reader_train</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;train_map.txt&#39;</span><span class="p">),</span>
+                             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;CIFAR-10_mean.xml&#39;</span><span class="p">),</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">reader_test</span>  <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;test_map.txt&#39;</span><span class="p">),</span>
+                             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="s1">&#39;CIFAR-10_mean.xml&#39;</span><span class="p">),</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Reading map file: c:\Data\CNTKTestData\Image\CIFAR\v0\tutorial201\train_map.txt
+Reading mean file: c:\Data\CNTKTestData\Image\CIFAR\v0\tutorial201\CIFAR-10_mean.xml
+Reading map file: c:\Data\CNTKTestData\Image\CIFAR\v0\tutorial201\test_map.txt
+Reading mean file: c:\Data\CNTKTestData\Image\CIFAR\v0\tutorial201\CIFAR-10_mean.xml
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 5</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/CNN.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/CNN.png"/></div>
+</div>
+</div>
+<div class="section" id="Model-creation-(Basic-CNN)">
+<h2>Model creation (Basic CNN)<a class="headerlink" href="#Model-creation-(Basic-CNN)" title="Permalink to this headline">¶</a></h2>
+<p>Now that we imported the needed modules, let’s implement our first CNN,
+as shown in Figure 5 above.</p>
+<p>Let’s implement the above network using CNTK layer API:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_basic_model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="mi">32</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="nb">input</span><span class="p">)</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))(</span><span class="n">net</span><span class="p">)</span>
+
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="mi">32</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="n">net</span><span class="p">)</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))(</span><span class="n">net</span><span class="p">)</span>
+
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="mi">64</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">)(</span><span class="n">net</span><span class="p">)</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))(</span><span class="n">net</span><span class="p">)</span>
+
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">)(</span><span class="n">net</span><span class="p">)</span>
+        <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)(</span><span class="n">net</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">net</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training-and-evaluation">
+<h2>Training and evaluation<a class="headerlink" href="#Training-and-evaluation" title="Permalink to this headline">¶</a></h2>
+<p>Now let us write the training and evaluation loop.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1"># Train and evaluate the network.</span>
+<span class="c1">#</span>
+<span class="k">def</span> <span class="nf">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span> <span class="n">reader_test</span><span class="p">,</span> <span class="n">max_epochs</span><span class="p">,</span> <span class="n">model_func</span><span class="p">):</span>
+    <span class="c1"># Input variables denoting the features and label data</span>
+    <span class="n">input_var</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">((</span><span class="n">num_channels</span><span class="p">,</span> <span class="n">image_height</span><span class="p">,</span> <span class="n">image_width</span><span class="p">))</span>
+    <span class="n">label_var</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">((</span><span class="n">num_classes</span><span class="p">))</span>
+
+    <span class="c1"># Normalize the input</span>
+    <span class="n">feature_scale</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">256.0</span>
+    <span class="n">input_var_norm</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">element_times</span><span class="p">(</span><span class="n">feature_scale</span><span class="p">,</span> <span class="n">input_var</span><span class="p">)</span>
+
+    <span class="c1"># apply model to input</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">model_func</span><span class="p">(</span><span class="n">input_var_norm</span><span class="p">,</span> <span class="n">out_dims</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Training action</span>
+    <span class="c1">#</span>
+
+    <span class="c1"># loss and metric</span>
+    <span class="n">ce</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_var</span><span class="p">)</span>
+    <span class="n">pe</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">label_var</span><span class="p">)</span>
+
+    <span class="c1"># training config</span>
+    <span class="n">epoch_size</span>     <span class="o">=</span> <span class="mi">50000</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">64</span>
+
+    <span class="c1"># Set training parameters</span>
+    <span class="n">lr_per_minibatch</span>       <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">([</span><span class="mf">0.01</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.003</span><span class="p">]</span><span class="o">*</span><span class="mi">10</span> <span class="o">+</span> <span class="p">[</span><span class="mf">0.001</span><span class="p">],</span>
+                                                      <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">)</span>
+    <span class="n">momentum_time_constant</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="o">-</span><span class="n">minibatch_size</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mf">0.9</span><span class="p">))</span>
+    <span class="n">l2_reg_weight</span>          <span class="o">=</span> <span class="mf">0.001</span>
+
+    <span class="c1"># trainer object</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_sgd</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                             <span class="n">lr</span> <span class="o">=</span> <span class="n">lr_per_minibatch</span><span class="p">,</span>
+                             <span class="n">momentum</span> <span class="o">=</span> <span class="n">momentum_time_constant</span><span class="p">,</span>
+                             <span class="n">l2_regularization_weight</span><span class="o">=</span><span class="n">l2_reg_weight</span><span class="p">)</span>
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">,</span> <span class="n">num_epochs</span><span class="o">=</span><span class="n">max_epochs</span><span class="p">)</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">ce</span><span class="p">,</span> <span class="n">pe</span><span class="p">),</span> <span class="p">[</span><span class="n">learner</span><span class="p">],</span> <span class="p">[</span><span class="n">progress_printer</span><span class="p">])</span>
+
+    <span class="c1"># define mapping from reader streams to network inputs</span>
+    <span class="n">input_map</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">input_var</span><span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">features</span><span class="p">,</span>
+        <span class="n">label_var</span><span class="p">:</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">labels</span>
+    <span class="p">}</span>
+
+    <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">log_number_of_parameters</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="p">;</span> <span class="k">print</span><span class="p">()</span>
+
+    <span class="c1"># perform model training</span>
+    <span class="n">batch_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">plot_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;batchindex&#39;</span><span class="p">:[],</span> <span class="s1">&#39;loss&#39;</span><span class="p">:[],</span> <span class="s1">&#39;error&#39;</span><span class="p">:[]}</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_epochs</span><span class="p">):</span>       <span class="c1"># loop over epochs</span>
+        <span class="n">sample_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">sample_count</span> <span class="o">&lt;</span> <span class="n">epoch_size</span><span class="p">:</span>  <span class="c1"># loop over minibatches in the epoch</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">reader_train</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">epoch_size</span> <span class="o">-</span> <span class="n">sample_count</span><span class="p">),</span>
+                                               <span class="n">input_map</span><span class="o">=</span><span class="n">input_map</span><span class="p">)</span> <span class="c1"># fetch minibatch.</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>                                   <span class="c1"># update model with it</span>
+
+            <span class="n">sample_count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="n">label_var</span><span class="p">]</span><span class="o">.</span><span class="n">num_samples</span>                     <span class="c1"># count samples processed so far</span>
+
+            <span class="c1"># For visualization...</span>
+            <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;batchindex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">batch_index</span><span class="p">)</span>
+            <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_loss_average</span><span class="p">)</span>
+            <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">trainer</span><span class="o">.</span><span class="n">previous_minibatch_evaluation_average</span><span class="p">)</span>
+
+            <span class="n">batch_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">summarize_training_progress</span><span class="p">()</span>
+
+    <span class="c1">#</span>
+    <span class="c1"># Evaluation action</span>
+    <span class="c1">#</span>
+    <span class="n">epoch_size</span>     <span class="o">=</span> <span class="mi">10000</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">16</span>
+
+    <span class="c1"># process minibatches and evaluate the model</span>
+    <span class="n">metric_numer</span>    <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">metric_denom</span>    <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sample_count</span>    <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">minibatch_index</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">while</span> <span class="n">sample_count</span> <span class="o">&lt;</span> <span class="n">epoch_size</span><span class="p">:</span>
+        <span class="n">current_minibatch</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">epoch_size</span> <span class="o">-</span> <span class="n">sample_count</span><span class="p">)</span>
+
+        <span class="c1"># Fetch next test min batch.</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">reader_test</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">current_minibatch</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="n">input_map</span><span class="p">)</span>
+
+        <span class="c1"># minibatch data to be trained with</span>
+        <span class="n">metric_numer</span> <span class="o">+=</span> <span class="n">trainer</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">*</span> <span class="n">current_minibatch</span>
+        <span class="n">metric_denom</span> <span class="o">+=</span> <span class="n">current_minibatch</span>
+
+        <span class="c1"># Keep track of the number of samples processed so far.</span>
+        <span class="n">sample_count</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="n">label_var</span><span class="p">]</span><span class="o">.</span><span class="n">num_samples</span>
+        <span class="n">minibatch_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Final Results: Minibatch[1-{}]: errs = {:0.1f}% * {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">minibatch_index</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">metric_numer</span><span class="o">*</span><span class="mf">100.0</span><span class="p">)</span><span class="o">/</span><span class="n">metric_denom</span><span class="p">,</span> <span class="n">metric_denom</span><span class="p">))</span>
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Visualize training result:</span>
+    <span class="n">window_width</span>            <span class="o">=</span> <span class="mi">32</span>
+    <span class="n">loss_cumsum</span>             <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;loss&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">error_cumsum</span>            <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;error&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="c1"># Moving average.</span>
+    <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;batchindex&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;batchindex&#39;</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)[</span><span class="n">window_width</span><span class="p">:]</span>
+    <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;avg_loss&#39;</span><span class="p">]</span>   <span class="o">=</span> <span class="p">(</span><span class="n">loss_cumsum</span><span class="p">[</span><span class="n">window_width</span><span class="p">:]</span> <span class="o">-</span> <span class="n">loss_cumsum</span><span class="p">[:</span><span class="o">-</span><span class="n">window_width</span><span class="p">])</span> <span class="o">/</span> <span class="n">window_width</span>
+    <span class="n">plot_data</span><span class="p">[</span><span class="s1">&#39;avg_error&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="p">(</span><span class="n">error_cumsum</span><span class="p">[</span><span class="n">window_width</span><span class="p">:]</span> <span class="o">-</span> <span class="n">error_cumsum</span><span class="p">[:</span><span class="o">-</span><span class="n">window_width</span><span class="p">])</span> <span class="o">/</span> <span class="n">window_width</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">211</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s2">&quot;batchindex&quot;</span><span class="p">],</span> <span class="n">plot_data</span><span class="p">[</span><span class="s2">&quot;avg_loss&quot;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Training loss &#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">plot_data</span><span class="p">[</span><span class="s2">&quot;batchindex&quot;</span><span class="p">],</span> <span class="n">plot_data</span><span class="p">[</span><span class="s2">&quot;avg_error&quot;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Minibatch number&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Label Prediction Error&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Minibatch run vs. Label Prediction Error &#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">softmax</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                          <span class="n">reader_test</span><span class="p">,</span>
+                          <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                          <span class="n">model_func</span><span class="o">=</span><span class="n">create_basic_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 116906 parameters in 10 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 5]: [Training] loss = 2.127933 * 50000, metric = 77.96% * 50000 15.851s (3154.4 samples/s);
+Finished Epoch[2 of 5]: [Training] loss = 1.768975 * 50000, metric = 64.90% * 50000 11.970s (4177.1 samples/s);
+Finished Epoch[3 of 5]: [Training] loss = 1.589650 * 50000, metric = 58.28% * 50000 11.958s (4181.3 samples/s);
+Finished Epoch[4 of 5]: [Training] loss = 1.495402 * 50000, metric = 54.32% * 50000 11.960s (4180.6 samples/s);
+Finished Epoch[5 of 5]: [Training] loss = 1.421285 * 50000, metric = 51.41% * 50000 11.965s (4178.9 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 46.4% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_22_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_22_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_22_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_22_2.png" />
+</div>
+</div>
+<p>Although, this model is very simple, it still has too much code, we can
+do better. Here the same model in more terse format:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_basic_model_terse</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">(),</span> <span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+                <span class="p">]),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred_basic_model</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                                      <span class="n">reader_test</span><span class="p">,</span>
+                                      <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                                      <span class="n">model_func</span><span class="o">=</span><span class="n">create_basic_model_terse</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 116906 parameters in 10 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 10]: [Training] loss = 2.064481 * 50000, metric = 75.90% * 50000 12.260s (4078.3 samples/s);
+Finished Epoch[2 of 10]: [Training] loss = 1.703777 * 50000, metric = 63.17% * 50000 12.127s (4123.0 samples/s);
+Finished Epoch[3 of 10]: [Training] loss = 1.561847 * 50000, metric = 57.11% * 50000 12.116s (4126.8 samples/s);
+Finished Epoch[4 of 10]: [Training] loss = 1.463862 * 50000, metric = 53.17% * 50000 12.078s (4139.8 samples/s);
+Finished Epoch[5 of 10]: [Training] loss = 1.374724 * 50000, metric = 49.49% * 50000 12.117s (4126.4 samples/s);
+Finished Epoch[6 of 10]: [Training] loss = 1.294328 * 50000, metric = 46.14% * 50000 12.158s (4112.5 samples/s);
+Finished Epoch[7 of 10]: [Training] loss = 1.231594 * 50000, metric = 43.62% * 50000 12.084s (4137.7 samples/s);
+Finished Epoch[8 of 10]: [Training] loss = 1.179700 * 50000, metric = 41.84% * 50000 12.156s (4113.2 samples/s);
+Finished Epoch[9 of 10]: [Training] loss = 1.136541 * 50000, metric = 39.93% * 50000 12.065s (4144.2 samples/s);
+Finished Epoch[10 of 10]: [Training] loss = 1.096253 * 50000, metric = 38.56% * 50000 12.148s (4115.9 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 34.4% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_25_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_25_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_25_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_25_2.png" />
+</div>
+</div>
+<p>Now that we have a trained model, let us classify the following image of
+a truck. We use PIL to read the image.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 6</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/00014.png&quot;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[16]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/00014.png" width="64" height="64"/></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Download a sample image</span>
+<span class="c1"># (this is 00014.png from test dataset)</span>
+<span class="c1"># Any image of size 32,32 can be evaluated</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://cntk.ai/jup/201/00014.png&quot;</span>
+<span class="n">myimg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">PIL</span><span class="o">.</span><span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">urlopen</span><span class="p">(</span><span class="n">url</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>During training we have subtracted the mean from the input images. Here
+we take an approximate value of the mean and subtract it from the image.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="n">pred_op</span><span class="p">,</span> <span class="n">image_data</span><span class="p">):</span>
+    <span class="n">label_lookup</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;airplane&quot;</span><span class="p">,</span> <span class="s2">&quot;automobile&quot;</span><span class="p">,</span> <span class="s2">&quot;bird&quot;</span><span class="p">,</span> <span class="s2">&quot;cat&quot;</span><span class="p">,</span> <span class="s2">&quot;deer&quot;</span><span class="p">,</span> <span class="s2">&quot;dog&quot;</span><span class="p">,</span> <span class="s2">&quot;frog&quot;</span><span class="p">,</span> <span class="s2">&quot;horse&quot;</span><span class="p">,</span> <span class="s2">&quot;ship&quot;</span><span class="p">,</span> <span class="s2">&quot;truck&quot;</span><span class="p">]</span>
+    <span class="n">image_mean</span> <span class="o">=</span> <span class="mf">133.0</span>
+    <span class="n">image_data</span> <span class="o">-=</span> <span class="n">image_mean</span>
+    <span class="n">image_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">image_data</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">pred_op</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="n">pred_op</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:[</span><span class="n">image_data</span><span class="p">]}))</span>
+
+    <span class="c1"># Return top 3 results:</span>
+    <span class="n">top_count</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">result_indices</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">result</span><span class="p">))</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[:</span><span class="n">top_count</span><span class="p">]</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Top 3 predictions:&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">top_count</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">Label: {:10s}, confidence: {:.2f}%&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label_lookup</span><span class="p">[</span><span class="n">result_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]],</span> <span class="n">result</span><span class="p">[</span><span class="n">result_indices</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">*</span> <span class="mi">100</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Run the evaluation on the downloaded image</span>
+<span class="nb">eval</span><span class="p">(</span><span class="n">pred_basic_model</span><span class="p">,</span> <span class="n">myimg</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Top 3 predictions:
+        Label: truck     , confidence: 96.59%
+        Label: ship      , confidence: 2.31%
+        Label: cat       , confidence: 0.43%
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Model:-CNN-with-dropout">
+<h2>Model: CNN with dropout<a class="headerlink" href="#Model:-CNN-with-dropout" title="Permalink to this headline">¶</a></h2>
+<p>Adding dropout layer, with drop rate of 0.25, before the last dense
+layer:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_basic_model_with_dropout</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="p">]),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dropout</span><span class="p">(</span><span class="mf">0.25</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [21]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred_basic_model_dropout</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                                              <span class="n">reader_test</span><span class="p">,</span>
+                                              <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                              <span class="n">model_func</span><span class="o">=</span><span class="n">create_basic_model_with_dropout</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 116906 parameters in 10 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 5]: [Training] loss = 2.107245 * 50000, metric = 79.08% * 50000 12.977s (3853.0 samples/s);
+Finished Epoch[2 of 5]: [Training] loss = 1.795581 * 50000, metric = 67.10% * 50000 12.244s (4083.6 samples/s);
+Finished Epoch[3 of 5]: [Training] loss = 1.657041 * 50000, metric = 61.52% * 50000 12.265s (4076.6 samples/s);
+Finished Epoch[4 of 5]: [Training] loss = 1.567592 * 50000, metric = 57.72% * 50000 12.251s (4081.3 samples/s);
+Finished Epoch[5 of 5]: [Training] loss = 1.500142 * 50000, metric = 54.97% * 50000 12.228s (4089.0 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 47.1% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_34_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_34_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_34_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_34_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Model:-CNN-with-BN">
+<h2>Model: CNN with BN<a class="headerlink" href="#Model:-CNN-with-BN" title="Permalink to this headline">¶</a></h2>
+<p>Add batch normalization after each convolution and before the last dense
+layer:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [22]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_basic_model_with_batch_normalization</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span> <span class="p">[</span><span class="mi">32</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">(</span><span class="n">map_rank</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="p">]),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">64</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">(</span><span class="n">map_rank</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [23]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred_basic_model_bn</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                                         <span class="n">reader_test</span><span class="p">,</span>
+                                         <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                         <span class="n">model_func</span><span class="o">=</span><span class="n">create_basic_model_with_batch_normalization</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 117290 parameters in 18 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 5]: [Training] loss = 1.536584 * 50000, metric = 55.22% * 50000 12.978s (3852.7 samples/s);
+Finished Epoch[2 of 5]: [Training] loss = 1.215455 * 50000, metric = 43.35% * 50000 12.196s (4099.7 samples/s);
+Finished Epoch[3 of 5]: [Training] loss = 1.092067 * 50000, metric = 38.66% * 50000 12.260s (4078.3 samples/s);
+Finished Epoch[4 of 5]: [Training] loss = 1.011021 * 50000, metric = 35.57% * 50000 12.330s (4055.2 samples/s);
+Finished Epoch[5 of 5]: [Training] loss = 0.952613 * 50000, metric = 33.38% * 50000 12.286s (4069.7 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 30.1% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_37_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_37_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_37_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_37_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Popular-Model">
+<h2>Popular Model<a class="headerlink" href="#Popular-Model" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="VGG-style-network">
+<h3>VGG style network<a class="headerlink" href="#VGG-style-network" title="Permalink to this headline">¶</a></h3>
+<p>Let’s implement an inspired VGG style network, using layer API, here the
+architecture:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="100%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">VGG9</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>conv3-64</td>
+</tr>
+<tr class="row-odd"><td>conv3-64</td>
+</tr>
+<tr class="row-even"><td>max3</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+</tr>
+<tr class="row-even"><td>conv3-96</td>
+</tr>
+<tr class="row-odd"><td>conv3-96</td>
+</tr>
+<tr class="row-even"><td>max3</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+</tr>
+<tr class="row-even"><td>conv3-128</td>
+</tr>
+<tr class="row-odd"><td>conv3-128</td>
+</tr>
+<tr class="row-even"><td>max3</td>
+</tr>
+<tr class="row-odd"><td>&#160;</td>
+</tr>
+<tr class="row-even"><td>FC-1024</td>
+</tr>
+<tr class="row-odd"><td>FC-1024</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>FC-10</td>
+</tr>
+</tbody>
+</table>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [24]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_vgg9_model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">glorot_uniform</span><span class="p">()):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">96</span><span class="p">,</span><span class="mi">128</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="p">[</span><span class="mi">64</span><span class="p">,</span><span class="mi">96</span><span class="p">,</span><span class="mi">128</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">MaxPooling</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+            <span class="p">]),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="k">lambda</span> <span class="p">:</span> <span class="p">[</span>
+                <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span>
+            <span class="p">]),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">model</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [25]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred_vgg</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span>
+                              <span class="n">reader_test</span><span class="p">,</span>
+                              <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                              <span class="n">model_func</span><span class="o">=</span><span class="n">create_vgg9_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 2675978 parameters in 18 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 5]: [Training] loss = 2.267064 * 50000, metric = 84.67% * 50000 18.672s (2677.8 samples/s);
+Finished Epoch[2 of 5]: [Training] loss = 1.877782 * 50000, metric = 69.81% * 50000 12.578s (3975.2 samples/s);
+Finished Epoch[3 of 5]: [Training] loss = 1.689757 * 50000, metric = 63.07% * 50000 12.729s (3928.0 samples/s);
+Finished Epoch[4 of 5]: [Training] loss = 1.564912 * 50000, metric = 57.57% * 50000 12.536s (3988.5 samples/s);
+Finished Epoch[5 of 5]: [Training] loss = 1.475126 * 50000, metric = 53.79% * 50000 13.171s (3796.2 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 50.1% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_40_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_40_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_40_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_40_2.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Residual-Network-(ResNet)">
+<h3>Residual Network (ResNet)<a class="headerlink" href="#Residual-Network-(ResNet)" title="Permalink to this headline">¶</a></h3>
+<p>One of the main problem of a Deep Neural Network is how to propagate the
+error all the way to the first layer. For a deep network, the gradients
+keep getting smaller until it has no effect on the network weights.
+<a class="reference external" href="https://arxiv.org/abs/1512.03385">ResNet</a> was designed to overcome
+such problem, by defining a block with identity path, as shown below:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [26]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Figure 7</span>
+<span class="n">Image</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="s2">&quot;https://cntk.ai/jup/201/ResNetBlock2.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[26]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<img src="https://cntk.ai/jup/201/ResNetBlock2.png"/></div>
+</div>
+<p>The idea of the above block is 2 folds:</p>
+<ul class="simple">
+<li>During back propagation the gradients have a path that does not
+affect its magnitude.</li>
+<li>The network need to learn residual mapping (delta to x).</li>
+</ul>
+<p>So let’s implements ResNet blocks using CNTK:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>        <span class="n">ResNetNode</span>                   <span class="n">ResNetNodeInc</span>
+            <span class="o">|</span>                              <span class="o">|</span>
+     <span class="o">+------+------+</span>             <span class="o">+---------+----------+</span>
+     <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>                    <span class="o">|</span>
+     <span class="n">V</span>             <span class="o">|</span>             <span class="n">V</span>                    <span class="n">V</span>
+<span class="o">+----------+</span>       <span class="o">|</span>      <span class="o">+--------------+</span>   <span class="o">+----------------+</span>
+<span class="o">|</span> <span class="n">Conv</span><span class="p">,</span> <span class="n">BN</span> <span class="o">|</span>       <span class="o">|</span>      <span class="o">|</span> <span class="n">Conv</span> <span class="n">x</span> <span class="mi">2</span><span class="p">,</span> <span class="n">BN</span> <span class="o">|</span>   <span class="o">|</span> <span class="n">SubSample</span><span class="p">,</span> <span class="n">BN</span>  <span class="o">|</span>
+<span class="o">+----------+</span>       <span class="o">|</span>      <span class="o">+--------------+</span>   <span class="o">+----------------+</span>
+     <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>                    <span class="o">|</span>
+     <span class="n">V</span>             <span class="o">|</span>             <span class="n">V</span>                    <span class="o">|</span>
+ <span class="o">+-------+</span>         <span class="o">|</span>         <span class="o">+-------+</span>                <span class="o">|</span>
+ <span class="o">|</span> <span class="n">ReLU</span>  <span class="o">|</span>         <span class="o">|</span>         <span class="o">|</span> <span class="n">ReLU</span>  <span class="o">|</span>                <span class="o">|</span>
+ <span class="o">+-------+</span>         <span class="o">|</span>         <span class="o">+-------+</span>                <span class="o">|</span>
+     <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>                    <span class="o">|</span>
+     <span class="n">V</span>             <span class="o">|</span>             <span class="n">V</span>                    <span class="o">|</span>
+<span class="o">+----------+</span>       <span class="o">|</span>        <span class="o">+----------+</span>              <span class="o">|</span>
+<span class="o">|</span> <span class="n">Conv</span><span class="p">,</span> <span class="n">BN</span> <span class="o">|</span>       <span class="o">|</span>        <span class="o">|</span> <span class="n">Conv</span><span class="p">,</span> <span class="n">BN</span> <span class="o">|</span>              <span class="o">|</span>
+<span class="o">+----------+</span>       <span class="o">|</span>        <span class="o">+----------+</span>              <span class="o">|</span>
+     <span class="o">|</span>             <span class="o">|</span>             <span class="o">|</span>                    <span class="o">|</span>
+     <span class="o">|</span>    <span class="o">+---+</span>    <span class="o">|</span>             <span class="o">|</span>       <span class="o">+---+</span>        <span class="o">|</span>
+     <span class="o">+---&gt;|</span> <span class="o">+</span> <span class="o">|&lt;---+</span>             <span class="o">+------&gt;+</span> <span class="o">+</span> <span class="o">+&lt;-------+</span>
+          <span class="o">+---+</span>                          <span class="o">+---+</span>
+            <span class="o">|</span>                              <span class="o">|</span>
+            <span class="n">V</span>                              <span class="n">V</span>
+        <span class="o">+-------+</span>                      <span class="o">+-------+</span>
+        <span class="o">|</span> <span class="n">ReLU</span>  <span class="o">|</span>                      <span class="o">|</span> <span class="n">ReLU</span>  <span class="o">|</span>
+        <span class="o">+-------+</span>                      <span class="o">+-------+</span>
+            <span class="o">|</span>                              <span class="o">|</span>
+            <span class="n">V</span>                              <span class="n">V</span>
+</pre></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [27]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">convolution_bn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">filter_size</span><span class="p">,</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">he_normal</span><span class="p">(),</span> <span class="n">activation</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">activation</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">activation</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Convolution</span><span class="p">(</span><span class="n">filter_size</span><span class="p">,</span>
+                             <span class="n">num_filters</span><span class="p">,</span>
+                             <span class="n">strides</span><span class="o">=</span><span class="n">strides</span><span class="p">,</span>
+                             <span class="n">init</span><span class="o">=</span><span class="n">init</span><span class="p">,</span>
+                             <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                             <span class="n">pad</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="bp">False</span><span class="p">)(</span><span class="nb">input</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">BatchNormalization</span><span class="p">(</span><span class="n">map_rank</span><span class="o">=</span><span class="mi">1</span><span class="p">)(</span><span class="n">r</span><span class="p">)</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="n">activation</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">r</span>
+
+<span class="k">def</span> <span class="nf">resnet_basic</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_filters</span><span class="p">):</span>
+    <span class="n">c1</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="p">)</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+    <span class="n">p</span>  <span class="o">=</span> <span class="n">c2</span> <span class="o">+</span> <span class="nb">input</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">resnet_basic_inc</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_filters</span><span class="p">):</span>
+    <span class="n">c1</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">c2</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="n">c1</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+    <span class="n">p</span> <span class="o">=</span> <span class="n">c2</span> <span class="o">+</span> <span class="n">s</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">resnet_basic_stack</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">num_filters</span><span class="p">,</span> <span class="n">num_stack</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="p">(</span><span class="n">num_stack</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">r</span> <span class="o">=</span> <span class="nb">input</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_stack</span><span class="p">):</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">resnet_basic</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">num_filters</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">r</span>
+</pre></div>
+</div>
+</div>
+<p>Let’s write the full model:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [28]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_resnet_model</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">out_dims</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">convolution_bn</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="mi">16</span><span class="p">)</span>
+    <span class="n">r1_1</span> <span class="o">=</span> <span class="n">resnet_basic_stack</span><span class="p">(</span><span class="n">conv</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">r2_1</span> <span class="o">=</span> <span class="n">resnet_basic_inc</span><span class="p">(</span><span class="n">r1_1</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span>
+    <span class="n">r2_2</span> <span class="o">=</span> <span class="n">resnet_basic_stack</span><span class="p">(</span><span class="n">r2_1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">r3_1</span> <span class="o">=</span> <span class="n">resnet_basic_inc</span><span class="p">(</span><span class="n">r2_2</span><span class="p">,</span> <span class="mi">64</span><span class="p">)</span>
+    <span class="n">r3_2</span> <span class="o">=</span> <span class="n">resnet_basic_stack</span><span class="p">(</span><span class="n">r3_1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># Global average pooling</span>
+    <span class="n">pool</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">AveragePooling</span><span class="p">(</span><span class="n">filter_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">))(</span><span class="n">r3_2</span><span class="p">)</span>
+    <span class="n">net</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">out_dims</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">he_normal</span><span class="p">(),</span> <span class="n">activation</span><span class="o">=</span><span class="bp">None</span><span class="p">)(</span><span class="n">pool</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">net</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [29]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">pred_resnet</span> <span class="o">=</span> <span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">reader_train</span><span class="p">,</span> <span class="n">reader_test</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">model_func</span><span class="o">=</span><span class="n">create_resnet_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 272474 parameters in 65 parameter tensors.
+
+Learning rate per minibatch: 0.01
+Momentum per sample: 0.9983550962823424
+Finished Epoch[1 of 5]: [Training] loss = 1.895607 * 50000, metric = 70.00% * 50000 24.547s (2036.9 samples/s);
+Finished Epoch[2 of 5]: [Training] loss = 1.594962 * 50000, metric = 59.18% * 50000 21.075s (2372.5 samples/s);
+Finished Epoch[3 of 5]: [Training] loss = 1.456406 * 50000, metric = 53.31% * 50000 21.631s (2311.5 samples/s);
+Finished Epoch[4 of 5]: [Training] loss = 1.354717 * 50000, metric = 49.36% * 50000 20.848s (2398.3 samples/s);
+Finished Epoch[5 of 5]: [Training] loss = 1.275108 * 50000, metric = 45.98% * 50000 21.164s (2362.5 samples/s);
+
+Final Results: Minibatch[1-626]: errs = 43.9% * 10000
+
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_47_1.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_47_1.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_201B_CIFAR-10_ImageHandsOn_47_2.png" src="_images/CNTK_201B_CIFAR-10_ImageHandsOn_47_2.png" />
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

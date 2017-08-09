@@ -1,0 +1,729 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 201A Part A: CIFAR-10 Data Loader &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 201A Part A: CIFAR-10 Data Loader</a><ul>
+<li><a class="reference internal" href="#Data-download">Data download</a><ul>
+<li><a class="reference internal" href="#Read-images">Read images</a></li>
+<li><a class="reference internal" href="#Save-images">Save images</a></li>
+<li><a class="reference internal" href="#Save-labels-and-features">Save labels and features</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 201A Part A: CIFAR-10 Data Loader</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_201A_CIFAR-10_DataLoader.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-201A-Part-A:-CIFAR-10-Data-Loader">
+<h1>CNTK 201A Part A: CIFAR-10 Data Loader<a class="headerlink" href="#CNTK-201A-Part-A:-CIFAR-10-Data-Loader" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial will show how to prepare image data sets for use with deep
+learning algorithms in CNTK. The CIFAR-10 dataset
+(<a class="reference external" href="http://www.cs.toronto.edu/~kriz/cifar.html">http://www.cs.toronto.edu/~kriz/cifar.html</a>) is a popular dataset for
+image classification, collected by Alex Krizhevsky, Vinod Nair, and
+Geoffrey Hinton. It is a labeled subset of the <a class="reference external" href="http://people.csail.mit.edu/torralba/tinyimages/">80 million tiny
+images</a> dataset.</p>
+<p>The CIFAR-10 dataset is not included in the CNTK distribution but can be
+easily downloaded and converted to CNTK-supported format</p>
+<p>CNTK 201A tutorial is divided into two parts: - Part A: Familiarizes you
+with the CIFAR-10 data and converts them into CNTK supported format.
+This data will be used later in the tutorial for image classification
+tasks. - Part B: We will introduce image understanding tutorials.</p>
+<p>If you are curious about how well computers can perform on CIFAR-10
+today, Rodrigo Benenson maintains a
+<a class="reference external" href="http://rodrigob.github.io/are_we_there_yet/build/classification_datasets_results.html#43494641522d3130">blog</a>
+on the state-of-the-art performance of various algorithms.</p>
+<p><strong>Note</strong>: Please be patient since downloading the data and
+pre-processing it can take 10-15 minutes depending on the network speed.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">getopt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pickle</span> <span class="kn">as</span> <span class="nn">cp</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="kn">as</span> <span class="nn">et</span>
+<span class="kn">import</span> <span class="nn">xml.dom.minidom</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib.request</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">urllib</span> <span class="kn">import</span> <span class="n">urlretrieve</span>
+
+<span class="c1"># Config matplotlib for inline plotting</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+</pre></div>
+</div>
+</div>
+<div class="section" id="Data-download">
+<h2>Data download<a class="headerlink" href="#Data-download" title="Permalink to this headline">¶</a></h2>
+<p>The CIFAR-10 dataset consists of 60,000 32x32 color images in 10
+classes, with 6,000 images per class. There are 50,000 training images
+and 10,000 test images. The 10 classes are: airplane, automobile, bird,
+cat, deer, dog, frog, horse, ship, and truck.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># CIFAR Image data</span>
+<span class="n">imgSize</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">numFeature</span> <span class="o">=</span> <span class="n">imgSize</span> <span class="o">*</span> <span class="n">imgSize</span> <span class="o">*</span> <span class="mi">3</span>
+</pre></div>
+</div>
+</div>
+<p>We first setup a few helper functions to download the CIFAR data. The
+archive contains the files data_batch_1, data_batch_2, …,
+data_batch_5, as well as test_batch. Each of these files is a Python
+“pickled” object produced with cPickle. To prepare the input data for
+use in CNTK we use three oprations: &gt; <code class="docutils literal"><span class="pre">readBatch</span></code>: Unpack the pickle
+files</p>
+<blockquote>
+<div><p><code class="docutils literal"><span class="pre">loadData</span></code>: Compose the data into single train and test objects</p>
+<p><code class="docutils literal"><span class="pre">saveTxt</span></code>: As the name suggests, saves the label and the features
+into text files for both training and testing.</p>
+</div></blockquote>
+<div class="section" id="Read-images">
+<h3>Read images<a class="headerlink" href="#Read-images" title="Permalink to this headline">¶</a></h3>
+<p>Unpack the picked files and create a numpy stack.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">readBatch</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
+        <span class="n">feat</span> <span class="o">=</span> <span class="n">data</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">feat</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">],</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">]),</span> <span class="mi">1</span><span class="p">))))</span>
+    <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">loadData</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Downloading &#39;</span> <span class="o">+</span> <span class="n">src</span><span class="p">)</span>
+    <span class="n">fname</span><span class="p">,</span> <span class="n">h</span> <span class="o">=</span> <span class="n">urlretrieve</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;./delete.me&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Extracting files...&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar</span><span class="p">:</span>
+            <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">()</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Preparing train set...&#39;</span><span class="p">)</span>
+        <span class="n">trn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">numFeature</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+            <span class="n">batchName</span> <span class="o">=</span> <span class="s1">&#39;./cifar-10-batches-py/data_batch_{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">trn</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">trn</span><span class="p">,</span> <span class="n">readBatch</span><span class="p">(</span><span class="n">batchName</span><span class="p">)))</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Preparing test set...&#39;</span><span class="p">)</span>
+        <span class="n">tst</span> <span class="o">=</span> <span class="n">readBatch</span><span class="p">(</span><span class="s1">&#39;./cifar-10-batches-py/test_batch&#39;</span><span class="p">)</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">trn</span><span class="p">,</span> <span class="n">tst</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">saveTxt</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">ndarray</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">labels</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">ndarray</span><span class="p">:</span>
+            <span class="n">row_str</span> <span class="o">=</span> <span class="n">row</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">label_str</span> <span class="o">=</span> <span class="n">labels</span><span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+            <span class="n">feature_str</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row_str</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;|labels {} |features {}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">label_str</span><span class="p">,</span> <span class="n">feature_str</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Save-images">
+<h3>Save images<a class="headerlink" href="#Save-images" title="Permalink to this headline">¶</a></h3>
+<p>In addition to saving the images in the text format, we would save the
+images in PNG format. In addition we also compute the mean of the image.
+<code class="docutils literal"><span class="pre">saveImage</span></code> and <code class="docutils literal"><span class="pre">saveMean</span></code> are two functions used for this purpose.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">saveImage</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">label</span><span class="p">,</span> <span class="n">mapFile</span><span class="p">,</span> <span class="n">regrFile</span><span class="p">,</span> <span class="n">pad</span><span class="p">,</span> <span class="o">**</span><span class="n">key_parms</span><span class="p">):</span>
+    <span class="c1"># data in CIFAR-10 dataset is in CHW format.</span>
+    <span class="n">pixData</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">))</span>
+    <span class="k">if</span> <span class="p">(</span><span class="s1">&#39;mean&#39;</span> <span class="ow">in</span> <span class="n">key_parms</span><span class="p">):</span>
+        <span class="n">key_parms</span><span class="p">[</span><span class="s1">&#39;mean&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">pixData</span>
+
+    <span class="k">if</span> <span class="n">pad</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">pixData</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="n">pixData</span><span class="p">,</span> <span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="p">),</span> <span class="p">(</span><span class="n">pad</span><span class="p">,</span> <span class="n">pad</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span> <span class="n">constant_values</span><span class="o">=</span><span class="mi">128</span><span class="p">)</span>
+
+    <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">,</span> <span class="p">(</span><span class="n">imgSize</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span><span class="p">,</span> <span class="n">imgSize</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">pad</span><span class="p">))</span>
+    <span class="n">pixels</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">load</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">img</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+            <span class="n">pixels</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">pixData</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">],</span> <span class="n">pixData</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">],</span> <span class="n">pixData</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="n">y</span><span class="p">][</span><span class="n">x</span><span class="p">])</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">mapFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\t</span><span class="si">%d</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">label</span><span class="p">))</span>
+
+    <span class="c1"># compute per channel mean and store for regression example</span>
+    <span class="n">channelMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">pixData</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">regrFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;|regrLabels</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\t</span><span class="si">%f</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">channelMean</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mf">255.0</span><span class="p">,</span> <span class="n">channelMean</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mf">255.0</span><span class="p">,</span> <span class="n">channelMean</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">/</span><span class="mf">255.0</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">saveMean</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">root</span> <span class="o">=</span> <span class="n">et</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;opencv_storage&#39;</span><span class="p">)</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;Channel&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;3&#39;</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;Row&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">imgSize</span><span class="p">)</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;Col&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">imgSize</span><span class="p">)</span>
+    <span class="n">meanImg</span> <span class="o">=</span> <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="s1">&#39;MeanImg&#39;</span><span class="p">,</span> <span class="n">type_id</span><span class="o">=</span><span class="s1">&#39;opencv-matrix&#39;</span><span class="p">)</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">meanImg</span><span class="p">,</span> <span class="s1">&#39;rows&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">meanImg</span><span class="p">,</span> <span class="s1">&#39;cols&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">imgSize</span> <span class="o">*</span> <span class="n">imgSize</span> <span class="o">*</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">meanImg</span><span class="p">,</span> <span class="s1">&#39;dt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39;f&#39;</span>
+    <span class="n">et</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">meanImg</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%e</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="p">(</span><span class="n">imgSize</span> <span class="o">*</span> <span class="n">imgSize</span> <span class="o">*</span> <span class="mi">3</span><span class="p">))])</span>
+
+    <span class="n">tree</span> <span class="o">=</span> <span class="n">et</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">root</span><span class="p">)</span>
+    <span class="n">tree</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">toprettyxml</span><span class="p">(</span><span class="n">indent</span> <span class="o">=</span> <span class="s1">&#39;  &#39;</span><span class="p">))</span>
+
+</pre></div>
+</div>
+</div>
+<p><code class="docutils literal"><span class="pre">saveTrainImages</span></code> and <code class="docutils literal"><span class="pre">saveTestImages</span></code> are simple wrapper functions
+to iterate through the data set.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">saveTrainImages</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">foldername</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">foldername</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">foldername</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">dataMean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">,</span> <span class="n">imgSize</span><span class="p">))</span> <span class="c1"># mean is in CHW format.</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;train_map.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mapFile</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;train_regrLabels.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">regrFile</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">ifile</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;./cifar-10-batches-py&#39;</span><span class="p">,</span> <span class="s1">&#39;data_batch_&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">ifile</span><span class="p">)),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">data</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
+                        <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">foldername</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%05d</span><span class="s1">.png&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="p">(</span><span class="n">ifile</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10000</span><span class="p">)))</span>
+                        <span class="n">saveImage</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">mapFile</span><span class="p">,</span> <span class="n">regrFile</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="n">dataMean</span><span class="p">)</span>
+    <span class="n">dataMean</span> <span class="o">=</span> <span class="n">dataMean</span> <span class="o">/</span> <span class="p">(</span><span class="mi">50</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+    <span class="n">saveMean</span><span class="p">(</span><span class="s1">&#39;CIFAR-10_mean.xml&#39;</span><span class="p">,</span> <span class="n">dataMean</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">saveTestImages</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">foldername</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">foldername</span><span class="p">):</span>
+      <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">foldername</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;test_map.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">mapFile</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;test_regrLabels.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">regrFile</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;./cifar-10-batches-py&#39;</span><span class="p">,</span> <span class="s1">&#39;test_batch&#39;</span><span class="p">),</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;latin1&#39;</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10000</span><span class="p">):</span>
+                    <span class="n">fname</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">foldername</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;</span><span class="si">%05d</span><span class="s1">.png&#39;</span> <span class="o">%</span> <span class="n">i</span><span class="p">))</span>
+                    <span class="n">saveImage</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;labels&#39;</span><span class="p">][</span><span class="n">i</span><span class="p">],</span> <span class="n">mapFile</span><span class="p">,</span> <span class="n">regrFile</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># URLs for the train image and labels data</span>
+<span class="n">url_cifar_data</span> <span class="o">=</span> <span class="s1">&#39;http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz&#39;</span>
+
+<span class="c1"># Paths for saving the text files</span>
+<span class="n">data_dir</span> <span class="o">=</span> <span class="s1">&#39;./data/CIFAR-10/&#39;</span>
+<span class="n">train_filename</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;/Train_cntk_text.txt&#39;</span>
+<span class="n">test_filename</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;/Test_cntk_text.txt&#39;</span>
+
+<span class="n">train_img_directory</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;/Train&#39;</span>
+<span class="n">test_img_directory</span> <span class="o">=</span> <span class="n">data_dir</span> <span class="o">+</span> <span class="s1">&#39;/Test&#39;</span>
+
+<span class="n">root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Save-labels-and-features">
+<h3>Save labels and features<a class="headerlink" href="#Save-labels-and-features" title="Permalink to this headline">¶</a></h3>
+<p>Now we save the label and the features into text files for both training
+and testing</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">data_dir</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">data_dir</span><span class="p">)</span>
+    <span class="n">trn</span><span class="p">,</span> <span class="n">tst</span><span class="o">=</span> <span class="n">loadData</span><span class="p">(</span><span class="s1">&#39;http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Writing train text file...&#39;</span><span class="p">)</span>
+    <span class="n">saveTxt</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;./Train_cntk_text.txt&#39;</span><span class="p">,</span> <span class="n">trn</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Writing test text file...&#39;</span><span class="p">)</span>
+    <span class="n">saveTxt</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;./Test_cntk_text.txt&#39;</span><span class="p">,</span> <span class="n">tst</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Converting train data to png images...&#39;</span><span class="p">)</span>
+    <span class="n">saveTrainImages</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;./Train_cntk_text.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;train&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Converting test data to png images...&#39;</span><span class="p">)</span>
+    <span class="n">saveTestImages</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;./Test_cntk_text.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;test&#39;</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s1">&#39;Done.&#39;</span><span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="s2">&quot;../..&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Downloading http://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz
+Done.
+Extracting files...
+Done.
+Preparing train set...
+Done.
+Preparing test set...
+Done.
+Writing train text file...
+Done.
+Writing test text file...
+Done.
+Converting train data to png images...
+Done.
+Converting test data to png images...
+Done.
+</pre></div></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

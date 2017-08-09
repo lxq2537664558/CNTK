@@ -1,0 +1,1538 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 202: Language Understanding with Recurrent Networks &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 202: Language Understanding with Recurrent Networks</a><ul>
+<li><a class="reference internal" href="#Prerequisites">Prerequisites</a></li>
+<li><a class="reference internal" href="#Data-download">Data download</a></li>
+<li><a class="reference internal" href="#Task-Overview">Task Overview</a></li>
+<li><a class="reference internal" href="#Model-Creation">Model Creation</a></li>
+<li><a class="reference internal" href="#Data-Reading">Data Reading</a></li>
+<li><a class="reference internal" href="#Training">Training</a><ul>
+<li><a class="reference internal" href="#Evaluating-the-model">Evaluating the model</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#Modifying-the-Model">Modifying the Model</a><ul>
+<li><a class="reference internal" href="#Task-1:-Add-Batch-Normalization">Task 1: Add Batch Normalization</a></li>
+<li><a class="reference internal" href="#Task-2:-Add-a-Lookahead">Task 2: Add a Lookahead</a></li>
+<li><a class="reference internal" href="#Task-3:-Bidirectional-Recurrent-Model">Task 3: Bidirectional Recurrent Model</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 202: Language Understanding with Recurrent Networks</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_202_Language_Understanding.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-202:-Language-Understanding-with-Recurrent-Networks">
+<h1>CNTK 202: Language Understanding with Recurrent Networks<a class="headerlink" href="#CNTK-202:-Language-Understanding-with-Recurrent-Networks" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how to implement a recurrent network to process
+text, for the <a class="reference external" href="https://catalog.ldc.upenn.edu/LDC95S26">Air Travel Information
+Services</a> (ATIS) task of slot
+tagging (tag individual words to their respective classes, where the
+classes are provided as labels in the training data set). We will start
+with a straight-forward (linear) embedding of the words followed by a
+recurrent LSTM. This will then be extended to include neighboring words
+and run bidirectionally. Lastly, we will turn this system into an intent
+classifier.</p>
+<p>The techniques you will practice are: * model description by composing
+layer blocks, a convenient way to compose networks/models without
+requiring the need to write formulas, * creating your own layer block
+* variables with different sequence lengths in the same network *
+training the network</p>
+<p>We assume that you are familiar with basics of deep learning, and these
+specific concepts: * recurrent networks (<a class="reference external" href="https://en.wikipedia.org/wiki/Recurrent_neural_network">Wikipedia
+page</a>) *
+text embedding (<a class="reference external" href="https://en.wikipedia.org/wiki/Word_embedding">Wikipedia
+page</a>)</p>
+<div class="section" id="Prerequisites">
+<h2>Prerequisites<a class="headerlink" href="#Prerequisites" title="Permalink to this headline">¶</a></h2>
+<p>We assume that you have already <a class="reference external" href="https://docs.microsoft.com/en-us/cognitive-toolkit/Setup-CNTK-on-your-machine">installed
+CNTK</a>.
+This tutorial requires CNTK V2. We strongly recommend to run this
+tutorial on a machine with a capable CUDA-compatible GPU. Deep learning
+without GPUs is not fun.</p>
+</div>
+<div class="section" id="Data-download">
+<h2>Data download<a class="headerlink" href="#Data-download" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial we are going to use a (lightly preprocessed) version of
+the ATIS dataset. You can download the data automatically by running the
+cells below or by executing the manual instructions.</p>
+<p><strong>Fallback manual instructions</strong> Download the ATIS
+<a class="reference external" href="https://github.com/Microsoft/CNTK/blob/release/2.1/Tutorials/SLUHandsOn/atis.train.ctf">training</a>
+and
+<a class="reference external" href="https://github.com/Microsoft/CNTK/blob/release/2.1/Tutorials/SLUHandsOn/atis.test.ctf">test</a>
+files and put them at the same folder as this notebook. If you want to
+see how the model is predicting on new sentences you will also need the
+vocabulary files for
+<a class="reference external" href="https://github.com/Microsoft/CNTK/blob/release/2.1/Examples/LanguageUnderstanding/ATIS/BrainScript/query.wl">queries</a>
+and
+<a class="reference external" href="https://github.com/Microsoft/CNTK/blob/release/2.1/Examples/LanguageUnderstanding/ATIS/BrainScript/slots.wl">slots</a></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span> <span class="c1"># Use a function definition from future version (say 3.x from 2.7 interpreter)</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; utility function to download a file &quot;&quot;&quot;</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">():</span>
+            <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="n">locations</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Tutorials/SLUHandsOn&#39;</span><span class="p">,</span> <span class="s1">&#39;Examples/LanguageUnderstanding/ATIS/BrainScript&#39;</span><span class="p">]</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">&#39;train&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="s1">&#39;atis.train.ctf&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="s1">&#39;test&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="s1">&#39;atis.test.ctf&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="mi">0</span> <span class="p">},</span>
+  <span class="s1">&#39;query&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="s1">&#39;query.wl&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="p">},</span>
+  <span class="s1">&#39;slots&#39;</span><span class="p">:</span> <span class="p">{</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span> <span class="s1">&#39;slots.wl&#39;</span><span class="p">,</span> <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="mi">1</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">data</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+    <span class="n">location</span> <span class="o">=</span> <span class="n">locations</span><span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reusing locally cached:&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+        <span class="c1"># Update path</span>
+        <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">path</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Reusing locally cached:&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Starting download:&quot;</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/Microsoft/CNTK/blob/release/2.1/</span><span class="si">%s</span><span class="s2">/</span><span class="si">%s</span><span class="s2">?raw=true&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+        <span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">item</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">])</span>
+        <span class="k">print</span><span class="p">(</span><span class="s2">&quot;Download completed&quot;</span><span class="p">)</span>
+
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Reusing locally cached: atis.train.ctf
+Reusing locally cached: query.wl
+Reusing locally cached: slots.wl
+Reusing locally cached: atis.test.ctf
+</pre></div></div>
+</div>
+<p><strong>Importing libraries</strong>: CNTK, math and numpy</p>
+<p>CNTK’s Python module contains several submodules like <code class="docutils literal"><span class="pre">io</span></code>,
+<code class="docutils literal"><span class="pre">learner</span></code>, and <code class="docutils literal"><span class="pre">layers</span></code>. We also use NumPy in some cases since the
+results returned by CNTK work like NumPy arrays.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Task-Overview">
+<h2>Task Overview<a class="headerlink" href="#Task-Overview" title="Permalink to this headline">¶</a></h2>
+<p>The task we want to approach in this tutorial is slot tagging. We use
+the <a class="reference external" href="https://catalog.ldc.upenn.edu/LDC95S26">ATIS corpus</a>. ATIS
+contains human-computer queries from the domain of Air Travel
+Information Services, and our task will be to annotate (tag) each word
+of a query whether it belongs to a specific item of information (slot),
+and which one.</p>
+<p>The data in your working folder has already been converted into the
+“CNTK Text Format.” Let us look at an example from the test-set file
+<code class="docutils literal"><span class="pre">atis.test.ctf</span></code>:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">178</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># BOS      |S1 14:1 |# flight  |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">770</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># show                         |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">429</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># flights                      |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">444</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># from                         |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">272</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># burbank                      |S2 48:1  |# B-fromloc.city_name</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">851</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># to                           |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">789</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># st.                          |S2 78:1  |# B-toloc.city_name</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">564</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># louis                        |S2 125:1 |# I-toloc.city_name</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">654</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># on                           |S2 128:1 |# O</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">601</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># monday                       |S2 26:1  |# B-depart_date.day_name</span>
+<span class="mi">19</span>  <span class="o">|</span><span class="n">S0</span> <span class="mi">179</span><span class="p">:</span><span class="mi">1</span> <span class="o">|</span><span class="c1"># EOS                          |S2 128:1 |# O</span>
+</pre></div>
+</div>
+<p>This file has 7 columns:</p>
+<ul class="simple">
+<li>a sequence id (19). There are 11 entries with this sequence id. This
+means that sequence 19 consists of 11 tokens;</li>
+<li>column <code class="docutils literal"><span class="pre">S0</span></code>, which contains numeric word indices; the input data is
+encoded in one-hot vectors. There are 943 words in the vocabulary, so
+each word is a 943 element vector of all 0 with a 1 at a vector index
+chosen to represent that word. For example the word “from” is
+represented with a 1 at index 444 and zero everywhere else in the
+vector. The word “monday” is represented with a 1 at index 601 and
+zero everywhere else in the vector.</li>
+<li>a comment column denoted by <code class="docutils literal"><span class="pre">#</span></code>, to allow a human reader to know
+what the numeric word index stands for; Comment columns are ignored
+by the system. <code class="docutils literal"><span class="pre">BOS</span></code> and <code class="docutils literal"><span class="pre">EOS</span></code> are special words to denote
+beginning and end of sentence, respectively;</li>
+<li>column <code class="docutils literal"><span class="pre">S1</span></code> is an intent label, which we will only use in the last
+part of the tutorial;</li>
+<li>another comment column that shows the human-readable label of the
+numeric intent index;</li>
+<li>column <code class="docutils literal"><span class="pre">S2</span></code> is the slot label, represented as a numeric index; and</li>
+<li>another comment column that shows the human-readable label of the
+numeric label index.</li>
+</ul>
+<p>The task of the neural network is to look at the query (column <code class="docutils literal"><span class="pre">S0</span></code>)
+and predict the slot label (column <code class="docutils literal"><span class="pre">S2</span></code>). As you can see, each word in
+the input gets assigned either an empty label <code class="docutils literal"><span class="pre">O</span></code> or a slot label that
+begins with <code class="docutils literal"><span class="pre">B-</span></code> for the first word, and with <code class="docutils literal"><span class="pre">I-</span></code> for any
+additional consecutive word that belongs to the same slot.</p>
+</div>
+<div class="section" id="Model-Creation">
+<h2>Model Creation<a class="headerlink" href="#Model-Creation" title="Permalink to this headline">¶</a></h2>
+<p>The model we will use is a recurrent model consisting of an embedding
+layer, a recurrent LSTM cell, and a dense layer to compute the posterior
+probabilities:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">slot</span> <span class="n">label</span>   <span class="s2">&quot;O&quot;</span>        <span class="s2">&quot;O&quot;</span>        <span class="s2">&quot;O&quot;</span>        <span class="s2">&quot;O&quot;</span>  <span class="s2">&quot;B-fromloc.city_name&quot;</span>
+              <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>
+              <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
+          <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>
+          <span class="o">|</span> <span class="n">Dense</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Dense</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Dense</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Dense</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Dense</span> <span class="o">|</span>  <span class="o">...</span>
+          <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>
+              <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>
+              <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
+          <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>
+     <span class="mi">0</span> <span class="o">--&gt;|</span> <span class="n">LSTM</span> <span class="o">|--&gt;|</span> <span class="n">LSTM</span> <span class="o">|--&gt;|</span> <span class="n">LSTM</span> <span class="o">|--&gt;|</span> <span class="n">LSTM</span> <span class="o">|--&gt;|</span> <span class="n">LSTM</span> <span class="o">|--&gt;...</span>
+          <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>   <span class="o">+------+</span>
+              <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>
+              <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
+          <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>
+          <span class="o">|</span> <span class="n">Embed</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Embed</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Embed</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Embed</span> <span class="o">|</span>  <span class="o">|</span> <span class="n">Embed</span> <span class="o">|</span>  <span class="o">...</span>
+          <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>  <span class="o">+-------+</span>
+              <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>          <span class="o">^</span>
+              <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>          <span class="o">|</span>
+<span class="n">w</span>      <span class="o">------&gt;+---------&gt;+---------&gt;+---------&gt;+---------&gt;+------...</span>
+             <span class="n">BOS</span>      <span class="s2">&quot;show&quot;</span>    <span class="s2">&quot;flights&quot;</span>    <span class="s2">&quot;from&quot;</span>   <span class="s2">&quot;burbank&quot;</span>
+</pre></div>
+</div>
+<p>Or, as a CNTK network description. Please have a quick look and match it
+with the description above: (descriptions of these functions can be
+found at: <a class="reference external" href="http://cntk.ai/pythondocs/layerref.html">the layers
+reference</a>)</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># number of words in vocab, slot labels, and intent labels</span>
+<span class="n">vocab_size</span> <span class="o">=</span> <span class="mi">943</span> <span class="p">;</span> <span class="n">num_labels</span> <span class="o">=</span> <span class="mi">129</span> <span class="p">;</span> <span class="n">num_intents</span> <span class="o">=</span> <span class="mi">26</span>
+
+<span class="c1"># model dimensions</span>
+<span class="n">input_dim</span>  <span class="o">=</span> <span class="n">vocab_size</span>
+<span class="n">label_dim</span>  <span class="o">=</span> <span class="n">num_labels</span>
+<span class="n">emb_dim</span>    <span class="o">=</span> <span class="mi">150</span>
+<span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">300</span>
+
+<span class="c1"># Create the containers for input feature (x) and the label (y)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">vocab_size</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;embed&#39;</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;classify&#39;</span><span class="p">)</span>
+        <span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>Now we are ready to create a model and inspect it.</p>
+<p>The model attributes are fully accessible from Python. The first layer
+named <code class="docutils literal"><span class="pre">embed</span></code> is an Embedding layer. Here we use the CNTK default,
+which is linear embedding. It is a simple matrix with dimension (input
+word encoding x output projected dimension). You can access its
+parameter <code class="docutils literal"><span class="pre">E</span></code> (where the embeddings are stored) like any other
+attribute of a Python object. Its shape contains a <code class="docutils literal"><span class="pre">-1</span></code> which
+indicates that this parameter (with input dimension) is not fully
+specified yet, while the output dimension is set to <code class="docutils literal"><span class="pre">emb_dim</span></code> ( = 150
+in this tutorial).</p>
+<p>Additionally we also inspect the value of the bias vector in the
+<code class="docutils literal"><span class="pre">Dense</span></code> layer named <code class="docutils literal"><span class="pre">classify</span></code>. The <code class="docutils literal"><span class="pre">Dense</span></code> layer is a fundamental
+compositional unit of a Multi-Layer Perceptron (as introduced in CNTK
+103C tutorial). The <code class="docutils literal"><span class="pre">Dense</span></code> layer has both <code class="docutils literal"><span class="pre">weight</span></code> and <code class="docutils literal"><span class="pre">bias</span></code>
+parameters, one each per <code class="docutils literal"><span class="pre">Dense</span></code> layer. Bias terms are by default
+initialized to 0 (but there is a way to change that if you need). As you
+create the model, one should name the layer component and then access
+the parameters as shown here.</p>
+<p><strong>Suggested task</strong>: What should be the expected dimension of the
+<code class="docutils literal"><span class="pre">weight</span></code> matrix from the layer named <code class="docutils literal"><span class="pre">classify</span></code>? Try printing the
+weight matrix of the <code class="docutils literal"><span class="pre">classify</span></code> layer? Does it match with your
+expected size?</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># peek</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">embed</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(-1, 150)
+[ 0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.  0.
+  0.  0.  0.]
+</pre></div></div>
+</div>
+<p>In our case we have input as one-hot encoded vector of length 943 and
+the output dimension <code class="docutils literal"><span class="pre">emb_dim</span></code> is set to 150. In the code below we
+pass the input variable <code class="docutils literal"><span class="pre">x</span></code> to our model <code class="docutils literal"><span class="pre">z</span></code>. This binds the model
+with input data of known shape. In this case, the input shape will be
+the size of the input vocabulary. With this modification, the parameter
+returned by the embed layer is completely specified (943, 150).
+<strong>Note</strong>: You can initialize the Embedding matrix with pre-computed
+vectors using <a class="reference external" href="https://en.wikipedia.org/wiki/Word2vec">Word2Vec</a> or
+<a class="reference external" href="https://en.wikipedia.org/wiki/GloVe_%28machine_learning%29">GloVe</a>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Pass an input and check the dimension</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>
+<span class="k">print</span><span class="p">(</span><span class="n">z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">embed</span><span class="o">.</span><span class="n">E</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(943, 150)
+</pre></div></div>
+</div>
+<p>To train and test a model in CNTK, we need to create a model and specify
+how to read data and perform training and testing.</p>
+<p>In order to train we need to specify:</p>
+<ul class="simple">
+<li>how to read the data</li>
+<li>the model function, its inputs, and outputs</li>
+<li>hyper-parameters for the learner such as the learning rate</li>
+</ul>
+</div>
+<div class="section" id="Data-Reading">
+<h2>Data Reading<a class="headerlink" href="#Data-Reading" title="Permalink to this headline">¶</a></h2>
+<p>We already looked at the data. But how do you generate this format? For
+reading text, this tutorial uses the <code class="docutils literal"><span class="pre">CNTKTextFormatReader</span></code>. It
+expects the input data to be in a specific format, as described
+<a class="reference external" href="https://docs.microsoft.com/en-us/cognitive-toolkit/Brainscript-CNTKTextFormat-Reader">here</a>.</p>
+<p>For this tutorial, we created the corpora by two steps: * convert the
+raw data into a plain text file that contains of TAB-separated columns
+of space-separated text. For example:</p>
+<p><code class="docutils literal"><span class="pre">BOS</span> <span class="pre">show</span> <span class="pre">flights</span> <span class="pre">from</span> <span class="pre">burbank</span> <span class="pre">to</span> <span class="pre">st.</span> <span class="pre">louis</span> <span class="pre">on</span> <span class="pre">monday</span> <span class="pre">EOS</span> <span class="pre">(TAB)</span> <span class="pre">flight</span> <span class="pre">(TAB)</span> <span class="pre">O</span> <span class="pre">O</span> <span class="pre">O</span> <span class="pre">O</span> <span class="pre">B-fromloc.city_name</span> <span class="pre">O</span> <span class="pre">B-toloc.city_name</span> <span class="pre">I-toloc.city_name</span> <span class="pre">O</span> <span class="pre">B-depart_date.day_name</span> <span class="pre">O</span></code></p>
+<p>This is meant to be compatible with the output of the <code class="docutils literal"><span class="pre">paste</span></code> command.
+* convert it to CNTK Text Format (CTF) with the following command:</p>
+<p><code class="docutils literal"><span class="pre">python</span> <span class="pre">[CNTK</span> <span class="pre">root]/Scripts/txt2ctf.py</span> <span class="pre">--map</span> <span class="pre">query.wl</span> <span class="pre">intent.wl</span> <span class="pre">slots.wl</span> <span class="pre">--annotated</span> <span class="pre">True</span> <span class="pre">--input</span> <span class="pre">atis.test.txt</span> <span class="pre">--output</span> <span class="pre">atis.test.ctf</span></code>
+where the three <code class="docutils literal"><span class="pre">.wl</span></code> files give the vocabulary as plain text files,
+one word per line.</p>
+<p>In these CTF files, our columns are labeled <code class="docutils literal"><span class="pre">S0</span></code>, <code class="docutils literal"><span class="pre">S1</span></code>, and <code class="docutils literal"><span class="pre">S2</span></code>.
+These are connected to the actual network inputs by the corresponding
+lines in the reader definition:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_reader</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">is_training</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">MinibatchSource</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">CTFDeserializer</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDefs</span><span class="p">(</span>
+         <span class="n">query</span>         <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S0&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">vocab_size</span><span class="p">,</span>  <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+         <span class="n">intent_unused</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S1&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_intents</span><span class="p">,</span> <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+         <span class="n">slot_labels</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">StreamDef</span><span class="p">(</span><span class="n">field</span><span class="o">=</span><span class="s1">&#39;S2&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_labels</span><span class="p">,</span>  <span class="n">is_sparse</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+     <span class="p">)),</span> <span class="n">randomize</span><span class="o">=</span><span class="n">is_training</span><span class="p">,</span> <span class="n">max_sweeps</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">INFINITELY_REPEAT</span> <span class="k">if</span> <span class="n">is_training</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># peek</span>
+<span class="n">reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">],</span> <span class="n">is_training</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[7]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>dict_keys([&#39;slot_labels&#39;, &#39;query&#39;, &#39;intent_unused&#39;])
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Training">
+<h2>Training<a class="headerlink" href="#Training" title="Permalink to this headline">¶</a></h2>
+<p>We also must define the training criterion (loss function), and also an
+error metric to track. In most tutorials, we know the input dimensions
+and the corresponding labels. We directly create the loss and the error
+functions. In this tutorial we will do the same. However, we take a
+brief detour and learn about placeholders. This concept would be useful
+for Task 3.</p>
+<p><strong>Learning note</strong>: Introduction to <code class="docutils literal"><span class="pre">placeholder</span></code>: Remember that the
+code we have been writing is not actually executing any heavy
+computation it is just specifying the function we want to compute on
+data during training/testing. And in the same way that it is convenient
+to have names for arguments when you write a regular function in a
+programming language, it is convenient to have placeholders that refer
+to arguments (or local computations that need to be reused). Eventually,
+some other code will replace these placeholders with other known
+quantities in the same way that in a programming language the function
+will be called with concrete values bound to its arguments.</p>
+<p>Specifically, the input variables you have created above
+<code class="docutils literal"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">C.sequence.input_variable(vocab_size)</span></code> holds data pre-defined by
+<code class="docutils literal"><span class="pre">vocab_size</span></code>. In the case where such instantiations are challenging or
+not possible, using <code class="docutils literal"><span class="pre">placeholder</span></code> is a logical choice. Having the
+<code class="docutils literal"><span class="pre">placeholder</span></code> only allows you to defer the specification of the
+argument at a later time when you may have the data.</p>
+<p>Here is an example below that illustrates the use of <code class="docutils literal"><span class="pre">placeholder</span></code>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_criterion_function</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;labels&#39;</span><span class="p">)</span>
+    <span class="n">ce</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="n">errs</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span>      <span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">combine</span> <span class="p">([</span><span class="n">ce</span><span class="p">,</span> <span class="n">errs</span><span class="p">])</span> <span class="c1"># (features, labels) -&gt; (loss, metric)</span>
+
+<span class="n">criterion</span> <span class="o">=</span> <span class="n">create_criterion_function</span><span class="p">(</span><span class="n">create_model</span><span class="p">())</span>
+<span class="n">criterion</span><span class="o">.</span><span class="n">replace_placeholders</span><span class="p">({</span><span class="n">criterion</span><span class="o">.</span><span class="n">placeholders</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">input_variable</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)})</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[8]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>Composite(Combine): Input(&#39;Input2300&#39;, [#, *], [129]), Placeholder(&#39;labels&#39;, [???], [???]) -&gt; Output(&#39;Block2270_Output_0&#39;, [#, *], [1]), Output(&#39;Block2290_Output_0&#39;, [#, *], [])
+</pre></div>
+</div>
+</div>
+<p>While the cell above works well when one has input parameters defined at
+network creation, it compromises readability. Hence we prefer creating
+functions as shown below</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_criterion_function_preferred</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
+    <span class="n">ce</span>   <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">cross_entropy_with_softmax</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="n">errs</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">classification_error</span>      <span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ce</span><span class="p">,</span> <span class="n">errs</span> <span class="c1"># (model, labels) -&gt; (loss, error metric)</span>
+</pre></div>
+</div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">model_func</span><span class="p">,</span> <span class="n">max_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+
+    <span class="c1"># Instantiate the model function; x is the input (feature) variable</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Instantiate the loss and error function</span>
+    <span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span> <span class="o">=</span> <span class="n">create_criterion_function_preferred</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># training config</span>
+    <span class="n">epoch_size</span> <span class="o">=</span> <span class="mi">18000</span>        <span class="c1"># 18000 samples is half the dataset size</span>
+    <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">70</span>
+
+    <span class="c1"># LR schedule over epochs</span>
+    <span class="c1"># In CNTK, an epoch is how often we get out of the minibatch loop to</span>
+    <span class="c1"># do other stuff (e.g. checkpointing, adjust learning rate, etc.)</span>
+    <span class="n">lr_per_sample</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3e-4</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span><span class="o">+</span><span class="p">[</span><span class="mf">1.5e-4</span><span class="p">]</span>
+    <span class="n">lr_per_minibatch</span> <span class="o">=</span> <span class="p">[</span><span class="n">lr</span> <span class="o">*</span> <span class="n">minibatch_size</span> <span class="k">for</span> <span class="n">lr</span> <span class="ow">in</span> <span class="n">lr_per_sample</span><span class="p">]</span>
+    <span class="n">lr_schedule</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">learning_rate_schedule</span><span class="p">(</span><span class="n">lr_per_minibatch</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">UnitType</span><span class="o">.</span><span class="n">minibatch</span><span class="p">,</span> <span class="n">epoch_size</span><span class="p">)</span>
+
+    <span class="c1"># Momentum schedule</span>
+    <span class="n">momentum_as_time_constant</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">momentum_as_time_constant_schedule</span><span class="p">(</span><span class="mi">700</span><span class="p">)</span>
+
+    <span class="c1"># We use a the Adam optimizer which is known to work well on this dataset</span>
+    <span class="c1"># Feel free to try other optimizers from</span>
+    <span class="c1"># https://www.cntk.ai/pythondocs/cntk.learner.html#module-cntk.learner</span>
+    <span class="n">learner</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">adam</span><span class="p">(</span><span class="n">parameters</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span>
+                     <span class="n">lr</span><span class="o">=</span><span class="n">lr_schedule</span><span class="p">,</span>
+                     <span class="n">momentum</span><span class="o">=</span><span class="n">momentum_as_time_constant</span><span class="p">,</span>
+                     <span class="n">gradient_clipping_threshold_per_sample</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+                     <span class="n">gradient_clipping_with_truncation</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+    <span class="c1"># Setup the progress updater</span>
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">,</span> <span class="n">num_epochs</span><span class="o">=</span><span class="n">max_epochs</span><span class="p">)</span>
+
+    <span class="c1"># Uncomment below for more detailed logging</span>
+    <span class="c1">#progress_printer = ProgressPrinter(freq=100, first=10, tag=&#39;Training&#39;, num_epochs=max_epochs)</span>
+
+    <span class="c1"># Instantiate the trainer</span>
+    <span class="n">trainer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span><span class="p">),</span> <span class="n">learner</span><span class="p">,</span> <span class="n">progress_printer</span><span class="p">)</span>
+
+    <span class="c1"># process minibatches and perform model training</span>
+    <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">log_number_of_parameters</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+
+    <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_epochs</span><span class="p">):</span>         <span class="c1"># loop over epochs</span>
+        <span class="n">epoch_end</span> <span class="o">=</span> <span class="p">(</span><span class="n">epoch</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">epoch_size</span>
+        <span class="k">while</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">epoch_end</span><span class="p">:</span>                <span class="c1"># loop over minibatches on the epoch</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="p">{</span>  <span class="c1"># fetch minibatch</span>
+                <span class="n">x</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">query</span><span class="p">,</span>
+                <span class="n">y</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">slot_labels</span>
+            <span class="p">})</span>
+            <span class="n">trainer</span><span class="o">.</span><span class="n">train_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>               <span class="c1"># update model with it</span>
+            <span class="n">t</span> <span class="o">+=</span> <span class="n">data</span><span class="p">[</span><span class="n">y</span><span class="p">]</span><span class="o">.</span><span class="n">num_samples</span>                    <span class="c1"># samples so far</span>
+        <span class="n">trainer</span><span class="o">.</span><span class="n">summarize_training_progress</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p><strong>Run the trainer</strong></p>
+<p>You can find the complete recipe below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">do_train</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">z</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">create_model</span><span class="p">()</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;train&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">],</span> <span class="n">is_training</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">train</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="n">do_train</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 721479 parameters in 6 parameter tensors.
+Learning rate per minibatch: 0.21
+Finished Epoch[1 of 10]: [Training] loss = 0.823758 * 18010, metric = 16.06% * 18010 5.226s (3446.2 samples/s);
+Finished Epoch[2 of 10]: [Training] loss = 0.237405 * 18051, metric = 5.37% * 18051 4.512s (4000.7 samples/s);
+Finished Epoch[3 of 10]: [Training] loss = 0.161412 * 17941, metric = 3.83% * 17941 4.432s (4048.1 samples/s);
+Finished Epoch[4 of 10]: [Training] loss = 0.111727 * 18059, metric = 2.70% * 18059 4.587s (3937.0 samples/s);
+Learning rate per minibatch: 0.105
+Finished Epoch[5 of 10]: [Training] loss = 0.075202 * 17957, metric = 1.84% * 17957 4.683s (3834.5 samples/s);
+Finished Epoch[6 of 10]: [Training] loss = 0.063646 * 18021, metric = 1.59% * 18021 4.442s (4057.0 samples/s);
+Finished Epoch[7 of 10]: [Training] loss = 0.057869 * 17980, metric = 1.46% * 17980 4.490s (4004.5 samples/s);
+Finished Epoch[8 of 10]: [Training] loss = 0.052613 * 18025, metric = 1.36% * 18025 4.569s (3945.1 samples/s);
+Finished Epoch[9 of 10]: [Training] loss = 0.034792 * 17956, metric = 0.96% * 17956 4.427s (4056.0 samples/s);
+Finished Epoch[10 of 10]: [Training] loss = 0.037248 * 18039, metric = 0.98% * 18039 4.548s (3966.4 samples/s);
+</pre></div></div>
+</div>
+<p>This shows how learning proceeds over epochs (passes through the data).
+For example, after four epochs, the loss, which is the cross-entropy
+criterion, has reached 0.39 as measured on the ~18000 samples of this
+epoch, and that the error rate is 8.39% on those same 18000 training
+samples.</p>
+<p>The epoch size is the number of samples–counted as <em>word tokens</em>, not
+sentences–to process between model checkpoints.</p>
+<p>Once the training has completed (a little less than 2 minutes on a
+Titan-X or a Surface Book), you will see an output like this</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">Finished</span> <span class="n">Epoch</span><span class="p">[</span><span class="mi">10</span> <span class="n">of</span> <span class="mi">10</span><span class="p">]:</span> <span class="p">[</span><span class="n">Training</span><span class="p">]</span> <span class="n">loss</span> <span class="o">=</span> <span class="mf">0.162569</span> <span class="o">*</span> <span class="mi">18039</span><span class="p">,</span> <span class="n">metric</span> <span class="o">=</span> <span class="mf">3.53</span><span class="o">%</span> <span class="o">*</span> <span class="mi">18039</span>
+</pre></div>
+</div>
+<p>which is the loss (cross entropy) and the metric (classification error)
+averaged over the final epoch.</p>
+<p>On a CPU-only machine, it can be 4 or more times slower. You can try
+setting</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">emb_dim</span>    <span class="o">=</span> <span class="mi">50</span>
+<span class="n">hidden_dim</span> <span class="o">=</span> <span class="mi">100</span>
+</pre></div>
+</div>
+<p>to reduce the time it takes to run on a CPU, but the model will not fit
+as well as when the hidden and embedding dimension are larger.</p>
+<div class="section" id="Evaluating-the-model">
+<h3>Evaluating the model<a class="headerlink" href="#Evaluating-the-model" title="Permalink to this headline">¶</a></h3>
+<p>Like the train() function, we also define a function to measure accuracy
+on a test set by computing the error over multiple minibatches of test
+data. For evaluating on a small sample read from a file, you can set a
+minibatch size reflecting the sample size and run the test_minibatch on
+that instance of data. To see how to evaluate a single sequence, we
+provide an instance later in the tutorial.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">model_func</span><span class="p">):</span>
+
+    <span class="c1"># Instantiate the model function; x is the input (feature) variable</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">model_func</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Create the loss and error functions</span>
+    <span class="n">loss</span><span class="p">,</span> <span class="n">label_error</span> <span class="o">=</span> <span class="n">create_criterion_function_preferred</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="c1"># process minibatches and perform evaluation</span>
+    <span class="n">progress_printer</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">logging</span><span class="o">.</span><span class="n">ProgressPrinter</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="s1">&#39;Evaluation&#39;</span><span class="p">,</span> <span class="n">num_epochs</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">minibatch_size</span> <span class="o">=</span> <span class="mi">500</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">next_minibatch</span><span class="p">(</span><span class="n">minibatch_size</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="p">{</span>  <span class="c1"># fetch minibatch</span>
+            <span class="n">x</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">query</span><span class="p">,</span>
+            <span class="n">y</span><span class="p">:</span> <span class="n">reader</span><span class="o">.</span><span class="n">streams</span><span class="o">.</span><span class="n">slot_labels</span>
+        <span class="p">})</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">data</span><span class="p">:</span>                                 <span class="c1"># until we hit the end</span>
+            <span class="k">break</span>
+
+        <span class="n">evaluator</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">eval</span><span class="o">.</span><span class="n">Evaluator</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">progress_printer</span><span class="p">)</span>
+        <span class="n">evaluator</span><span class="o">.</span><span class="n">test_minibatch</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="n">evaluator</span><span class="o">.</span><span class="n">summarize_test_progress</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<p>Now we can measure the model accuracy by going through all the examples
+in the test set and using the <code class="docutils literal"><span class="pre">test_minibatch</span></code> method of the trainer
+created inside the evaluate function defined above. At the moment (when
+this tutorial was written) the Trainer constructor requires a learner
+(even if it is only used to perform <code class="docutils literal"><span class="pre">test_minibatch</span></code>) so we have to
+specify a dummy learner. In the future it will be allowed to construct a
+Trainer without specifying a learner as long as the trainer only calls
+<code class="docutils literal"><span class="pre">test_minibatch</span></code></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">do_test</span><span class="p">():</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">create_reader</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;test&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">],</span> <span class="n">is_training</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">evaluate</span><span class="p">(</span><span class="n">reader</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+<span class="n">do_test</span><span class="p">()</span>
+<span class="n">z</span><span class="o">.</span><span class="n">classify</span><span class="o">.</span><span class="n">b</span><span class="o">.</span><span class="n">value</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Finished Evaluation [1]: Minibatch[1-23]: metric = 0.48% * 10984;
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[13]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>array([-0.025497  , -0.06407529, -0.02425336,  0.01145075, -0.01295212,
+       -0.00491321,  0.00133862, -0.04287424,  0.02108153, -0.02486051,
+        0.09403792,  0.03413068, -0.0568643 ,  0.0351739 , -0.06779342,
+       -0.08128691, -0.08191209, -0.02362143,  0.00320719, -0.08894888,
+       -0.00314734, -0.037007  ,  0.04418299,  0.02886184,  0.00632481,
+       -0.01977408,  0.00359284, -0.07357866,  0.01406481, -0.03664853,
+       -0.02824573,  0.05532354, -0.06132982, -0.01242861,  0.04455924,
+        0.00934195, -0.00617396, -0.06531817,  0.00429921, -0.07940828,
+       -0.08715955, -0.09912758, -0.00969285, -0.08148459, -0.06078886,
+       -0.04919855,  0.03761278,  0.04650427,  0.03250287, -0.06955715,
+       -0.05663453, -0.04372443,  0.05098081, -0.0537931 ,  0.04788526,
+        0.03120032, -0.07803968, -0.0089695 , -0.01326094,  0.00292298,
+        0.05527316, -0.00303634,  0.03741406, -0.00955698,  0.00873039,
+        0.01483427, -0.12158918, -0.02407008,  0.00814711, -0.08676851,
+       -0.0110663 , -0.03000952,  0.01349191, -0.01237276, -0.03843433,
+        0.03893027,  0.09145479,  0.07953884,  0.05887863, -0.00930274,
+       -0.05893788, -0.03368121, -0.06416555, -0.18227793, -0.07258282,
+       -0.02431093, -0.00153815,  0.06013145, -0.01692016, -0.10026735,
+       -0.01780264, -0.0967905 , -0.11973669, -0.16913898, -0.01270897,
+       -0.07991355,  0.05703591, -0.03107373, -0.05552248, -0.08649468,
+       -0.02901657, -0.04163757, -0.06302745, -0.10043665,  0.00282423,
+        0.0310167 , -0.07681263, -0.06272763, -0.1057751 , -0.03781575,
+       -0.10536277, -0.00620188,  0.01091709,  0.02787812,  0.01497771,
+       -0.08469339,  0.02878375,  0.02957725,  0.01043399, -0.16963176,
+       -0.08668834, -0.0368621 , -0.03902728,  0.0367249 , -0.02276799,
+       -0.03198999,  0.00540702, -0.08940242,  0.0582918 ], dtype=float32)
+</pre></div>
+</div>
+</div>
+<p>The following block of code illustrates how to evaluate a single
+sequence. Additionally we show how one can pass in the information using
+NumPy arrays.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># load dictionaries</span>
+<span class="n">query_wl</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;query&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">])]</span>
+<span class="n">slots_wl</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">open</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;slots&#39;</span><span class="p">][</span><span class="s1">&#39;file&#39;</span><span class="p">])]</span>
+<span class="n">query_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">query_wl</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">query_wl</span><span class="p">))}</span>
+<span class="n">slots_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">slots_wl</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">slots_wl</span><span class="p">))}</span>
+
+<span class="c1"># let&#39;s run a sequence through</span>
+<span class="n">seq</span> <span class="o">=</span> <span class="s1">&#39;BOS flights from new york to seattle EOS&#39;</span>
+<span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="n">query_dict</span><span class="p">[</span><span class="n">w</span><span class="p">]</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">seq</span><span class="o">.</span><span class="n">split</span><span class="p">()]</span> <span class="c1"># convert to word indices</span>
+<span class="k">print</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+<span class="n">onehot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">),</span><span class="nb">len</span><span class="p">(</span><span class="n">query_dict</span><span class="p">)],</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">w</span><span class="p">)):</span>
+    <span class="n">onehot</span><span class="p">[</span><span class="n">t</span><span class="p">,</span><span class="n">w</span><span class="p">[</span><span class="n">t</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1">#x = C.sequence.input_variable(vocab_size)</span>
+<span class="n">pred</span> <span class="o">=</span> <span class="n">z</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="n">x</span><span class="p">:[</span><span class="n">onehot</span><span class="p">]})[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pred</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="n">best</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">best</span><span class="p">)</span>
+<span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">seq</span><span class="o">.</span><span class="n">split</span><span class="p">(),[</span><span class="n">slots_wl</span><span class="p">[</span><span class="n">s</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">best</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[178, 429, 444, 619, 937, 851, 752, 179]
+(8, 129)
+[128 128 128  48 110 128  78 128]
+</pre></div></div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[14]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>[(&#39;BOS&#39;, &#39;O&#39;),
+ (&#39;flights&#39;, &#39;O&#39;),
+ (&#39;from&#39;, &#39;O&#39;),
+ (&#39;new&#39;, &#39;B-fromloc.city_name&#39;),
+ (&#39;york&#39;, &#39;I-fromloc.city_name&#39;),
+ (&#39;to&#39;, &#39;O&#39;),
+ (&#39;seattle&#39;, &#39;B-toloc.city_name&#39;),
+ (&#39;EOS&#39;, &#39;O&#39;)]
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Modifying-the-Model">
+<h2>Modifying the Model<a class="headerlink" href="#Modifying-the-Model" title="Permalink to this headline">¶</a></h2>
+<p>In the following, you will be given tasks to practice modifying CNTK
+configurations. The solutions are given at the end of this document…
+but please try without!</p>
+<p><strong>A Word About
+```Sequential()`` &lt;https://www.cntk.ai/pythondocs/layerref.html#sequential&gt;`__</strong></p>
+<p>Before jumping to the tasks, let’s have a look again at the model we
+just ran. The model is described in what we call <em>function-composition
+style</em>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">Sequential</span><span class="p">([</span>
+    <span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+    <span class="n">Recurrence</span><span class="p">(</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+    <span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+<span class="p">])</span>
+</pre></div>
+</div>
+<p>You may be familiar with the “sequential” notation from other
+neural-network toolkits. If not,
+<code class="docutils literal"><span class="pre">`Sequential()</span></code> &lt;<a class="reference external" href="https://www.cntk.ai/pythondocs/layerref.html#sequential">https://www.cntk.ai/pythondocs/layerref.html#sequential</a>&gt;`__
+is a powerful operation that, in a nutshell, allows to compactly express
+a very common situation in neural networks where an input is processed
+by propagating it through a progression of layers. <code class="docutils literal"><span class="pre">Sequential()</span></code>
+takes an list of functions as its argument, and returns a <em>new</em> function
+that invokes these functions in order, each time passing the output of
+one to the next. For example,</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">FGH</span> <span class="o">=</span> <span class="n">Sequential</span> <span class="p">([</span><span class="n">F</span><span class="p">,</span><span class="n">G</span><span class="p">,</span><span class="n">H</span><span class="p">])</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">FGH</span> <span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>means the same as</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">H</span><span class="p">(</span><span class="n">G</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>This is known as <a class="reference external" href="https://en.wikipedia.org/wiki/Function_composition">“function
+composition”</a>,
+and is especially convenient for expressing neural networks, which often
+have this form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>     <span class="o">+-------+</span>   <span class="o">+-------+</span>   <span class="o">+-------+</span>
+<span class="n">x</span> <span class="o">--&gt;|</span>   <span class="n">F</span>   <span class="o">|--&gt;|</span>   <span class="n">G</span>   <span class="o">|--&gt;|</span>   <span class="n">H</span>   <span class="o">|--&gt;</span> <span class="n">y</span>
+     <span class="o">+-------+</span>   <span class="o">+-------+</span>   <span class="o">+-------+</span>
+</pre></div>
+</div>
+<p>Coming back to our model at hand, the <code class="docutils literal"><span class="pre">Sequential</span></code> expression simply
+says that our model has this form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>     <span class="o">+-----------+</span>   <span class="o">+----------------+</span>   <span class="o">+------------+</span>
+<span class="n">x</span> <span class="o">--&gt;|</span> <span class="n">Embedding</span> <span class="o">|--&gt;|</span> <span class="n">Recurrent</span> <span class="n">LSTM</span> <span class="o">|--&gt;|</span> <span class="n">DenseLayer</span> <span class="o">|--&gt;</span> <span class="n">y</span>
+     <span class="o">+-----------+</span>   <span class="o">+----------------+</span>   <span class="o">+------------+</span>
+</pre></div>
+</div>
+<div class="section" id="Task-1:-Add-Batch-Normalization">
+<h3>Task 1: Add Batch Normalization<a class="headerlink" href="#Task-1:-Add-Batch-Normalization" title="Permalink to this headline">¶</a></h3>
+<p>We now want to add new layers to the model, specifically batch
+normalization.</p>
+<p>Batch normalization is a popular technique for speeding up convergence.
+It is often used for image-processing setups. But could it work for
+recurrent models, too?</p>
+<blockquote>
+<div>Note: training with Batch Normalization is currently only supported
+on GPU.</div></blockquote>
+<p>So your task will be to insert batch-normalization layers before and
+after the recurrent LSTM layer. If you have completed the <a class="reference external" href="https://github.com/Microsoft/CNTK/blob/release/2.1/Tutorials/CNTK_201B_CIFAR-10_ImageHandsOn.ipynb">hands-on labs
+on image
+processing</a>,
+you may remember that the <a class="reference external" href="https://www.cntk.ai/pythondocs/layerref.html#batchnormalization-layernormalization-stabilizer">batch-normalization
+layer</a>
+has this form:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">BatchNormalization</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>So please go ahead and modify the configuration and see what happens.</p>
+<p>If everything went right, you will notice improved convergence speed
+(<code class="docutils literal"><span class="pre">loss</span></code> and <code class="docutils literal"><span class="pre">metric</span></code>) compared to the previous configuration.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Your task: Add batch normalization</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="c1"># Enable these when done:</span>
+<span class="c1">#do_train()</span>
+<span class="c1">#do_test()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Task-2:-Add-a-Lookahead">
+<h3>Task 2: Add a Lookahead<a class="headerlink" href="#Task-2:-Add-a-Lookahead" title="Permalink to this headline">¶</a></h3>
+<p>Our recurrent model suffers from a structural deficit: Since the
+recurrence runs from left to right, the decision for a slot label has no
+information about upcoming words. The model is a bit lopsided. Your task
+will be to modify the model such that the input to the recurrence
+consists not only of the current word, but also of the next one
+(lookahead).</p>
+<p>Your solution should be in function-composition style. Hence, you will
+need to write a Python function that does the following:</p>
+<ul class="simple">
+<li>takes no input arguments</li>
+<li>creates a placeholder (sequence) variable</li>
+<li>computes the “next value” in this sequence using the
+<code class="docutils literal"><span class="pre">sequence.future_value()</span></code> operation and</li>
+<li>concatenates the current and the next value into a vector of twice
+the embedding dimension using <code class="docutils literal"><span class="pre">splice()</span></code></li>
+</ul>
+<p>and then insert this function into <code class="docutils literal"><span class="pre">Sequential()</span></code>’s list right after
+the embedding layer.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [16]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Your task: Add lookahead</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="c1"># Enable these when done:</span>
+<span class="c1">#do_train()</span>
+<span class="c1">#do_test()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Task-3:-Bidirectional-Recurrent-Model">
+<h3>Task 3: Bidirectional Recurrent Model<a class="headerlink" href="#Task-3:-Bidirectional-Recurrent-Model" title="Permalink to this headline">¶</a></h3>
+<p>Aha, knowledge of future words help. So instead of a one-word lookahead,
+why not look ahead until all the way to the end of the sentence, through
+a backward recurrence? Let us create a bidirectional model!</p>
+<p>Your task is to implement a new layer that performs both a forward and a
+backward recursion over the data, and concatenates the output vectors.</p>
+<p>Note, however, that this differs from the previous task in that the
+bidirectional layer contains learnable model parameters. In
+function-composition style, the pattern to implement a layer with model
+parameters is to write a <em>factory function</em> that creates a <em>function
+object</em>.</p>
+<p>A function object, also known as
+<a class="reference external" href="https://en.wikipedia.org/wiki/Function_object">*functor*</a>, is an
+object that is both a function and an object. Which means nothing else
+that it contains data yet still can be invoked as if it was a function.</p>
+<p>For example, <code class="docutils literal"><span class="pre">Dense(outDim)</span></code> is a factory function that returns a
+function object that contains a weight matrix <code class="docutils literal"><span class="pre">W</span></code>, a bias <code class="docutils literal"><span class="pre">b</span></code>, and
+another function to compute <code class="docutils literal"><span class="pre">input</span> <span class="pre">&#64;</span> <span class="pre">W</span> <span class="pre">+</span> <span class="pre">b.</span></code> (This is using <a class="reference external" href="https://docs.python.org/3/whatsnew/3.5.html#whatsnew-pep-465">Python
+3.5 notation for matrix
+multiplication</a>.
+In Numpy syntax it is <code class="docutils literal"><span class="pre">input.dot(W)</span> <span class="pre">+</span> <span class="pre">b</span></code>). E.g. saying <code class="docutils literal"><span class="pre">Dense(1024)</span></code>
+will create this function object, which can then be used like any other
+function, also immediately: <code class="docutils literal"><span class="pre">Dense(1024)(x)</span></code>.</p>
+<p>Let’s look at an example for further clarity: Let us implement a new
+layer that combines a linear layer with a subsequent batch
+normalization. To allow function composition, the layer needs to be
+realized as a factory function, which could look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">DenseLayerWithBN</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">Dense</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">BatchNormalization</span><span class="p">()</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">placeholder</span><span class="p">()</span>
+    <span class="n">apply_x</span> <span class="o">=</span> <span class="n">G</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">apply_x</span>
+</pre></div>
+</div>
+<p>Invoking this factory function will create <code class="docutils literal"><span class="pre">F</span></code>, <code class="docutils literal"><span class="pre">G</span></code>, <code class="docutils literal"><span class="pre">x</span></code>, and
+<code class="docutils literal"><span class="pre">apply_x</span></code>. In this example, <code class="docutils literal"><span class="pre">F</span></code> and <code class="docutils literal"><span class="pre">G</span></code> are function objects
+themselves, and <code class="docutils literal"><span class="pre">apply_x</span></code> is the function to be applied to the data.
+Thus, e.g. calling <code class="docutils literal"><span class="pre">DenseLayerWithBN(1024)</span></code> will create an object
+containing a linear-layer function object called <code class="docutils literal"><span class="pre">F</span></code>, a
+batch-normalization function object <code class="docutils literal"><span class="pre">G</span></code>, and <code class="docutils literal"><span class="pre">apply_x</span></code> which is the
+function that implements the actual operation of this layer using <code class="docutils literal"><span class="pre">F</span></code>
+and <code class="docutils literal"><span class="pre">G</span></code>. It will then return <code class="docutils literal"><span class="pre">apply_x</span></code>. To the outside, <code class="docutils literal"><span class="pre">apply_x</span></code>
+looks and behaves like a function. Under the hood, however, <code class="docutils literal"><span class="pre">apply_x</span></code>
+retains access to its specific instances of <code class="docutils literal"><span class="pre">F</span></code> and <code class="docutils literal"><span class="pre">G</span></code>.</p>
+<p>Now back to our task at hand. You will now need to create a factory
+function, very much like the example above. You shall create a factory
+function that creates two recurrent layer instances (one forward, one
+backward), and then defines an <code class="docutils literal"><span class="pre">apply_x</span></code> function which applies both
+layer instances to the same <code class="docutils literal"><span class="pre">x</span></code> and concatenate the two results.</p>
+<p>Alright, give it a try! To know how to realize a backward recursion in
+CNTK, please take a hint from how the forward recursion is done. Please
+also do the following: * remove the one-word lookahead you added in the
+previous task, which we aim to replace; and * make sure each LSTM is
+using <code class="docutils literal"><span class="pre">hidden_dim//2</span></code> outputs to keep the total number of model
+parameters limited.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [17]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># Your task: Add bidirectional recurrence</span>
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="c1"># Enable these when done:</span>
+<span class="c1">#do_train()</span>
+<span class="c1">#do_test()</span>
+</pre></div>
+</div>
+</div>
+<p>Works like a charm! This model achieves 0.30%, better than the lookahead
+model above. The bidirectional model has 40% less parameters than the
+lookahead one. However, if you go back and look closely you may find
+that the lookahead one trained about 30% faster. This is because the
+lookahead model has both less horizontal dependencies (one instead of
+two recurrences) and larger matrix products, and can thus achieve higher
+parallelism.</p>
+<p><strong>Solution 1: Adding Batch Normalization</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [18]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="c1">#C.layers.BatchNormalization(),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="c1">#C.layers.BatchNormalization(),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="n">do_train</span><span class="p">()</span>
+<span class="n">do_test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 721479 parameters in 6 parameter tensors.
+Learning rate per minibatch: 0.21
+Finished Epoch[1 of 10]: [Training] loss = 0.823758 * 18010, metric = 16.06% * 18010 4.753s (3789.2 samples/s);
+Finished Epoch[2 of 10]: [Training] loss = 0.237405 * 18051, metric = 5.37% * 18051 4.516s (3997.1 samples/s);
+Finished Epoch[3 of 10]: [Training] loss = 0.161412 * 17941, metric = 3.83% * 17941 4.387s (4089.6 samples/s);
+Finished Epoch[4 of 10]: [Training] loss = 0.111727 * 18059, metric = 2.70% * 18059 4.607s (3919.9 samples/s);
+Learning rate per minibatch: 0.105
+Finished Epoch[5 of 10]: [Training] loss = 0.075202 * 17957, metric = 1.84% * 17957 4.570s (3929.3 samples/s);
+Finished Epoch[6 of 10]: [Training] loss = 0.063646 * 18021, metric = 1.59% * 18021 4.485s (4018.1 samples/s);
+Finished Epoch[7 of 10]: [Training] loss = 0.057869 * 17980, metric = 1.46% * 17980 4.460s (4031.4 samples/s);
+Finished Epoch[8 of 10]: [Training] loss = 0.052613 * 18025, metric = 1.36% * 18025 4.525s (3983.4 samples/s);
+Finished Epoch[9 of 10]: [Training] loss = 0.034792 * 17956, metric = 0.96% * 17956 4.411s (4070.7 samples/s);
+Finished Epoch[10 of 10]: [Training] loss = 0.037248 * 18039, metric = 0.98% * 18039 4.499s (4009.6 samples/s);
+Finished Evaluation [1]: Minibatch[1-23]: metric = 0.48% * 10984;
+</pre></div></div>
+</div>
+<p><strong>Solution 2: Add a Lookahead</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [19]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">OneWordLookahead</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">placeholder</span><span class="p">()</span>
+    <span class="n">apply_x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">splice</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">sequence</span><span class="o">.</span><span class="n">future_value</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">apply_x</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="n">OneWordLookahead</span><span class="p">(),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="p">),</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="n">do_train</span><span class="p">()</span>
+<span class="n">do_test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 901479 parameters in 6 parameter tensors.
+Learning rate per minibatch: 0.21
+Finished Epoch[1 of 10]: [Training] loss = 0.733090 * 18010, metric = 14.28% * 18010 4.975s (3620.1 samples/s);
+Finished Epoch[2 of 10]: [Training] loss = 0.194049 * 18051, metric = 4.37% * 18051 4.761s (3791.4 samples/s);
+Finished Epoch[3 of 10]: [Training] loss = 0.129423 * 17941, metric = 2.83% * 17941 4.775s (3757.3 samples/s);
+Finished Epoch[4 of 10]: [Training] loss = 0.087664 * 18059, metric = 2.13% * 18059 4.913s (3675.8 samples/s);
+Learning rate per minibatch: 0.105
+Finished Epoch[5 of 10]: [Training] loss = 0.049175 * 17957, metric = 1.15% * 17957 4.858s (3696.4 samples/s);
+Finished Epoch[6 of 10]: [Training] loss = 0.046396 * 18021, metric = 1.04% * 18021 4.774s (3774.8 samples/s);
+Finished Epoch[7 of 10]: [Training] loss = 0.044411 * 17980, metric = 0.98% * 17980 4.727s (3803.7 samples/s);
+Finished Epoch[8 of 10]: [Training] loss = 0.034134 * 18025, metric = 0.84% * 18025 4.840s (3724.2 samples/s);
+Finished Epoch[9 of 10]: [Training] loss = 0.018955 * 17956, metric = 0.52% * 17956 4.751s (3779.4 samples/s);
+Finished Epoch[10 of 10]: [Training] loss = 0.017645 * 18039, metric = 0.45% * 18039 4.847s (3721.7 samples/s);
+Finished Evaluation [1]: Minibatch[1-23]: metric = 0.34% * 10984;
+</pre></div></div>
+</div>
+<p><strong>Solution 3: Bidirectional Recurrent Model</strong></p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [20]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">BiRecurrence</span><span class="p">(</span><span class="n">fwd</span><span class="p">,</span> <span class="n">bwd</span><span class="p">):</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">fwd</span><span class="p">)</span>
+    <span class="n">G</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Recurrence</span><span class="p">(</span><span class="n">bwd</span><span class="p">,</span> <span class="n">go_backwards</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">placeholder</span><span class="p">()</span>
+    <span class="n">apply_x</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">splice</span><span class="p">(</span><span class="n">F</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">G</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">apply_x</span>
+
+<span class="k">def</span> <span class="nf">create_model</span><span class="p">():</span>
+    <span class="k">with</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">default_options</span><span class="p">(</span><span class="n">initial_state</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Sequential</span><span class="p">([</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Embedding</span><span class="p">(</span><span class="n">emb_dim</span><span class="p">),</span>
+            <span class="n">BiRecurrence</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="o">//</span><span class="mi">2</span><span class="p">),</span>
+                                  <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span><span class="p">(</span><span class="n">hidden_dim</span><span class="o">//</span><span class="mi">2</span><span class="p">)),</span>
+            <span class="n">C</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">Dense</span><span class="p">(</span><span class="n">num_labels</span><span class="p">)</span>
+        <span class="p">])</span>
+
+<span class="n">do_train</span><span class="p">()</span>
+<span class="n">do_test</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Training 541479 parameters in 9 parameter tensors.
+Learning rate per minibatch: 0.21
+Finished Epoch[1 of 10]: [Training] loss = 0.731444 * 18010, metric = 13.83% * 18010 8.562s (2103.5 samples/s);
+Finished Epoch[2 of 10]: [Training] loss = 0.175613 * 18051, metric = 3.90% * 18051 8.292s (2176.9 samples/s);
+Finished Epoch[3 of 10]: [Training] loss = 0.103988 * 17941, metric = 2.34% * 17941 8.173s (2195.2 samples/s);
+Finished Epoch[4 of 10]: [Training] loss = 0.070101 * 18059, metric = 1.59% * 18059 8.431s (2142.0 samples/s);
+Learning rate per minibatch: 0.105
+Finished Epoch[5 of 10]: [Training] loss = 0.042499 * 17957, metric = 1.10% * 17957 8.230s (2181.9 samples/s);
+Finished Epoch[6 of 10]: [Training] loss = 0.037220 * 18021, metric = 0.88% * 18021 8.150s (2211.2 samples/s);
+Finished Epoch[7 of 10]: [Training] loss = 0.036474 * 17980, metric = 0.88% * 17980 8.240s (2182.0 samples/s);
+Finished Epoch[8 of 10]: [Training] loss = 0.026553 * 18025, metric = 0.65% * 18025 8.384s (2149.9 samples/s);
+Finished Epoch[9 of 10]: [Training] loss = 0.014205 * 17956, metric = 0.37% * 17956 8.188s (2193.0 samples/s);
+Finished Epoch[10 of 10]: [Training] loss = 0.015177 * 18039, metric = 0.45% * 18039 8.118s (2222.1 samples/s);
+Finished Evaluation [1]: Minibatch[1-23]: metric = 0.35% * 10984;
+</pre></div></div>
+</div>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [ ]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

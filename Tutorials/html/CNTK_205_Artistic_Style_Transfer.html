@@ -1,0 +1,909 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>CNTK 205 Artistic Style Transfer &mdash; CNTK Tutorial Documentation  documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="CNTK Tutorial Documentation  documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+   
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="tutindex.html" class="icon icon-home"> CNTK Tutorial Documentation
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">CNTK 205 Artistic Style Transfer</a><ul>
+<li><a class="reference internal" href="#Defining-the-loss-function">Defining the loss function</a></li>
+<li><a class="reference internal" href="#Instantiating-the-loss">Instantiating the loss</a></li>
+<li><a class="reference internal" href="#Optimizing-the-loss">Optimizing the loss</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="tutindex.html">CNTK Tutorial Documentation</a>
+        
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="tutindex.html">Docs</a> &raquo;</li>
+        
+      <li>CNTK 205 Artistic Style Transfer</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/CNTK_205_Artistic_Style_Transfer.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput,
+div.nbinput div.prompt,
+div.nbinput div.input_area,
+div.nbinput div[class*=highlight],
+div.nbinput div[class*=highlight] pre,
+div.nboutput,
+div.nbinput div.prompt,
+div.nbinput div.output_area,
+div.nboutput div[class*=highlight],
+div.nboutput div[class*=highlight] pre {
+    background: none;
+    border: none;
+    padding: 0 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+/* avoid gaps between output lines */
+div.nboutput div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput,
+div.nboutput {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput,
+    div.nboutput {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput div.prompt pre {
+    color: #303F9F;
+}
+
+/* output prompt */
+div.nboutput div.prompt pre {
+    color: #D84315;
+}
+
+/* all prompts */
+div.nbinput div.prompt,
+div.nboutput div.prompt {
+    min-width: 8ex;
+    padding-top: 0.4em;
+    padding-right: 0.4em;
+    text-align: right;
+    flex: 0;
+}
+@media (max-width: 540px) {
+    div.nbinput div.prompt,
+    div.nboutput div.prompt {
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput div.prompt.empty {
+        padding: 0;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput div.prompt pre,
+div.nboutput div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput div.input_area,
+div.nboutput div.output_area {
+    padding: 0.4em;
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput div.input_area,
+    div.nboutput div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput div.input_area {
+    border: 1px solid #cfcfcf;
+    border-radius: 2px;
+    background: #f7f7f7;
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.pngmath center alignment in output cells */
+div.nboutput div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-bold { font-weight: bold; }
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast,
+.nboutput.nblast {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast + .nbinput {
+    margin-top: -19px;
+}
+
+/* nice headers on first paragraph of info/warning boxes */
+.admonition .first {
+    margin: -12px;
+    padding: 6px 12px;
+    margin-bottom: 12px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+}
+.admonition.warning .first {
+    background: #f0b37e;
+}
+.admonition.note .first {
+    background: #6ab0de;
+}
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+</style>
+<div class="section" id="CNTK-205-Artistic-Style-Transfer">
+<h1>CNTK 205 Artistic Style Transfer<a class="headerlink" href="#CNTK-205-Artistic-Style-Transfer" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial shows how to transfer the style of one image to another.
+This allows us to take our ordinary photos and render them in the style
+of famous images or paintings.</p>
+<p>Apart from creating nice looking pictures, in this tutorial you will
+learn how to load a pretrained <a class="reference external" href="https://arxiv.org/abs/1409.1556">VGG
+model</a> into CNTK, how to get the
+gradient of a function with respect to an input variable (rather than a
+parameter), and how to use the gradient outside of CNTK.</p>
+<p>We will follow the approach of <a class="reference external" href="https://arxiv.org/abs/1508.06576">Gatys et.
+al.</a> with some of the improvements
+in <a class="reference external" href="https://arxiv.org/abs/1605.04603">Novak and Nikulin</a>. While
+<a class="reference external" href="https://arxiv.org/abs/1603.08155">faster techniques</a> exist, these
+are limited to transfering a particular style.</p>
+<p>We begin by importing the necessary packages. In addition to the usual
+suspects (<code class="docutils literal"><span class="pre">numpy</span></code>, <code class="docutils literal"><span class="pre">scipy</span></code>, and <code class="docutils literal"><span class="pre">cntk</span></code>) we will need <code class="docutils literal"><span class="pre">PIL</span></code> to
+work with images, <code class="docutils literal"><span class="pre">requests</span></code> to download a pretrained model and
+<code class="docutils literal"><span class="pre">h5py</span></code> to read in the weights of the pretrained model.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">optimize</span> <span class="k">as</span> <span class="n">opt</span>
+<span class="kn">import</span> <span class="nn">cntk</span> <span class="kn">as</span> <span class="nn">C</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="kn">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">cntk.tests.test_utils</span>
+<span class="n">cntk</span><span class="o">.</span><span class="n">tests</span><span class="o">.</span><span class="n">test_utils</span><span class="o">.</span><span class="n">set_device_from_pytest_env</span><span class="p">()</span> <span class="c1"># (only needed for our build system)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">cntk_py</span><span class="o">.</span><span class="n">set_fixed_random_seed</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># fix a random seed for CNTK components</span>
+</pre></div>
+</div>
+</div>
+<p>The pretrained model is a VGG network which we originally got from <a class="reference external" href="https://gist.github.com/baraldilorenzo/07d7802847aaad0a35d3">this
+page</a>.
+We host it in a place which permits easy downloading. Below we download
+it if it is not already available locally and load the weights into
+numpy arrays.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">stream</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">handle</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">iter_content</span><span class="p">(</span><span class="n">chunk_size</span><span class="o">=</span><span class="mi">2</span><span class="o">**</span><span class="mi">20</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">data</span><span class="p">:</span> <span class="n">handle</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">load_vgg</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="n">layers</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;nb_layers&#39;</span><span class="p">]):</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;layer_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">)]</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">attrs</span><span class="p">[</span><span class="s1">&#39;nb_params&#39;</span><span class="p">]</span>
+        <span class="n">layers</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;param_{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="p">)][:]</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">layers</span>
+
+<span class="c1"># Check for an environment variable defined in CNTK&#39;s test infrastructure</span>
+<span class="n">envvar</span> <span class="o">=</span> <span class="s1">&#39;CNTK_EXTERNAL_TESTDATA_SOURCE_DIRECTORY&#39;</span>
+<span class="k">def</span> <span class="nf">is_test</span><span class="p">():</span> <span class="k">return</span> <span class="n">envvar</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span>
+
+<span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;vgg16_weights.bin&#39;</span>
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://cntk.ai/jup/models/vgg16_weights.bin&#39;</span>
+<span class="c1"># We check for the model locally</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="c1"># If not there we might be running in CNTK&#39;s test infrastructure</span>
+    <span class="k">if</span> <span class="n">is_test</span><span class="p">():</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="n">envvar</span><span class="p">],</span><span class="s1">&#39;PreTrainedModels&#39;</span><span class="p">,</span><span class="s1">&#39;Vgg16&#39;</span><span class="p">,</span><span class="s1">&#39;v0&#39;</span><span class="p">,</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#If neither is true we download the file from the web</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;downloading VGG model (~0.5GB)&#39;</span><span class="p">)</span>
+        <span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+<span class="n">layers</span> <span class="o">=</span> <span class="n">load_vgg</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;loaded VGG model&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+loaded VGG model
+</pre></div></div>
+</div>
+<p>Next we define the VGG network as a CNTK graph.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># A convolutional layer in the VGG network</span>
+<span class="k">def</span> <span class="nf">vggblock</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">arrays</span><span class="p">,</span> <span class="n">layer_map</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">arrays</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">arrays</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">convolution</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">auto_padding</span><span class="o">=</span><span class="p">[</span><span class="bp">False</span><span class="p">,</span> <span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">])</span> <span class="o">+</span> <span class="n">t</span><span class="p">)</span>
+    <span class="n">layer_map</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="k">return</span> <span class="n">y</span>
+
+<span class="c1"># A pooling layer in the VGG network</span>
+<span class="k">def</span> <span class="nf">vggpool</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">pooling</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">AVG_POOLING</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+
+
+<span class="c1"># Build the graph for the VGG network (excluding fully connected layers)</span>
+<span class="k">def</span> <span class="nf">model</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">layers</span><span class="p">):</span>
+    <span class="n">model_layers</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">def</span> <span class="nf">convolutional</span><span class="p">(</span><span class="n">z</span><span class="p">):</span> <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">z</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span> <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="n">layers</span> <span class="k">if</span> <span class="n">convolutional</span><span class="p">(</span><span class="n">layer</span><span class="p">)]</span>
+    <span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">num_convs</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+    <span class="k">for</span> <span class="n">outer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">inner</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_convs</span><span class="p">[</span><span class="n">outer</span><span class="p">]):</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">vggblock</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">conv</span><span class="p">[</span><span class="n">cnt</span><span class="p">],</span> <span class="n">model_layers</span><span class="p">,</span> <span class="s1">&#39;conv</span><span class="si">%d</span><span class="s1">_</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">outer</span><span class="p">,</span> <span class="mi">1</span><span class="o">+</span><span class="n">inner</span><span class="p">))</span>
+            <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">vggpool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">x</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">combine</span><span class="p">([</span><span class="n">model_layers</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">model_layers</span><span class="o">.</span><span class="n">keys</span><span class="p">())])</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="Defining-the-loss-function">
+<h2>Defining the loss function<a class="headerlink" href="#Defining-the-loss-function" title="Permalink to this headline">¶</a></h2>
+<p>The interesting part in this line of work is the definition of a loss
+function that, when optimized, leads to a result that is close to both
+the content of one image, as well as the style of the other image. This
+loss contains multiple terms some of which are defined in terms of the
+VGG network we just created. Concretely, the loss takes a candidate
+image <span class="math">\(x\)</span> and takes a weighted sum of three terms: the content
+loss, the style loss and the total variation loss:</p>
+<div class="math">
+\[L(x) = \alpha C(x) + \beta S(x) + T(x)\]</div>
+<p>where <span class="math">\(\alpha\)</span> and <span class="math">\(\beta\)</span> are weights on the content loss
+and the style loss, respectively. We have normalized the weights so that
+the weight in front of the total variation loss is 1. How are each of
+these terms computed?</p>
+<ul class="simple">
+<li>The <a class="reference external" href="https://en.wikipedia.org/wiki/Total_variation_denoising">total variation
+loss</a>
+<span class="math">\(T(x)\)</span> is the simplest one to understand: It measures the
+average sum of squared differences among adjacent pixel values and
+encourages the result <span class="math">\(x\)</span> to be a smooth image. We implement
+this by convolving the image with a kernel containing (-1,1) both
+horizontally and vertically, squaring the results and computing their
+average.</li>
+<li>The content loss is measuring the squared difference between the
+content image and <span class="math">\(x\)</span>. We can measure this difference on the
+raw pixels or at various layers inside the VGG network. While we
+write the content loss as <span class="math">\(C(x)\)</span> it implicitly depends on the
+content image we provide. However since that image is fixed we do not
+write this dependence explicitly.</li>
+<li>The style loss <span class="math">\(S(x)\)</span> is similar to the content loss in that it
+also implicitly depends on another image. The main idea of Gatys et.
+al. was to define the style as the correlations among the activations
+of the network and measure the style loss as the squared difference
+between these correlations. In particular for a particular layer we
+compute a covariance matrix among the output channels averaging
+across all positions. The style loss is just the squared error
+between the covariance matrix induced by the style image and the
+covariance matrix induced by <span class="math">\(x\)</span>. We are deliberately vague
+here as to which layer of the network in is used. Different
+implementations do this differently and below we will use a weighted
+sum of all the style losses of all layers.</li>
+</ul>
+<p>Below we define these loss functions:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">3</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">],</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+
+<span class="k">def</span> <span class="nf">gram</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">minus</span><span class="p">(</span><span class="n">flatten</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">times_transpose</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">features</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">npgram</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">features</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">features</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">style_loss</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">channels</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">assert</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">gram</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">npgram</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">squared_error</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">channels</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">x</span><span class="o">**</span><span class="mi">4</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">content_loss</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+    <span class="n">channels</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">return</span> <span class="n">C</span><span class="o">.</span><span class="n">squared_error</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">channels</span><span class="o">*</span><span class="n">x</span><span class="o">*</span><span class="n">y</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">total_variation_loss</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">xx</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span><span class="o">+</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="n">kh</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">delta</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">kv</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">constant</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">delta</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">dh</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">convolution</span><span class="p">(</span><span class="n">kh</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">auto_padding</span><span class="o">=</span><span class="p">[</span><span class="bp">False</span><span class="p">])</span>
+    <span class="n">dv</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">convolution</span><span class="p">(</span><span class="n">kv</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">auto_padding</span><span class="o">=</span><span class="p">[</span><span class="bp">False</span><span class="p">])</span>
+    <span class="n">avg</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">dv</span><span class="p">))</span> <span class="o">+</span> <span class="n">C</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">dh</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="n">avg</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Instantiating-the-loss">
+<h2>Instantiating the loss<a class="headerlink" href="#Instantiating-the-loss" title="Permalink to this headline">¶</a></h2>
+<p>Now we are ready to instantiate a loss with two particular images. We
+will use an image of Portland’s landscape and <a class="reference external" href="https://en.wikipedia.org/wiki/The_Starry_Night">The Starry
+Night</a> by Vincent van
+Gogh. We first define a few tuning parameters whose explanation is
+below: - Depending on whether the code runs on a GPU or a CPU we resize
+the images to 300 x 300 or 64 x 64 respectively and adjust the number of
+iterations of optimization to speed up the process and for ease of
+experimentation. You can use a larger size if you like the results. If
+you only have a CPU you will have to wait a while. - The content weight
+and style weight are the main parameters that affect the quality of the
+resulting image. - The decay factor is a number in (0,1) which decides
+how to weigh the contribution of each layer. Following <a class="reference external" href="https://arxiv.org/abs/1605.04603">Novak and
+Nikulin</a>, all layers contribute to
+both the content loss and the style loss. The content loss weighs the
+input more heavily and each later layer in the VGG network contributes
+with a weight that is exponentially smaller with its distance from the
+input. The style loss weighs the output of the VGG network more heavily
+and each earlier layer in the VGG network contributes with a weight that
+is exponentially smaller with its distance from the output. As in Novak
+and Nikulin we use a decay factor of 0.5. - The inner and outer
+parameters define how we are going to obtain our final result. We will
+take <code class="docutils literal"><span class="pre">outer</span></code> snapshots during our search for the image that minimizes
+the loss. Each snapshot will be taken after <code class="docutils literal"><span class="pre">inner</span></code> steps of
+optimization. - Finally, a very important thing to know about our
+pretrained network is how it was trained. In particular, a constant
+vector was subtracted from all input images that contained the average
+value for the red, green, and blue channels in the training set. This
+makes the inputs zero centered which helps the training procedure. If we
+do not subtract this vector our images will not look like the training
+images and this will lead to bad results. This vector is referred to as
+SHIFT below.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="n">style_path</span> <span class="o">=</span> <span class="s1">&#39;style.jpg&#39;</span>
+<span class="n">content_path</span> <span class="o">=</span> <span class="s1">&#39;content.jpg&#39;</span>
+
+<span class="n">start_from_random</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">content_weight</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="n">style_weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">decay</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+<span class="k">if</span> <span class="n">is_test</span><span class="p">():</span>
+    <span class="n">outer</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">inner</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">SIZE</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">outer</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="n">inner</span> <span class="o">=</span> <span class="mi">20</span>
+    <span class="n">SIZE</span> <span class="o">=</span> <span class="mi">300</span>
+
+<span class="n">SHIFT</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">([</span><span class="mf">103.939</span><span class="p">,</span> <span class="mf">116.779</span><span class="p">,</span> <span class="mf">123.68</span><span class="p">],</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">load_image</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">pic</span><span class="p">:</span>
+        <span class="n">hw</span> <span class="o">=</span> <span class="n">pic</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">hh</span> <span class="o">=</span> <span class="n">pic</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="n">mh</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">hw</span><span class="p">,</span><span class="n">hh</span><span class="p">)</span>
+        <span class="n">cropped</span> <span class="o">=</span> <span class="n">pic</span><span class="o">.</span><span class="n">crop</span><span class="p">((</span><span class="n">hw</span> <span class="o">-</span> <span class="n">mh</span><span class="p">,</span> <span class="n">hh</span> <span class="o">-</span> <span class="n">mh</span><span class="p">,</span> <span class="n">hw</span> <span class="o">+</span> <span class="n">mh</span><span class="p">,</span> <span class="n">hh</span> <span class="o">+</span> <span class="n">mh</span><span class="p">))</span>
+        <span class="n">array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">cropped</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">SIZE</span><span class="p">,</span><span class="n">SIZE</span><span class="p">),</span> <span class="n">Image</span><span class="o">.</span><span class="n">BICUBIC</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">)))</span><span class="o">-</span><span class="n">SHIFT</span>
+
+<span class="k">def</span> <span class="nf">save_image</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+    <span class="n">sanitized_img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="n">img</span><span class="o">+</span><span class="n">SHIFT</span><span class="p">))</span>
+    <span class="n">pic</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">sanitized_img</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))))</span>
+    <span class="n">pic</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">ordered_outputs</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">output_dict</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">binding</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">output_dict</span><span class="p">[</span><span class="n">out</span><span class="p">])</span> <span class="k">for</span> <span class="n">out</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">outputs</span><span class="p">]</span>
+
+<span class="c1"># download the images if they are not available locally</span>
+<span class="k">for</span> <span class="n">local_path</span> <span class="ow">in</span> <span class="n">content_path</span><span class="p">,</span> <span class="n">style_path</span><span class="p">:</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">local_path</span><span class="p">):</span>
+        <span class="n">download</span><span class="p">(</span><span class="s1">&#39;https://cntk.ai/jup/</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">local_path</span><span class="p">,</span> <span class="n">local_path</span><span class="p">)</span>
+
+<span class="c1"># Load the images</span>
+<span class="n">style</span>   <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">style_path</span><span class="p">)</span>
+<span class="n">content</span> <span class="o">=</span> <span class="n">load_image</span><span class="p">(</span><span class="n">content_path</span><span class="p">)</span>
+
+<span class="c1"># Display the images</span>
+<span class="k">for</span> <span class="n">img</span> <span class="ow">in</span> <span class="n">content</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">img</span><span class="o">+</span><span class="n">SHIFT</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+
+<span class="c1"># Push the images through the VGG network</span>
+<span class="c1"># First define the input and the output</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">),</span> <span class="n">needs_gradient</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">z</span><span class="p">,</span> <span class="n">intermediate_layers</span> <span class="o">=</span> <span class="n">model</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">layers</span><span class="p">)</span>
+<span class="c1"># Now get the activations for the two images</span>
+<span class="n">content_activations</span> <span class="o">=</span> <span class="n">ordered_outputs</span><span class="p">(</span><span class="n">intermediate_layers</span><span class="p">,</span> <span class="p">{</span><span class="n">y</span><span class="p">:</span> <span class="p">[[</span><span class="n">content</span><span class="p">]]})</span>
+<span class="n">style_activations</span> <span class="o">=</span> <span class="n">ordered_outputs</span><span class="p">(</span><span class="n">intermediate_layers</span><span class="p">,</span> <span class="p">{</span><span class="n">y</span><span class="p">:</span> <span class="p">[[</span><span class="n">style</span><span class="p">]]})</span>
+<span class="n">style_output</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">z</span><span class="o">.</span><span class="n">eval</span><span class="p">({</span><span class="n">y</span><span class="p">:</span> <span class="p">[[</span><span class="n">style</span><span class="p">]]}))</span>
+
+<span class="c1"># Finally define the loss</span>
+<span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">content_activations</span><span class="p">)</span>
+<span class="n">total</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">decay</span><span class="o">**</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">decay</span><span class="p">)</span> <span class="c1"># makes sure that changing the decay does not affect the magnitude of content/style</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">total</span> <span class="o">*</span> <span class="n">content_weight</span> <span class="o">*</span> <span class="n">content_loss</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+         <span class="o">+</span> <span class="mf">1.0</span><span class="o">/</span><span class="n">total</span> <span class="o">*</span> <span class="n">style_weight</span> <span class="o">*</span> <span class="n">style_loss</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">style_output</span><span class="p">)</span>
+         <span class="o">+</span> <span class="n">total_variation_loss</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+    <span class="n">loss</span> <span class="o">=</span> <span class="p">(</span><span class="n">loss</span>
+        <span class="o">+</span> <span class="n">decay</span><span class="o">**</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">total</span> <span class="o">*</span> <span class="n">content_weight</span> <span class="o">*</span> <span class="n">content_loss</span><span class="p">(</span><span class="n">intermediate_layers</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">content_activations</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="o">+</span> <span class="n">decay</span><span class="o">**</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="n">i</span><span class="p">)</span><span class="o">/</span><span class="n">total</span> <span class="o">*</span> <span class="n">style_weight</span>   <span class="o">*</span>   <span class="n">style_loss</span><span class="p">(</span><span class="n">intermediate_layers</span><span class="o">.</span><span class="n">outputs</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">style_activations</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_205_Artistic_Style_Transfer_9_0.png" src="_images/CNTK_205_Artistic_Style_Transfer_9_0.png" />
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_205_Artistic_Style_Transfer_9_1.png" src="_images/CNTK_205_Artistic_Style_Transfer_9_1.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Optimizing-the-loss">
+<h2>Optimizing the loss<a class="headerlink" href="#Optimizing-the-loss" title="Permalink to this headline">¶</a></h2>
+<p>Now we are finally ready to find the image that minimizes the loss we
+defined. We will use the optimization package in scipy and in particular
+the LBFGS method. LBFGS is a great optimization procedure which is very
+popular when computing the full gradient is feasible as is the case
+here.</p>
+<p>Notice that we are computing the gradient with respect to the input.
+This is quite different from most other use cases where we compute the
+gradient with respect to the network parameters. By default, input
+variables do not ask for gradients, however we defined our input
+variable as</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">C</span><span class="o">.</span><span class="n">input_variable</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">),</span> <span class="n">needs_gradient</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which means that CNTK will compute the gradient with respect to this
+input variable as well.</p>
+<p>The rest of the code is straightforward and most of the complexity comes
+from interacting with the scipy optimization package: - The optimizer
+works only with vectors of double precision so img2vec takes a
+(3,SIZE,SIZE) image and converts it to a vector of doubles - CNTK needs
+the input as an image but scipy is calling us back with a vector - CNTK
+computes a gradient as an image but scipy wants the gradient as a vector</p>
+<p>Besides these complexities we just start from the content image (or a
+random image), perform our optimization and display the final result.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># utility to convert a vector to an image</span>
+<span class="k">def</span> <span class="nf">vec2img</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;i&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">d</span><span class="p">))</span>
+
+<span class="c1"># utility to convert an image to a vector</span>
+<span class="k">def</span> <span class="nf">img2vec</span><span class="p">(</span><span class="n">img</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">img</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)</span>
+
+<span class="c1"># utility to compute the value and the gradient of f at a particular place defined by binding</span>
+<span class="k">def</span> <span class="nf">value_and_grads</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">binding</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">outputs</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;function must return a single tensor&#39;</span><span class="p">)</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">valdict</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">binding</span><span class="p">,</span> <span class="p">[</span><span class="n">f</span><span class="o">.</span><span class="n">output</span><span class="p">],</span> <span class="nb">set</span><span class="p">([</span><span class="n">f</span><span class="o">.</span><span class="n">output</span><span class="p">]))</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">valdict</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">grads</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="p">{</span><span class="n">f</span><span class="o">.</span><span class="n">output</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">value</span><span class="p">)},</span> <span class="nb">set</span><span class="p">(</span><span class="n">binding</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">value</span><span class="p">,</span> <span class="n">grads</span>
+
+<span class="c1"># an objective function that scipy will be happy with</span>
+<span class="k">def</span> <span class="nf">objfun</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">loss</span><span class="p">):</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">vec2img</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">v</span><span class="p">,</span> <span class="n">g</span> <span class="o">=</span> <span class="n">value_and_grads</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="p">{</span><span class="n">loss</span><span class="o">.</span><span class="n">arguments</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="p">[[</span><span class="n">y</span><span class="p">]]})</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">img2vec</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">g</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">v</span><span class="p">,</span> <span class="n">g</span>
+
+<span class="c1"># the actual optimization procedure</span>
+<span class="k">def</span> <span class="nf">optimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">):</span>
+    <span class="n">bounds</span> <span class="o">=</span> <span class="p">[(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">SHIFT</span><span class="p">),</span> <span class="mi">255</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">SHIFT</span><span class="p">))]</span><span class="o">*</span><span class="n">x0</span><span class="o">.</span><span class="n">size</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">outer</span><span class="p">):</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="n">opt</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">objfun</span><span class="p">,</span> <span class="n">img2vec</span><span class="p">(</span><span class="n">x0</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">loss</span><span class="p">,),</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;L-BFGS-B&#39;</span><span class="p">,</span>
+                         <span class="n">bounds</span><span class="o">=</span><span class="n">bounds</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;maxiter&#39;</span><span class="p">:</span> <span class="n">inner</span><span class="p">},</span> <span class="n">jac</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s1">&#39;objective : </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">s</span><span class="o">.</span><span class="n">fun</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">x0</span> <span class="o">=</span> <span class="n">vec2img</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;output_</span><span class="si">%d</span><span class="s1">.jpg&#39;</span> <span class="o">%</span> <span class="n">i</span>
+        <span class="n">save_image</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">x0</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">98052</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">start_from_random</span><span class="p">:</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">content</span>
+<span class="n">xstar</span> <span class="o">=</span> <span class="n">optimize</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">inner</span><span class="p">,</span> <span class="n">outer</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">xstar</span><span class="o">+</span><span class="n">SHIFT</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+objective : 52596.0
+objective : 44182.2
+objective : 42034.1
+objective : 41035.2
+objective : 40551.4
+objective : 40256.1
+objective : 40060.5
+objective : 39937.1
+objective : 39835.0
+objective : 39754.1
+</pre></div></div>
+</div>
+<div class="nboutput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[6]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>&lt;matplotlib.image.AxesImage at 0x2825170d6a0&gt;
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="_images/CNTK_205_Artistic_Style_Transfer_11_2.png" src="_images/CNTK_205_Artistic_Style_Transfer_11_2.png" />
+</div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>In [7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3"><div class="highlight"><pre>
+<span></span><span class="c1"># For testing purposes</span>
+<span class="n">objfun</span><span class="p">(</span><span class="n">xstar</span><span class="p">,</span> <span class="n">loss</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none"><div class="highlight"><pre>
+<span></span>Out[7]:
+</pre></div>
+</div>
+<div class="output_area highlight-none"><div class="highlight"><pre>
+<span></span>39754.125
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           <div class="articleComments">
+            
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Cognitive Toolkit (CNTK) Team.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
